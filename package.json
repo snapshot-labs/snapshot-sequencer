@@ -1,7 +1,6 @@
 {
   "name": "snapshot-sequencer",
   "version": "0.1.3",
-  "repository": "snapshot-labs/snapshot-hub",
   "license": "MIT",
   "scripts": {
     "lint": "eslint . --ext .ts --fix",
@@ -27,13 +26,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.2",
     "express": "^4.18.1",
-    "express-graphql": "^0.12.0",
-    "express-rate-limit": "^5.2.6",
-    "graphql": "^15.8.0",
-    "graphql-depth-limit": "^1.1.0",
-    "graphql-fields": "^2.0.3",
-    "graphql-query-count-limit": "^1.0.0",
-    "graphql-tools": "^7.0.5",
     "lodash": "^4.17.21",
     "mysql": "^2.18.1",
     "ts-node": "^10.9.1",
