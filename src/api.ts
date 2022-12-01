@@ -4,13 +4,14 @@ import relayer from './helpers/relayer';
 import { addOrUpdateSpace } from './helpers/actions';
 import { getSpaceENS } from './helpers/ens';
 import { updateProposalAndVotes } from './scores';
+import typedData from './ingestor';
+import { sendError } from './helpers/utils';
 import log from './helpers/log';
 import { name, version } from '../package.json';
-import { sendError } from './helpers/utils';
-import typedData from './ingestor';
 
 const router = express.Router();
 const network = process.env.NETWORK || 'testnet';
+
 const maintenanceMsg = 'update in progress, try later';
 
 router.post('/message', async (req, res) => {
