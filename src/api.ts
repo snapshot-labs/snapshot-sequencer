@@ -14,11 +14,7 @@ const network = process.env.NETWORK || 'testnet';
 
 const maintenanceMsg = 'update in progress, try later';
 
-router.post('/message', async (req, res) => {
-  return sendError(res, 'personal sign is not supported anymore');
-});
-
-router.post('/msg', async (req, res) => {
+router.post('/', async (req, res) => {
   if (process.env.MAINTENANCE) return sendError(res, maintenanceMsg);
   try {
     const result = await typedData(req.body);
