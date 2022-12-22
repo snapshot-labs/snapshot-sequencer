@@ -26,6 +26,7 @@ async function getVotes(proposalId: string): Promise<any[] | undefined> {
   const query =
     'SELECT id, choice, voter, vp, vp_by_strategy, vp_state FROM votes WHERE proposal = ?';
   const votes = await db.queryAsync(query, [proposalId]);
+
   return votes.map(vote => {
     vote.choice = JSON.parse(vote.choice);
     vote.vp_by_strategy = JSON.parse(vote.vp_by_strategy);

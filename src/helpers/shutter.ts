@@ -58,7 +58,8 @@ export async function rpcRequest(method, params, url: string = SHUTTER_URL) {
 export async function getDecryptionKey(proposal: string, url: string = SHUTTER_URL) {
   const id = proposalToId(proposal);
   const result = await rpcRequest('get_decryption_key', ['1', id], url);
-  log.info(`[shutter] get_decryption_key ${JSON.stringify(result)}`);
+  log.info(`[shutter] get_decryption_key ${proposal} ${JSON.stringify(result)}`);
+
   return result;
 }
 
@@ -77,12 +78,16 @@ export async function setProposalKey(params) {
     const proposalId = idToProposal(id);
     let query = 'SELECT id, end FROM proposals WHERE id = ? AND privacy = ? LIMIT 1';
     const [proposal] = await db.queryAsync(query, [proposalId, 'shutter']);
+
     const ts = (Date.now() / 1e3).toFixed();
     if (!proposal || ts < proposal.end) return false;
+
     query = 'SELECT id, choice FROM votes WHERE proposal = ?';
     const votes = await db.queryAsync(query, [proposal.id]);
+
     const sqlParams: string[] = [];
     let sqlQuery = '';
+
     for (const vote of votes) {
       const choice = await shutterDecrypt(jsonParse(vote.choice), `0x${key}`);
       log.info(`[shutter] decrypted choice ${JSON.stringify(choice)}`);
@@ -92,8 +97,10 @@ export async function setProposalKey(params) {
         sqlParams.push(vote.id);
       }
     }
+
     if (sqlQuery) await db.queryAsync(sqlQuery, sqlParams);
     log.info(`[shutter] choices decrypted and updated for ${proposalId}`);
+
     await updateProposalAndVotes(proposal.id, true);
     log.info(`[shutter] proposal scores updated for ${proposalId}`);
   } catch (e) {
@@ -105,21 +112,28 @@ export async function setProposalKey(params) {
 
 router.all('/', async (req, res) => {
   log.info(`[shutter] incoming rpc request ${JSON.stringify(req.body)} from ${getIp(req)}`);
+
+  /*
   if (!SHUTTER_IPS.includes(getIp(req))) {
-    return rpcError(res, 500, 'not authorized', null);
+    log.warn(`[shutter] wrong ip`);
+    return rpcError(res, 500, 'not authorized ip', null);
   }
+  */
 
   const id = req.body.id || null;
   try {
     const { method, params } = req.body;
+
     if (method === 'shutter_set_eon_pubkey') {
       setEonPubkey(params);
       return rpcSuccess(res, true, id);
     }
+
     if (method === 'shutter_set_proposal_key') {
       setProposalKey(params);
       return rpcSuccess(res, true, id);
     }
+
     return rpcError(res, 500, 'wrong method', id);
   } catch (e) {
     log.warn(`[shutter] failed ${JSON.stringify(e)}`);
