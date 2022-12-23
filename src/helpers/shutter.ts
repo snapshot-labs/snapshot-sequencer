@@ -113,12 +113,10 @@ export async function setProposalKey(params) {
 router.all('/', async (req, res) => {
   log.info(`[shutter] incoming rpc request ${JSON.stringify(req.body)} from ${getIp(req)}`);
 
-  /*
   if (!SHUTTER_IPS.includes(getIp(req))) {
     log.warn(`[shutter] wrong ip`);
     return rpcError(res, 500, 'not authorized ip', null);
   }
-  */
 
   const id = req.body.id || null;
   try {
