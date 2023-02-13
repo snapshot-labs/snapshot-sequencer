@@ -8,8 +8,13 @@ export async function verify(body): Promise<any> {
 
   const space = await getSpace(msg.space);
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());
-  if (!admins.includes(body.address.toLowerCase()) && proposal.author !== body.address)
-    return Promise.reject('wrong signer');
+  const mods = (space?.moderators || []).map(mod => mod.toLowerCase());
+  if (
+    !admins.includes(body.address.toLowerCase()) &&
+    !mods.includes(body.address.toLowerCase()) &&
+    proposal.author !== body.address
+  )
+    return Promise.reject('not authorized to archive proposal');
 }
 
 export async function action(body): Promise<void> {
