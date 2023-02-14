@@ -57,9 +57,11 @@ export async function verify(body): Promise<any> {
   }
 
   const onlyAuthors = space.filters?.onlyMembers;
-  const members = (space.members || [])
-    .concat(...(space.admins || []), ...(space.moderators || []))
-    .map(member => member.toLowerCase());
+  const members = [
+    ...(space.members || []),
+    ...(space.admins || []),
+    ...(space.moderators || [])
+  ].map(member => member.toLowerCase());
   const isAuthorized = members.includes(body.address.toLowerCase());
 
   if (onlyAuthors && !isAuthorized) return Promise.reject('only space authors can propose');
