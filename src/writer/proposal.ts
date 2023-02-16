@@ -57,11 +57,16 @@ export async function verify(body): Promise<any> {
   }
 
   const onlyAuthors = space.filters?.onlyMembers;
-  const authors = (space.members || []).map(address => address.toLowerCase());
-  const isAuthor = authors.includes(body.address.toLowerCase());
-  if (onlyAuthors && !isAuthor) return Promise.reject('only space authors can propose');
+  const members = [
+    ...(space.members || []),
+    ...(space.admins || []),
+    ...(space.moderators || [])
+  ].map(member => member.toLowerCase());
+  const isAuthorized = members.includes(body.address.toLowerCase());
 
-  if (!isAuthor) {
+  if (onlyAuthors && !isAuthorized) return Promise.reject('only space authors can propose');
+
+  if (!isAuthorized) {
     try {
       const validationName = space.validation?.name || 'basic';
       const validationParams = space.validation?.params || {};
