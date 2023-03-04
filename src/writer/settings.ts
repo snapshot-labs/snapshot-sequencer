@@ -16,15 +16,16 @@ export async function verify(body): Promise<any> {
   }
 
   const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK);
-  const isOwner = controller === body.address;
+  const isController = controller === body.address;
   const space = await getSpace(msg.space);
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());
   const isAdmin = admins.includes(body.address.toLowerCase());
   const newAdmins = (msg.payload.admins || []).map(admin => admin.toLowerCase());
 
-  if (!isAdmin && !isOwner) return Promise.reject('not allowed');
+  if (!isAdmin && !isController) return Promise.reject('not allowed');
 
-  if (!isOwner && !isEqual(admins, newAdmins)) return Promise.reject('not allowed change admins');
+  if (!isController && !isEqual(admins, newAdmins))
+    return Promise.reject('not allowed change admins');
 }
 
 export async function action(body): Promise<void> {
