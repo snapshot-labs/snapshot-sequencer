@@ -13,5 +13,5 @@ app.set('trust proxy', 1);
 app.use('/', api);
 app.use('/shutter', shutter);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => log.info(`Started on: http://localhost:${PORT}`));
