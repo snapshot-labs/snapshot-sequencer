@@ -5,7 +5,6 @@ import { jsonParse } from '../helpers/utils';
 import log from '../helpers/log';
 
 const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK || '1';
-const networkPath = DEFAULT_NETWORK === '1' ? '' : 'testnet/';
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
@@ -16,19 +15,17 @@ export async function verify(body): Promise<any> {
     return Promise.reject('wrong space format');
   }
 
-  const spaceUri = await snapshot.utils.getSpaceUri(msg.space, DEFAULT_NETWORK);
-  const spaceIdUri = encodeURIComponent(msg.space);
-  const isOwner =
-    spaceUri ===
-    `ipns://storage.snapshot.page/registry/${networkPath}${body.address}/${spaceIdUri}`;
+  const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK);
+  const isController = controller === body.address;
   const space = await getSpace(msg.space);
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());
   const isAdmin = admins.includes(body.address.toLowerCase());
   const newAdmins = (msg.payload.admins || []).map(admin => admin.toLowerCase());
 
-  if (!isAdmin && !isOwner) return Promise.reject('not allowed');
+  if (!isAdmin && !isController) return Promise.reject('not allowed');
 
-  if (!isOwner && !isEqual(admins, newAdmins)) return Promise.reject('not allowed change admins');
+  if (!isController && !isEqual(admins, newAdmins))
+    return Promise.reject('not allowed change admins');
 }
 
 export async function action(body): Promise<void> {
