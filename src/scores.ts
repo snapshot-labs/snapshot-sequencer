@@ -135,8 +135,10 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
   if (proposal.scores_state === 'final') return true;
 
   if (!force && proposal.privacy === 'shutter') {
-    if (proposal.state === 'closed') await getDecryptionKey(proposal.id);
-    return true;
+    if (proposal.state === 'closed') {
+      await getDecryptionKey(proposal.id);
+      return true;
+    }
   }
 
   // Get votes
@@ -166,7 +168,15 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
   }
 
   // Get results
-  const voting = new snapshot.utils.voting[proposal.type](proposal, votes, proposal.strategies);
+  let voting;
+  if (proposal.privacy === 'shutter' && proposal.state !== 'closed') {
+    voting = new snapshot.utils.voting[proposal.type](proposal, votes, proposal.strategies, [], {
+      shutter: true
+    });
+  } else {
+    voting = new snapshot.utils.voting[proposal.type](proposal, votes, proposal.strategies);
+  }
+
   const results = {
     scores_state: proposal.state === 'closed' ? 'final' : 'pending',
     scores: voting.getScores(),
