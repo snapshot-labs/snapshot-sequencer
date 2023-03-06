@@ -134,11 +134,9 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
   if (!proposal) return false;
   if (proposal.scores_state === 'final') return true;
 
-  if (!force && proposal.privacy === 'shutter') {
-    if (proposal.state === 'closed') {
-      await getDecryptionKey(proposal.id);
-      return true;
-    }
+  if (!force && proposal.privacy === 'shutter' && proposal.state === 'closed') {
+    await getDecryptionKey(proposal.id);
+    return true;
   }
 
   // Get votes
