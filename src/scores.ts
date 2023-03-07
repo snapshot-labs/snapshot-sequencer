@@ -166,14 +166,17 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
   }
 
   // Get results
-  let voting;
-  if (proposal.privacy === 'shutter' && proposal.state !== 'closed') {
-    voting = new snapshot.utils.voting[proposal.type](proposal, votes, proposal.strategies, [], {
-      shutter: true
-    });
-  } else {
-    voting = new snapshot.utils.voting[proposal.type](proposal, votes, proposal.strategies);
-  }
+  const encryptedChoice = proposal.privacy === 'shutter' && proposal.state !== 'closed';
+
+  const voting = new snapshot.utils.voting[proposal.type](
+    proposal,
+    votes,
+    proposal.strategies,
+    undefined,
+    {
+      encryptedChoice
+    }
+  );
 
   const results = {
     scores_state: proposal.state === 'closed' ? 'final' : 'pending',
