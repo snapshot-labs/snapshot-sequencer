@@ -69,15 +69,34 @@ export async function verify(body): Promise<any> {
   if (!isAuthorized) {
     try {
       const validationName = space.validation?.name || 'basic';
-      const validationParams = space.validation?.params || {};
-      const isValid = await snapshot.utils.validations[validationName](
-        body.address,
-        space,
-        msg.payload,
-        validationParams
-      );
-      if (!isValid) return Promise.reject('validation failed');
+      let isValid = false;
+      // default case
+      if (validationName === 'basic' && !space.filters?.minScore) {
+        isValid = true;
+      } else {
+        const validationParams = space.validation?.params || {};
+        if (validationName === 'basic') {
+          validationParams.minScore = space.validation?.params?.minScore || space.filters.minScore;
+          validationParams.strategies = space.validation?.params?.strategies || space.strategies;
+        }
+        isValid = await snapshot.utils.validate(
+          validationName,
+          body.address,
+          space.id,
+          space.network,
+          'latest',
+          validationParams,
+          {}
+        );
+      }
+
+      if (isValid === false) return Promise.reject('validation failed');
     } catch (e) {
+      log.warn(
+        `[writer] Failed to check proposal validation, ${msg.space}, ${
+          body.address
+        }, ${JSON.stringify(e)}`
+      );
       return Promise.reject('failed to check validation');
     }
   }
