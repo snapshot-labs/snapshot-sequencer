@@ -7,12 +7,12 @@ import db from '../helpers/mysql';
 import { updateProposalAndVotes } from '../scores';
 import log from '../helpers/log';
 
-async function isLimitReached(space) {
-  const limit = 1500000;
-  const query = `SELECT COUNT(*) AS count FROM messages WHERE space = ? AND timestamp > (UNIX_TIMESTAMP() - 2592000)`;
-  const [{ count }] = await db.queryAsync(query, [space]);
-  return count > limit;
-}
+// async function isLimitReached(space) {
+//   const limit = 1500000;
+//   const query = `SELECT COUNT(*) AS count FROM messages WHERE space = ? AND timestamp > (UNIX_TIMESTAMP() - 2592000)`;
+//   const [{ count }] = await db.queryAsync(query, [space]);
+//   return count > limit;
+// }
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
