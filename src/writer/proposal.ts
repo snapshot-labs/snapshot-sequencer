@@ -91,7 +91,7 @@ export async function verify(body): Promise<any> {
         );
       }
 
-      if (isValid === false) return Promise.reject('validation failed');
+      if (!isValid) return Promise.reject('validation failed');
     } catch (e) {
       log.warn(
         `[writer] Failed to check proposal validation, ${msg.space}, ${
