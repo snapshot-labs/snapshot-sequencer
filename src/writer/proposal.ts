@@ -65,7 +65,6 @@ export async function verify(body): Promise<any> {
   const isAuthorized = members.includes(body.address.toLowerCase());
 
   if (onlyAuthors && !isAuthorized) return Promise.reject('only space authors can propose');
-  console.log('isAuthorized', isAuthorized);
   if (!isAuthorized) {
     try {
       const validationName = space.validation?.name || 'basic';
