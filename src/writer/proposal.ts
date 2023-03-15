@@ -69,7 +69,7 @@ export async function verify(body): Promise<any> {
     try {
       const validationName = space.validation?.name || 'basic';
       const validationParams = space.validation?.params || {};
-      const minScore = space.validation?.params?.minScore || space.filters.minScore;
+      const minScore = space.validation?.params?.minScore || space.filters?.minScore;
 
       let isValid = false;
       // default case
