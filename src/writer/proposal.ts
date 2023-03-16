@@ -155,7 +155,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     app: kebabCase(msg.payload.app || ''),
     scores: JSON.stringify([]),
     scores_by_strategy: JSON.stringify([]),
-    scores_state: '',
+    scores_state: 'pending',
     scores_total: 0,
     scores_updated: 0,
     votes: 0,
