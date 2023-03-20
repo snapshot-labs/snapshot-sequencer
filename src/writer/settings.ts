@@ -1,10 +1,8 @@
 import isEqual from 'lodash/isEqual';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { addOrUpdateSpace, getSpace } from '../helpers/actions';
-import { jsonParse } from '../helpers/utils';
+import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 import log from '../helpers/log';
-
-const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK || '1';
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);

@@ -33,8 +33,13 @@ export async function getProposal(space, id) {
 }
 
 export async function getSpace(id) {
-  const query = `SELECT settings FROM spaces WHERE id = ? LIMIT 1`;
+  const query = `SELECT settings FROM spaces WHERE id = ? AND deleted = 0 LIMIT 1`;
   const spaces = await db.queryAsync(query, [id]);
   if (!spaces[0]) return false;
   return jsonParse(spaces[0].settings, {});
+}
+
+export async function markSpaceAsDeleted(space: string) {
+  const query = 'UPDATE spaces SET deleted = ? WHERE id = ?';
+  await db.queryAsync(query, [1, space]);
 }
