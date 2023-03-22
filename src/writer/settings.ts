@@ -15,7 +15,8 @@ export async function verify(body): Promise<any> {
 
   const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK);
   const isController = controller === body.address;
-  const space = await getSpace(msg.space);
+  const space = await getSpace(msg.space, true);
+  if (space?.deleted) return Promise.reject('space deleted, contact admin');
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());
   const isAdmin = admins.includes(body.address.toLowerCase());
   const newAdmins = (msg.payload.admins || []).map(admin => admin.toLowerCase());
