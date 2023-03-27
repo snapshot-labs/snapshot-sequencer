@@ -25,11 +25,13 @@ CREATE TABLE spaces (
   name VARCHAR(64) NOT NULL,
   settings JSON,
   verified INT NOT NULL DEFAULT '0',
+  deleted INT NOT NULL DEFAULT '0',
   created_at BIGINT NOT NULL,
   updated_at BIGINT NOT NULL,
   PRIMARY KEY (id),
   INDEX name (name),
   INDEX verified (verified),
+  INDEX deleted (deleted),
   INDEX created_at (created_at),
   INDEX updated_at (updated_at)
 );

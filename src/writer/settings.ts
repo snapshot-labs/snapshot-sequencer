@@ -1,10 +1,8 @@
 import isEqual from 'lodash/isEqual';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { addOrUpdateSpace, getSpace } from '../helpers/actions';
-import { jsonParse } from '../helpers/utils';
+import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 import log from '../helpers/log';
-
-const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK || '1';
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
@@ -17,7 +15,8 @@ export async function verify(body): Promise<any> {
 
   const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK);
   const isController = controller === body.address;
-  const space = await getSpace(msg.space);
+  const space = await getSpace(msg.space, true);
+  if (space?.deleted) return Promise.reject('space deleted, contact admin');
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());
   const isAdmin = admins.includes(body.address.toLowerCase());
   const newAdmins = (msg.payload.admins || []).map(admin => admin.toLowerCase());
