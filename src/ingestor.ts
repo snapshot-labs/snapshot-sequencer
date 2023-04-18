@@ -66,7 +66,7 @@ export default async function ingestor(body) {
     const isValidSig = await snapshot.utils.verify(body.address, body.sig, body.data, network);
     if (!isValidSig) return Promise.reject('wrong signature');
   } catch (e) {
-    log.warn(`signature validation failed for ${body.address}`);
+    log.warn(`signature validation failed for ${body.address} ${JSON.stringify(e)}`);
     return Promise.reject('signature validation failed');
   }
 
