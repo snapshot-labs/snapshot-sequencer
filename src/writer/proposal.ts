@@ -30,10 +30,6 @@ export async function verify(body): Promise<any> {
     return Promise.reject('wrong proposal format');
   }
 
-  const name = msg.payload.name.toLowerCase();
-  if (name.includes('airdrop') || name.includes('a1rdrop') || name.includes('alrdrop'))
-    return Promise.reject('oops, something goes wrong');
-
   if (
     msg.payload.type === 'basic' &&
     !isEqual(['For', 'Against', 'Abstain'], msg.payload.choices)
