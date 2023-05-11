@@ -141,7 +141,8 @@ export default async function ingestor(body) {
   let pinned;
   let receipt;
   try {
-    [pinned, receipt] = await Promise.all([pin(body), issueReceipt(body.sig)]);
+    const ipfsBody = { ...body, hash: id };
+    [pinned, receipt] = await Promise.all([pin(ipfsBody), issueReceipt(body.sig)]);
   } catch (e) {
     return Promise.reject('pinning failed');
   }
