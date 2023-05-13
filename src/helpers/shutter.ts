@@ -27,12 +27,12 @@ export async function shutterDecrypt(encryptedMsg: string, decryptionKey: string
   }
 }
 
-export function proposalToId(proposal: string): string | boolean {
+function proposalToId(proposal: string): string | boolean {
   if (!proposal.startsWith('0x')) return false;
   return proposal.slice(2);
 }
 
-export function idToProposal(id: string): string {
+function idToProposal(id: string): string {
   return `0x${id}`;
 }
 
