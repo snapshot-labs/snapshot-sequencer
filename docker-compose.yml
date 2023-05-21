@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  snapshot-sequencer:
+    build: .
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - mysql
+    
+  mysql:
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    cap_add:
+      - SYS_NICE
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./src/helpers/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE_NAME}
+
+volumes:
+  mysql:
+    driver: local
