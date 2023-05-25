@@ -139,6 +139,10 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     return true;
   }
 
+  const isLinea =
+    proposalId === '0xda4f201a37ea08cf1892418e7b9e88f5687a68dbdc96c3ab22abaa1c7244648e';
+  if (isLinea) return;
+
   // Get votes
   console.time('getVotes');
   let votes: any = await getVotes(proposalId);
