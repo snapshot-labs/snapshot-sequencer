@@ -140,7 +140,9 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
   }
 
   // Get votes
+  console.time('getVotes');
   let votes: any = await getVotes(proposalId);
+  console.timeEnd('getVotes');
   const isFinal = votes.every(vote => vote.vp_state === 'final');
   let vpState = 'final';
 
