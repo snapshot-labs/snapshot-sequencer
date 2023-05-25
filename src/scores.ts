@@ -143,6 +143,13 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     proposalId === '0xda4f201a37ea08cf1892418e7b9e88f5687a68dbdc96c3ab22abaa1c7244648e';
   if (isLinea) return;
 
+  // Ignore score calculation if proposal have more than 100k votes and scores_updated greater than 1 minute
+  const ts = Number((Date.now() / 1e3).toFixed());
+  if (proposal.votes > 0 && proposal.scores_updated > ts - 60) {
+    console.log('ignore score calculation', proposalId, proposal.votes, proposal.scores_updated);
+    return false;
+  }
+
   // Get votes
   let votes: any = await getVotes(proposalId);
   const isFinal = votes.every(vote => vote.vp_state === 'final');
