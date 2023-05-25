@@ -6,6 +6,7 @@ import { getProposal } from '../helpers/actions';
 import db from '../helpers/mysql';
 import { updateProposalAndVotes } from '../scores';
 import log from '../helpers/log';
+import serve from '../helpers/ee';
 
 // async function isLimitReached(space) {
 //   const limit = 1500000;
@@ -169,9 +170,9 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     await db.queryAsync('INSERT IGNORE INTO votes SET ?', params);
   }
 
-  // Update proposal scores and voters vp
+  // Update proposal scores and voters vp (with event emitter)
   try {
-    const result = await updateProposalAndVotes(proposalId);
+    const result = await serve(proposalId, updateProposalAndVotes, [proposalId]);
     if (!result) log.warn(`[writer] updateProposalAndVotes() false, ${proposalId}`);
   } catch (e) {
     log.error(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
