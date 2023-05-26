@@ -17,7 +17,7 @@ const maintenanceMsg = 'update in progress, try later';
 router.post('/', async (req, res) => {
   if (process.env.MAINTENANCE) return sendError(res, maintenanceMsg);
   try {
-    const result = await typedData(req.body);
+    const result = await typedData(req);
     return res.json(result);
   } catch (e) {
     log.warn(`[ingestor] msg validation failed (typed data) ${JSON.stringify(e)}`);

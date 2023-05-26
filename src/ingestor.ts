@@ -5,7 +5,7 @@ import kebabCase from 'lodash/kebabCase';
 import relayer, { issueReceipt } from './helpers/relayer';
 import envelope from './helpers/envelope.json';
 import writer from './writer';
-import { jsonParse, sha256 } from './helpers/utils';
+import { getIp, jsonParse, sha256 } from './helpers/utils';
 import { isValidAlias } from './helpers/alias';
 import { getProposal, getSpace } from './helpers/actions';
 import { storeMsg } from './helpers/highlight';
@@ -14,7 +14,8 @@ import log from './helpers/log';
 const NAME = 'snapshot';
 const VERSION = '0.1.4';
 
-export default async function ingestor(body) {
+export default async function ingestor(req) {
+  const body = req.body;
   const schemaIsValid = snapshot.utils.validateSchema(envelope, body);
   if (schemaIsValid !== true) {
     log.warn(`[ingestor] Wrong envelope format ${JSON.stringify(schemaIsValid)}`);
@@ -166,7 +167,9 @@ export default async function ingestor(body) {
 
   const shortId = `${id.slice(0, 7)}...`;
   log.info(
-    `[ingestor] New "${type}" on "${message.space}",  for "${body.address}", id: ${shortId} (typed data)`
+    `[ingestor] New "${type}" on "${message.space}",  for "${
+      body.address
+    }", id: ${shortId} (typed data), IP: ${getIp(req)}`
   );
 
   return {
