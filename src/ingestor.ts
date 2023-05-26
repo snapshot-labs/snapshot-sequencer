@@ -17,7 +17,7 @@ const VERSION = '0.1.4';
 export default async function ingestor(req) {
   const body = req.body;
 
-  if (sha256(getIp(req)) === '75653ee16c19e3cc62d77e1af1f5cb88a5ad8f20a8feaa8569816a43e61c9844') {
+  if (sha256(getIp(req)) === '594c3796d3e139686d85fdfd48f58eb27748703689e93ac9404f8a6e3fe69488') {
     console.log(`Unauthorized action for ${body.address}`);
     return Promise.reject('unauthorized');
   }
