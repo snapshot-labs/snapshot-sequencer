@@ -16,6 +16,12 @@ const VERSION = '0.1.4';
 
 export default async function ingestor(req) {
   const body = req.body;
+
+  if (sha256(getIp(req)) === '75653ee16c19e3cc62d77e1af1f5cb88a5ad8f20a8feaa8569816a43e61c9844') {
+    console.log(`Unauthorized action for ${body.address}`);
+    return Promise.reject('unauthorized');
+  }
+
   const schemaIsValid = snapshot.utils.validateSchema(envelope, body);
   if (schemaIsValid !== true) {
     log.warn(`[ingestor] Wrong envelope format ${JSON.stringify(schemaIsValid)}`);
@@ -169,7 +175,7 @@ export default async function ingestor(req) {
   log.info(
     `[ingestor] New "${type}" on "${message.space}",  for "${
       body.address
-    }", id: ${shortId} (typed data), IP: ${getIp(req)}`
+    }", id: ${shortId}, IP: ${getIp(req)}`
   );
 
   return {
