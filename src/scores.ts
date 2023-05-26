@@ -145,7 +145,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
 
   // Ignore score calculation if proposal have more than 100k votes and scores_updated greater than 1 minute
   const ts = Number((Date.now() / 1e3).toFixed());
-  if (proposal.votes > 0 && proposal.scores_updated > ts - 60) {
+  if (proposal.votes > 100000 && proposal.scores_updated > ts - 60) {
     console.log('ignore score calculation', proposalId, proposal.votes, proposal.scores_updated);
     return false;
   }
