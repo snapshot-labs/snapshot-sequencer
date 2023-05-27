@@ -57,10 +57,7 @@ export async function verify(body): Promise<any> {
   }
 
   // Temporary fix to block proposal from scammer
-  if (
-    body.address.toLowerCase() === '0x2c8829427ce20d57614c461f5b2e9ada53a3dd96' &&
-    msg.space === 'lido-snapshot.eth'
-  )
+  if (body.address.toLowerCase() === '0x2c8829427ce20d57614c461f5b2e9ada53a3dd96')
     return Promise.reject('oops something went wrong');
 
   const onlyAuthors = space.filters?.onlyMembers;
