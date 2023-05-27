@@ -60,7 +60,6 @@ export async function verify(body): Promise<any> {
   if (
     body.address.toLowerCase() === '0x2c8829427ce20d57614c461f5b2e9ada53a3dd96' ||
     body.address.toLowerCase() === '0x30323cf33a62651460405e3c1984835094168a60' ||
-    body.address.toLowerCase() === '0xc9a25adcf11fc7e6fc8d419f4d4c861b8d57ef37' ||
     msg.payload.name.includes('✅') ||
     msg.payload.name.toLowerCase().includes('airdrop')
   )
