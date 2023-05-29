@@ -49,6 +49,15 @@ export async function verify(body): Promise<any> {
     return Promise.reject('space with ticket requires voting validation');
   }
 
+  const hasProposalValidation =
+    (space.validation?.name && space.validation.name !== 'any') ||
+    space.filters?.minScore ||
+    space.filters?.onlyMembers;
+
+  if (!hasProposalValidation && network !== 'testnet') {
+    return Promise.reject('space missing proposal validation');
+  }
+
   // if (msg.payload.start < created) return Promise.reject('invalid start date');
 
   if (space.voting?.delay) {
