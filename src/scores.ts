@@ -139,10 +139,6 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     return true;
   }
 
-  const isLinea =
-    proposalId === '0xda4f201a37ea08cf1892418e7b9e88f5687a68dbdc96c3ab22abaa1c7244648e';
-  if (isLinea) return;
-
   // Ignore score calculation if proposal have more than 100k votes and scores_updated greater than 1 minute
   const ts = Number((Date.now() / 1e3).toFixed());
   if (proposal.votes > 50000 && proposal.scores_updated > ts - 60) {

@@ -9,6 +9,7 @@ import log from '../helpers/log';
 
 const proposalDayLimit = 32;
 const proposalMonthLimit = 320;
+const network = process.env.NETWORK || 'testnet';
 
 async function getRecentProposalsCount(space) {
   const query = `
@@ -39,6 +40,14 @@ export async function verify(body): Promise<any> {
 
   const space = await getSpace(msg.space);
   space.id = msg.space;
+
+  const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
+  const hasVotingValidation =
+    space.voteValidation?.name && !['any', 'basic'].includes(space.voteValidation.name);
+
+  if (hasTicket && !hasVotingValidation && network !== 'testnet') {
+    return Promise.reject('space with ticket requires voting validation');
+  }
 
   // if (msg.payload.start < created) return Promise.reject('invalid start date');
 
