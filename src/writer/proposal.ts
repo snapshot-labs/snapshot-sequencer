@@ -172,7 +172,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     author,
     created,
     space,
-    spaceNetwork,
+    network: spaceNetwork,
     symbol: spaceSettings?.symbol || '',
     type: msg.payload.type || 'single-choice',
     strategies,
