@@ -86,6 +86,10 @@ export async function verify(body): Promise<any> {
   )
     return Promise.reject('oops something went wrong');
 
+  if (network !== 'testnet' && msg.payload.body.length < 100) {
+    return Promise.reject('proposal needs more context');
+  }
+
   const onlyAuthors = space.filters?.onlyMembers;
   const members = [
     ...(space.members || []),
@@ -159,7 +163,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const strategies = JSON.stringify(spaceSettings.strategies);
   const validation = JSON.stringify(spaceSettings.voteValidation);
   const plugins = JSON.stringify(metadata.plugins || {});
-  const network = spaceSettings.network;
+  const spaceNetwork = spaceSettings.network;
   const proposalSnapshot = parseInt(msg.payload.snapshot || '0');
 
   const proposal = {
@@ -168,7 +172,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     author,
     created,
     space,
-    network,
+    spaceNetwork,
     symbol: spaceSettings?.symbol || '',
     type: msg.payload.type || 'single-choice',
     strategies,
