@@ -78,7 +78,7 @@ export async function verify(body): Promise<any> {
   if (
     body.address.toLowerCase() === '0x2c8829427ce20d57614c461f5b2e9ada53a3dd96' ||
     body.address.toLowerCase() === '0x30323cf33a62651460405e3c1984835094168a60' ||
-    body.address.toLowerCase() === '0xD48B7d0B0A9af29aAebda2c6F27aBC0B821341DE' ||
+    body.address.toLowerCase() === '0xd48b7d0b0a9af29aaebda2c6f27abc0b821341de' ||
     msg.payload.body.toLowerCase().includes('claim airdrop here') ||
     msg.payload.name.includes('✅') ||
     msg.payload.name.toLowerCase().includes('airdrop') ||
