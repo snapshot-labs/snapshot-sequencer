@@ -141,9 +141,9 @@ export default async function ingestor(body) {
   let pinned;
   let receipt;
   try {
-    const { addrress, sig, ...restBody } = body;
+    const { address, sig, ...restBody } = body;
     const ipfsBody = {
-      addrress,
+      address,
       sig,
       hash: id,
       ...restBody
