@@ -86,10 +86,6 @@ export async function verify(body): Promise<any> {
   )
     return Promise.reject('oops something went wrong');
 
-  if (network !== 'testnet' && msg.payload.body.length < 100) {
-    return Promise.reject('proposal needs more context');
-  }
-
   const onlyAuthors = space.filters?.onlyMembers;
   const members = [
     ...(space.members || []),
