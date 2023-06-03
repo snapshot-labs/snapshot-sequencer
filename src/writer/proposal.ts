@@ -39,8 +39,8 @@ export async function verify(body): Promise<any> {
   }
 
   const space = await getSpace(msg.space);
-  space.id = msg.space;
 
+  space.id = msg.space;
   const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
   const hasVotingValidation =
     space.voteValidation?.name && !['any', 'basic'].includes(space.voteValidation.name);
@@ -109,6 +109,7 @@ export async function verify(body): Promise<any> {
           validationParams.minScore = minScore;
           validationParams.strategies = space.validation?.params?.strategies || space.strategies;
         }
+
         isValid = await snapshot.utils.validate(
           validationName,
           body.address,
@@ -132,14 +133,23 @@ export async function verify(body): Promise<any> {
   }
 
   const provider = snapshot.utils.getProvider(space.network);
+
   const currentBlockNum = parseInt(await provider.getBlockNumber());
+
   if (msg.payload.snapshot > currentBlockNum)
     return Promise.reject('proposal snapshot must be in past');
 
   try {
     const [{ count_1d: proposalsDayCount, count_30d: proposalsMonthCount }] =
       await getRecentProposalsCount(space.id);
-    if (proposalsDayCount >= proposalDayLimit || proposalsMonthCount >= proposalMonthLimit)
+
+    if (
+      (space.id !== 'orbapp.eth' &&
+        (proposalsDayCount >= proposalDayLimit || proposalsMonthCount >= proposalMonthLimit)) ||
+      (space.id === 'orbapp.eth' &&
+        (proposalsDayCount >= proposalDayLimit * 4 ||
+          proposalsMonthCount >= proposalMonthLimit * 4))
+    )
       return Promise.reject('proposal limit reached');
   } catch (e) {
     return Promise.reject('failed to check proposals limit');
@@ -152,6 +162,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
 
   /* Store the proposal in dedicated table 'proposals' */
   const spaceSettings = await getSpace(space);
+
   const author = getAddress(body.address);
   const created = parseInt(msg.timestamp);
   const metadata = msg.payload.metadata || {};
