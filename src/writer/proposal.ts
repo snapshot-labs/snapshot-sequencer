@@ -81,7 +81,6 @@ export async function verify(body): Promise<any> {
     body.address.toLowerCase() === '0xd48b7d0b0a9af29aaebda2c6f27abc0b821341de' ||
     msg.payload.body.toLowerCase().includes('claim airdrop here') ||
     msg.payload.name.includes('✅') ||
-    msg.payload.name.toLowerCase().includes('airdrop') ||
     msg.payload.name.toLowerCase().includes('drop claim')
   )
     return Promise.reject('oops something went wrong');
