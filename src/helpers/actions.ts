@@ -2,7 +2,7 @@ import db from './mysql';
 import { jsonParse } from './utils';
 
 export async function addOrUpdateSpace(space: string, settings: any) {
-  if (!settings || !settings.name) return false;
+  if (!settings?.name) return false;
   const ts = (Date.now() / 1e3).toFixed();
   const query =
     'INSERT IGNORE INTO spaces SET ? ON DUPLICATE KEY UPDATE updated_at = ?, settings = ?, name = ?';
