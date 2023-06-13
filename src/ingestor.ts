@@ -65,7 +65,14 @@ export default async function ingestor(req) {
 
   // Check if signing address is an alias
   const aliasTypes = ['follow', 'unfollow', 'subscribe', 'unsubscribe', 'profile'];
-  const aliasOptionTypes = ['vote', 'vote-array', 'vote-string', 'proposal', 'delete-proposal'];
+  const aliasOptionTypes = [
+    'vote',
+    'vote-array',
+    'vote-string',
+    'proposal',
+    'delete-proposal',
+    'statement'
+  ];
   if (body.address !== message.from) {
     if (!aliasTypes.includes(type) && !aliasOptionTypes.includes(type))
       return Promise.reject('wrong from');
@@ -140,7 +147,11 @@ export default async function ingestor(req) {
   };
   const msg = jsonParse(legacyBody.msg);
 
-  if (['follow', 'unfollow', 'alias', 'subscribe', 'unsubscribe', 'profile'].includes(type)) {
+  if (
+    ['follow', 'unfollow', 'alias', 'subscribe', 'unsubscribe', 'profile', 'statement'].includes(
+      type
+    )
+  ) {
     legacyBody = message;
   }
 

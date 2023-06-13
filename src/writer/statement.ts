@@ -6,7 +6,6 @@ export async function verify(msg): Promise<any> {
   const space = await getSpace(msg.space);
 
   if (!space) return Promise.reject('invalid space');
-
   if (msg.about.length > 140) return Promise.reject('about is too long');
 
   return true;
@@ -24,8 +23,8 @@ export async function action(msg, ipfs, receipt, id): Promise<void> {
   };
 
   const query =
-    'INSERT IGNORE INTO statements SET ? ON DUPLICATE KEY UPDATE about = ?, statement = ?, updated = ?';
-  const params = [item, item.about, item.statement, item.created];
+    'INSERT IGNORE INTO statements SET ? ON DUPLICATE KEY UPDATE ipfs = ?, about = ?, statement = ?, updated = ?';
+  const params = [item, item.ipfs, item.about, item.statement, item.created];
 
   await db.queryAsync(query, params);
 }
