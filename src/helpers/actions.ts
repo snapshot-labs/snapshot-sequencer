@@ -29,19 +29,24 @@ export async function getProposal(space, id) {
     params: {}
   };
   proposal.choices = jsonParse(proposal.choices);
+
   return proposal;
 }
 
 export async function getSpace(id, includeDeleted = false) {
   const query = `SELECT settings, deleted FROM spaces WHERE id = ? AND deleted in (?) LIMIT 1`;
   const spaces = await db.queryAsync(query, [id, includeDeleted ? [0, 1] : [0]]);
+
   if (!spaces[0]) return false;
+
   const space = jsonParse(spaces[0].settings, {});
   if (spaces[0].deleted) space.deleted = true;
+
   return space;
 }
 
 export async function markSpaceAsDeleted(space: string) {
   const query = 'UPDATE spaces SET deleted = ? WHERE id = ?';
+
   await db.queryAsync(query, [1, space]);
 }
