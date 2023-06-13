@@ -1,25 +1,32 @@
 import { getAddress } from '@ethersproject/address';
+import snapshot from '@snapshot-labs/snapshot.js';
 import db from '../helpers/mysql';
-import { getSpace } from '../helpers/actions';
+import { jsonParse } from '../helpers/utils';
+import log from '../helpers/log';
 
-export async function verify(msg): Promise<any> {
-  const space = await getSpace(msg.space);
-
-  if (!space) return Promise.reject('invalid space');
-  if (msg.about.length > 140) return Promise.reject('about is too long');
-
+export async function verify(body): Promise<any> {
+  const msg = jsonParse(body.msg, {});
+  const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.statement, msg.payload);
+  if (schemaIsValid !== true) {
+    log.warn(`[writer] Wrong statement format ${JSON.stringify(schemaIsValid)}`);
+    return Promise.reject('wrong statement format');
+  }
   return true;
 }
 
-export async function action(msg, ipfs, receipt, id): Promise<void> {
+export async function action(body, ipfs, receipt, id): Promise<void> {
+  const msg = jsonParse(body.msg);
+  const space = msg.space;
+  const delegate = getAddress(body.address);
+  const created = parseInt(msg.timestamp);
   const item = {
     id,
     ipfs,
-    delegate: getAddress(msg.from),
-    space: msg.space,
-    about: msg.about,
-    statement: msg.statement,
-    created: msg.timestamp
+    delegate,
+    space,
+    about: msg.payload.about,
+    statement: msg.payload.statement,
+    created
   };
 
   const query =
