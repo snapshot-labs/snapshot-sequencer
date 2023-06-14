@@ -97,20 +97,20 @@ export default async function ingestor(req) {
   if (type === 'settings') payload = JSON.parse(message.settings);
 
   if (type === 'proposal') {
-      payload = {
-        name: message.title,
-        body: message.body,
-        discussion: message.discussion || '',
-        choices: message.choices,
-        start: message.start > ts ? message.start : ts,
-        end: message.end,
-        snapshot: message.snapshot,
-        metadata: {
-          plugins: JSON.parse(message.plugins)
-        },
-        type: message.type,
-        app: kebabCase(message.app || '')
-      };
+    payload = {
+      name: message.title,
+      body: message.body,
+      discussion: message.discussion || '',
+      choices: message.choices,
+      start: message.start > ts ? message.start : ts,
+      end: message.end,
+      snapshot: message.snapshot,
+      metadata: {
+        plugins: JSON.parse(message.plugins)
+      },
+      type: message.type,
+      app: kebabCase(message.app || '')
+    };
   }
 
   if (type === 'delete-proposal') payload = { proposal: message.proposal };
