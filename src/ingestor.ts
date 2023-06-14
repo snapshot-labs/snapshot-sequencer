@@ -35,7 +35,7 @@ export default async function ingestor(req) {
     return Promise.reject('wrong envelope format');
   }
 
-  const ts = Date.now() / 1e3;
+  const ts = parseInt((Date.now() / 1e3).toFixed());
   const over = 300;
   const under = 60 * 60 * 24 * 3; // 3 days
   const overTs = (ts + over).toFixed();
@@ -96,21 +96,22 @@ export default async function ingestor(req) {
 
   if (type === 'settings') payload = JSON.parse(message.settings);
 
-  if (type === 'proposal')
-    payload = {
-      name: message.title,
-      body: message.body,
-      discussion: message.discussion || '',
-      choices: message.choices,
-      start: message.start,
-      end: message.end,
-      snapshot: message.snapshot,
-      metadata: {
-        plugins: JSON.parse(message.plugins)
-      },
-      type: message.type,
-      app: kebabCase(message.app || '')
-    };
+  if (type === 'proposal') {
+      payload = {
+        name: message.title,
+        body: message.body,
+        discussion: message.discussion || '',
+        choices: message.choices,
+        start: message.start > ts ? message.start : ts,
+        end: message.end,
+        snapshot: message.snapshot,
+        metadata: {
+          plugins: JSON.parse(message.plugins)
+        },
+        type: message.type,
+        app: kebabCase(message.app || '')
+      };
+  }
 
   if (type === 'delete-proposal') payload = { proposal: message.proposal };
 
