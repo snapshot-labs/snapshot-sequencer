@@ -113,6 +113,7 @@ export default async function ingestor(req) {
     };
   }
 
+  if (type === 'statement') payload = { about: message.about, statement: message.statement };
   if (type === 'delete-proposal') payload = { proposal: message.proposal };
 
   if (['vote', 'vote-array', 'vote-string'].includes(type)) {
@@ -148,11 +149,7 @@ export default async function ingestor(req) {
   };
   const msg = jsonParse(legacyBody.msg);
 
-  if (
-    ['follow', 'unfollow', 'alias', 'subscribe', 'unsubscribe', 'profile', 'statement'].includes(
-      type
-    )
-  ) {
+  if (['follow', 'unfollow', 'alias', 'subscribe', 'unsubscribe', 'profile'].includes(type)) {
     legacyBody = message;
   }
 
