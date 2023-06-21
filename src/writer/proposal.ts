@@ -10,6 +10,7 @@ import log from '../helpers/log';
 const proposalDayLimit = 32;
 const proposalMonthLimit = 320;
 const network = process.env.NETWORK || 'testnet';
+const spaceWithExtraLimit = ['orbapp.eth', 'pancake'];
 
 async function getRecentProposalsCount(space) {
   const query = `
@@ -144,9 +145,9 @@ export async function verify(body): Promise<any> {
       await getRecentProposalsCount(space.id);
 
     if (
-      (space.id !== 'orbapp.eth' &&
+      (!spaceWithExtraLimit.includes(space.id) &&
         (proposalsDayCount >= proposalDayLimit || proposalsMonthCount >= proposalMonthLimit)) ||
-      (space.id === 'orbapp.eth' &&
+      (spaceWithExtraLimit.includes(space.id) &&
         (proposalsDayCount >= proposalDayLimit * 4 ||
           proposalsMonthCount >= proposalMonthLimit * 4))
     )
