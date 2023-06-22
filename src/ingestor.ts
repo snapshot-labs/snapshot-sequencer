@@ -102,7 +102,7 @@ export default async function ingestor(req) {
       body: message.body,
       discussion: message.discussion || '',
       choices: message.choices,
-      start: message.start > ts ? message.start : ts,
+      start: Math.max(message.start, ts),
       end: message.end,
       snapshot: message.snapshot,
       metadata: {
@@ -164,7 +164,12 @@ export default async function ingestor(req) {
   let pinned;
   let receipt;
   try {
-    const { address, sig, ...restBody } = body;
+    const { address, sig, ...restBody } = JSON.parse(JSON.stringify(body));
+
+    if (restBody.data?.message?.start) {
+      restBody.data.message.start = Math.max(restBody.data.message.start, ts);
+    }
+
     const ipfsBody = {
       address,
       sig,
