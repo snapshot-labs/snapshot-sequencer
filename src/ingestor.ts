@@ -166,10 +166,6 @@ export default async function ingestor(req) {
   try {
     const { address, sig, ...restBody } = JSON.parse(JSON.stringify(body));
 
-    if (restBody.data?.message?.start) {
-      restBody.data.message.start = Math.max(restBody.data.message.start, ts);
-    }
-
     const ipfsBody = {
       address,
       sig,
