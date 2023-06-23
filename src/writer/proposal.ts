@@ -10,7 +10,7 @@ import log from '../helpers/log';
 const proposalDayLimit = 32;
 const proposalMonthLimit = 320;
 const network = process.env.NETWORK || 'testnet';
-const spaceWithExtraLimit = ['orbapp.eth', 'pancake'];
+const spaceWithExtraLimit = ['orbapp.eth', 'cakevote.eth'];
 
 async function getRecentProposalsCount(space) {
   const query = `
