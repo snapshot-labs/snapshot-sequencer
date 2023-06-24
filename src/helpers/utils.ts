@@ -61,7 +61,7 @@ export function hasStrategyOverride(strategies: any[]) {
     '"orbs-network-delegation"'
   ];
   const strategiesStr = JSON.stringify(strategies).toLowerCase();
-  return keywords.some(keyword => strategiesStr.includes(keyword));
+  return keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`));
 }
 
 export function getIp(req) {
