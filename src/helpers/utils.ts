@@ -43,8 +43,6 @@ export function rpcError(res, code, e, id) {
 
 export function hasStrategyOverride(strategies: any[]) {
   const keywords = [
-    '"api"',
-    '"api-post"',
     '"aura-vlaura-vebal-with-overrides"',
     '"balance-of-with-linear-vesting-power"',
     '"balancer-delegation"',
@@ -61,7 +59,7 @@ export function hasStrategyOverride(strategies: any[]) {
     '"orbs-network-delegation"'
   ];
   const strategiesStr = JSON.stringify(strategies).toLowerCase();
-  return keywords.some(keyword => strategiesStr.includes(keyword));
+  return keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`));
 }
 
 export function getIp(req) {
