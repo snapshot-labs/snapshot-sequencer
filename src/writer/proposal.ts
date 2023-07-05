@@ -42,7 +42,7 @@ export async function verify(body): Promise<any> {
   space.id = msg.space;
   const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
   const hasVotingValidation =
-    space.voteValidation?.name && !['any', 'basic'].includes(space.voteValidation.name);
+    space.voteValidation?.name && !['any'].includes(space.voteValidation.name);
 
   if (hasTicket && !hasVotingValidation && network !== 'testnet') {
     return Promise.reject('space with ticket requires voting validation');
