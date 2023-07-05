@@ -6,11 +6,9 @@ import { jsonParse } from '../helpers/utils';
 import db from '../helpers/mysql';
 import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
+import { getSpaceLimits } from '../helpers/limits';
 
-const proposalDayLimit = 32;
-const proposalMonthLimit = 320;
 const network = process.env.NETWORK || 'testnet';
-const spaceWithExtraLimit = ['orbapp.eth', 'cakevote.eth'];
 
 async function getRecentProposalsCount(space) {
   const query = `
@@ -141,17 +139,12 @@ export async function verify(body): Promise<any> {
     return Promise.reject('proposal snapshot must be in past');
 
   try {
-    const [{ count_1d: proposalsDayCount, count_30d: proposalsMonthCount }] =
-      await getRecentProposalsCount(space.id);
+    const [{ count_1d: dayCount, count_30d: monthCount }] = await getRecentProposalsCount(space.id);
+    const [dayLimit, monthLimit] = getSpaceLimits(space.id);
 
-    if (
-      (!spaceWithExtraLimit.includes(space.id) &&
-        (proposalsDayCount >= proposalDayLimit || proposalsMonthCount >= proposalMonthLimit)) ||
-      (spaceWithExtraLimit.includes(space.id) &&
-        (proposalsDayCount >= proposalDayLimit * 4 ||
-          proposalsMonthCount >= proposalMonthLimit * 4))
-    )
+    if (dayCount >= dayLimit || monthCount >= monthLimit) {
       return Promise.reject('proposal limit reached');
+    }
   } catch (e) {
     return Promise.reject('failed to check proposals limit');
   }
