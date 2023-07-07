@@ -1,4 +1,4 @@
-name: Build and run Lint
+name: Lint
 on: [push]
 jobs:
   build-lint:
@@ -10,6 +10,5 @@ jobs:
           node-version: '16'
           cache: 'yarn'
       - run: yarn install
-      - run: yarn build
       - run: yarn lint:nofix
       - run: yarn typecheck
