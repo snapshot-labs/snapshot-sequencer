@@ -3,10 +3,12 @@
   "version": "0.1.3",
   "license": "MIT",
   "scripts": {
-    "lint": "eslint . --ext .ts --fix",
+    "lint": "yarn lint:nofix --fix",
+    "lint:nofix": "eslint . --ext .ts",
     "dev": "nodemon src/index.ts",
     "start": "ts-node src/index.ts",
-    "test": "yarn jest"
+    "test": "yarn jest",
+    "typecheck": "tsc --noEmit"
   },
   "eslintConfig": {
     "extends": "@snapshot-labs"
