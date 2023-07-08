@@ -13,7 +13,7 @@ describe('writer/proposal', () => {
     it.todo('rejects if the space limit checker fails');
 
     describe('when only members can propose', () => {
-      it.todo('rejects if the submitted is not a member');
+      it.todo('rejects if the submitter is not a member');
     });
   });
 });

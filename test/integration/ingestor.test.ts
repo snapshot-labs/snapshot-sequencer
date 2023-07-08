@@ -1,5 +1,5 @@
 describe('ingestor', () => {
-  it.todo('rejects when the requestor IP is banned');
+  it.todo('rejects when the submitter IP is banned');
   it.todo('rejects when the schema is invalid');
   it.todo('rejects when the body is too large');
   it.todo('rejects when the timestamp is invalid');
