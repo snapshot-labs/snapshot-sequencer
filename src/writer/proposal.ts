@@ -10,7 +10,15 @@ import { getSpaceLimits } from '../helpers/limits';
 
 const network = process.env.NETWORK || 'testnet';
 
-async function getRecentProposalsCount(space) {
+export const FLAGGED_ADDRESSES = [
+  '0x2c8829427ce20d57614c461f5b2e9ada53a3dd96',
+  '0x30323cf33a62651460405e3c1984835094168a60',
+  '0x30323cf33a62651460405e3c1984835094168a60'
+];
+export const FLAGGED_BODY_KEYWORDS = ['claim airdrop here'];
+export const FLAGGED_NAME_KEYWORDS = ['✅', 'drop claim'];
+
+export const getRecentProposalsCount = async (space: string) => {
   const query = `
     SELECT
     COUNT(IF(created > (UNIX_TIMESTAMP() - 86400), 1, NULL)) AS count_1d,
@@ -18,7 +26,7 @@ async function getRecentProposalsCount(space) {
     FROM proposals WHERE space = ? AND created > (UNIX_TIMESTAMP() - 2592000)
   `;
   return await db.queryAsync(query, [space]);
-}
+};
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
@@ -75,14 +83,12 @@ export async function verify(body): Promise<any> {
 
   // Temporary fix to block proposal from scammer
   if (
-    body.address.toLowerCase() === '0x2c8829427ce20d57614c461f5b2e9ada53a3dd96' ||
-    body.address.toLowerCase() === '0x30323cf33a62651460405e3c1984835094168a60' ||
-    body.address.toLowerCase() === '0xd48b7d0b0a9af29aaebda2c6f27abc0b821341de' ||
-    msg.payload.body.toLowerCase().includes('claim airdrop here') ||
-    msg.payload.name.includes('✅') ||
-    msg.payload.name.toLowerCase().includes('drop claim')
-  )
+    FLAGGED_ADDRESSES.includes(body.address.toLowerCase()) ||
+    FLAGGED_BODY_KEYWORDS.includes(msg.payload.body.toLowerCase()) ||
+    FLAGGED_NAME_KEYWORDS.includes(msg.payload.name.toLowerCase())
+  ) {
     return Promise.reject('oops something went wrong');
+  }
 
   const onlyAuthors = space.filters?.onlyMembers;
   const members = [
