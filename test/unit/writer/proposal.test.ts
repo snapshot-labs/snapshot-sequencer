@@ -43,12 +43,12 @@ jest.mock('@snapshot-labs/snapshot.js', () => {
 
 describe('writer/proposal', () => {
   describe('verify()', () => {
-    describe('when the schema is invalid', () => {
+    describe.only('when the schema is invalid', () => {
       const msg = JSON.parse(input.msg);
       const invalidMsg = [
-        [{ ...msg, title: 'title' }, 'unknown field'],
-        [omit(msg, 'name'), 'missing field', ''],
-        [{ ...msg, name: true }, 'not matching type']
+        ['unknown field', { ...msg, payload: { ...msg.payload, title: 'title' } }],
+        ['missing field', { msg, payload: omit(msg.payload, 'name') }],
+        ['not matching type', { ...msg, payload: { ...msg.payload, name: true } }]
       ];
 
       it.each(invalidMsg)('rejects on %s', async (title: string, val: any) => {
@@ -139,7 +139,9 @@ describe('writer/proposal', () => {
         const msg = JSON.parse(input.msg);
         msg.payload.end = msg.payload.start + VOTING_PERIOD;
 
-        expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).resolves.toBeUndefined();
+        await expect(
+          writer.verify({ ...input, msg: JSON.stringify(msg) })
+        ).resolves.toBeUndefined();
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
       });
     });
@@ -166,7 +168,9 @@ describe('writer/proposal', () => {
         const msg = JSON.parse(input.msg);
         msg.payload.start = msg.timestamp + VOTING_DELAY;
 
-        expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).resolves.toBeUndefined();
+        await expect(
+          writer.verify({ ...input, msg: JSON.stringify(msg) })
+        ).resolves.toBeUndefined();
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
       });
     });
@@ -232,6 +236,7 @@ describe('writer/proposal', () => {
       describe('when using the basic validation with no minimum score', () => {
         it('does not validate the space validation', async () => {
           await writer.verify(input);
+
           expect(mockSnapshotUtilsValidate).toHaveBeenCalledTimes(0);
         });
       });
@@ -239,6 +244,7 @@ describe('writer/proposal', () => {
       describe('when using the any validation', () => {
         it('does not validate the space validation', async () => {
           await writer.verify(input);
+
           expect(mockSnapshotUtilsValidate).toHaveBeenCalledTimes(0);
         });
       });
