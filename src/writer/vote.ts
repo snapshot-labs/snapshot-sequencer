@@ -47,14 +47,19 @@ export async function verify(body): Promise<any> {
 
   if (proposal.validation?.name && proposal.validation.name !== 'any') {
     try {
-      const { validation } = proposal;
+      const {
+        validation: { name: validationName, params: validationParams }
+      } = proposal;
+      if (validationName === 'basic')
+        validationParams.strategies = validationParams.strategies ?? proposal.strategies;
+
       const validate = await snapshot.utils.validate(
-        validation.name,
+        validationName,
         body.address,
         msg.space,
         proposal.network,
         proposal.snapshot,
-        validation.params,
+        validationParams,
         {}
       );
       if (!validate) return Promise.reject('failed vote validation');
