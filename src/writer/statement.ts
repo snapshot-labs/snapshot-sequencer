@@ -3,11 +3,13 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import db from '../helpers/mysql';
 import { jsonParse } from '../helpers/utils';
 import log from '../helpers/log';
+import { capture } from '../helpers/sentry';
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg, {});
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.statement, msg.payload);
   if (schemaIsValid !== true) {
+    capture(schemaIsValid);
     log.warn(`[writer] Wrong statement format ${JSON.stringify(schemaIsValid)}`);
     return Promise.reject('wrong statement format');
   }

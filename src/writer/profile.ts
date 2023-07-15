@@ -3,11 +3,13 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import db from '../helpers/mysql';
 import { jsonParse } from '../helpers/utils';
 import log from '../helpers/log';
+import { capture } from '../helpers/sentry';
 
 export async function verify(body): Promise<any> {
   const profile = jsonParse(body.profile, {});
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.profile, profile);
   if (schemaIsValid !== true) {
+    capture(schemaIsValid);
     log.warn(`[writer] Wrong profile format ${JSON.stringify(schemaIsValid)}`);
     return Promise.reject('wrong profile format');
   }
