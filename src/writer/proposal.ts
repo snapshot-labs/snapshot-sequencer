@@ -6,18 +6,31 @@ import { jsonParse } from '../helpers/utils';
 import db from '../helpers/mysql';
 import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
-import { getSpaceLimits } from '../helpers/limits';
+import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 
 const network = process.env.NETWORK || 'testnet';
 
-async function getRecentProposalsCount(space) {
+async function getProposalsCount(space, author) {
   const query = `
-    SELECT
-    COUNT(IF(created > (UNIX_TIMESTAMP() - 86400), 1, NULL)) AS count_1d,
-    COUNT(*) AS count_30d
-    FROM proposals WHERE space = ? AND created > (UNIX_TIMESTAMP() - 2592000)
+  SELECT
+    dayCount,
+    monthCount,
+    activeProposalsByAuthor
+  FROM
+    (SELECT
+        COUNT(IF(a.created > (UNIX_TIMESTAMP() - 86400), 1, NULL)) AS dayCount,
+        COUNT(*) AS monthCount
+    FROM proposals AS a
+    WHERE a.space = ? AND a.created > (UNIX_TIMESTAMP() - 2592000)
+    ) AS proposalsCountBySpace
+  CROSS JOIN
+    (SELECT
+        COUNT(*) AS activeProposalsByAuthor
+    FROM proposals AS b
+    WHERE b.author = ? and b.end > UNIX_TIMESTAMP()
+    ) AS proposalsCountByAuthor;
   `;
-  return await db.queryAsync(query, [space]);
+  return await db.queryAsync(query, [space, author]);
 }
 
 export async function verify(body): Promise<any> {
@@ -139,12 +152,16 @@ export async function verify(body): Promise<any> {
     return Promise.reject('proposal snapshot must be in past');
 
   try {
-    const [{ count_1d: dayCount, count_30d: monthCount }] = await getRecentProposalsCount(space.id);
+    const [{ dayCount, monthCount, activeProposalsByAuthor }] = await getProposalsCount(
+      space.id,
+      body.address
+    );
     const [dayLimit, monthLimit] = getSpaceLimits(space.id);
 
-    if (dayCount >= dayLimit || monthCount >= monthLimit) {
+    if (dayCount >= dayLimit || monthCount >= monthLimit)
       return Promise.reject('proposal limit reached');
-    }
+    if (activeProposalsByAuthor >= ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT)
+      return Promise.reject('active proposal limit reached for author');
   } catch (e) {
     return Promise.reject('failed to check proposals limit');
   }
