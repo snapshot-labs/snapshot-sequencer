@@ -5,7 +5,8 @@
   "scripts": {
     "lint": "eslint . --ext .ts --fix",
     "dev": "nodemon src/index.ts",
-    "start": "ts-node src/index.ts"
+    "build": "tsc",
+    "start": "node build/src/index.js"
   },
   "eslintConfig": {
     "extends": "@snapshot-labs"
