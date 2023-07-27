@@ -4,6 +4,7 @@ import db from './helpers/mysql';
 import { hasStrategyOverride, sha256 } from './helpers/utils';
 import log from './helpers/log';
 import { getDecryptionKey } from './helpers/shutter';
+import { capture } from './helpers/sentry';
 
 async function getProposal(id: string): Promise<any | undefined> {
   const query = 'SELECT * FROM proposals WHERE id = ? LIMIT 1';
@@ -66,6 +67,7 @@ export async function getScores(
     const obj = await res.json();
     return obj.result;
   } catch (e) {
+    capture(e);
     return Promise.reject(e);
   }
 }

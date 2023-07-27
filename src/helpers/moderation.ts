@@ -1,5 +1,6 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import log from './log';
+import { capture } from './sentry';
 
 const moderationURL = 'https://sh5.co/api/moderation';
 
@@ -18,6 +19,7 @@ async function run() {
   try {
     await loadModerationData();
   } catch (e) {
+    capture(e);
     log.error(`[moderation] failed to load ${JSON.stringify(e)}`);
   }
   await snapshot.utils.sleep(20e3);

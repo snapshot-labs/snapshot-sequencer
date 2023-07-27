@@ -7,6 +7,7 @@ import db from '../helpers/mysql';
 import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { getSpaceLimits } from '../helpers/limits';
+import { capture } from '../helpers/sentry';
 
 const network = process.env.NETWORK || 'testnet';
 
@@ -26,6 +27,7 @@ export async function verify(body): Promise<any> {
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload);
   if (schemaIsValid !== true) {
+    capture(schemaIsValid);
     log.warn('[writer] Wrong proposal format', schemaIsValid);
     return Promise.reject('wrong proposal format');
   }
@@ -122,6 +124,7 @@ export async function verify(body): Promise<any> {
 
       if (!isValid) return Promise.reject('validation failed');
     } catch (e) {
+      capture(e, { context: { space: msg.space, address: body.address } });
       log.warn(
         `[writer] Failed to check proposal validation, ${msg.space}, ${
           body.address
@@ -146,6 +149,7 @@ export async function verify(body): Promise<any> {
       return Promise.reject('proposal limit reached');
     }
   } catch (e) {
+    capture(e);
     return Promise.reject('failed to check proposals limit');
   }
 }

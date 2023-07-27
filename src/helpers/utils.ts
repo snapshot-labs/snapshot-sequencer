@@ -1,4 +1,5 @@
 import { createHash } from 'crypto';
+import { capture } from './sentry';
 
 export const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK || '1';
 
@@ -6,6 +7,7 @@ export function jsonParse(input, fallback?) {
   try {
     return JSON.parse(input);
   } catch (err) {
+    capture(err);
     return fallback || {};
   }
 }

@@ -10,6 +10,7 @@ import { isValidAlias } from './helpers/alias';
 import { getProposal, getSpace } from './helpers/actions';
 import { storeMsg } from './helpers/highlight';
 import log from './helpers/log';
+import { capture } from './helpers/sentry';
 import { flaggedIps } from './helpers/moderation';
 
 const NAME = 'snapshot';
@@ -24,6 +25,7 @@ export default async function ingestor(req) {
 
   const schemaIsValid = snapshot.utils.validateSchema(envelope, body);
   if (schemaIsValid !== true) {
+    capture(schemaIsValid);
     log.warn(`[ingestor] Wrong envelope format ${JSON.stringify(schemaIsValid)}`);
     return Promise.reject('wrong envelope format');
   }
@@ -80,6 +82,7 @@ export default async function ingestor(req) {
     const isValidSig = await snapshot.utils.verify(body.address, body.sig, body.data, network);
     if (!isValidSig) return Promise.reject('wrong signature');
   } catch (e) {
+    capture(e, { context: { address: body.address } });
     log.warn(`signature validation failed for ${body.address} ${JSON.stringify(e)}`);
     return Promise.reject('signature validation failed');
   }
@@ -149,6 +152,7 @@ export default async function ingestor(req) {
   try {
     context = await writer[type].verify(legacyBody);
   } catch (e) {
+    capture(e);
     log.warn(`[ingestor] verify failed ${JSON.stringify(e)}`);
     return Promise.reject(e);
   }
@@ -165,6 +169,7 @@ export default async function ingestor(req) {
     };
     [pinned, receipt] = await Promise.all([pin(ipfsBody), issueReceipt(body.sig)]);
   } catch (e) {
+    capture(e);
     return Promise.reject('pinning failed');
   }
   const ipfs = pinned.cid;
@@ -183,6 +188,7 @@ export default async function ingestor(req) {
       receipt
     );
   } catch (e) {
+    capture(e);
     return Promise.reject(e);
   }
 
