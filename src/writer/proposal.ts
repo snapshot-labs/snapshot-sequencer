@@ -95,18 +95,13 @@ export async function verify(body): Promise<any> {
     '0x30323cf33a62651460405e3c1984835094168a60',
     '0xd48b7d0b0a9af29aaebda2c6f27abc0b821341de'
   ];
-  const blockedKeywords = [
-    '✅',
-    'drop claim'
-  ]
-  const blockedKeywordsInBody = [
-    'claim airdrop here'
-  ]
+  const blockedKeywords = ['✅', 'drop claim'];
+  const blockedKeywordsInBody = ['claim airdrop here'];
   const proposalNameLC = msg.payload.name.toLowerCase();
-  const proposalBodyLC = msg.payload.body.toLowerCase()
+  const proposalBodyLC = msg.payload.body.toLowerCase();
   if (
     blockedAddress.includes(addressLC) ||
-    blockedKeywordsInBody.some(keyword =>proposalBodyLC.includes(keyword)) ||
+    blockedKeywordsInBody.some(keyword => proposalBodyLC.includes(keyword)) ||
     blockedKeywords.some(keyword => proposalNameLC.includes(keyword))
   )
     return Promise.reject('scam proposal detected, contact support');
