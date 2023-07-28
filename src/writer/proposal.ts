@@ -6,26 +6,42 @@ import { jsonParse } from '../helpers/utils';
 import db from '../helpers/mysql';
 import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
-import { getSpaceLimits } from '../helpers/limits';
+import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
+import { capture } from '../helpers/sentry';
 
 const network = process.env.NETWORK || 'testnet';
 
-async function getRecentProposalsCount(space) {
+async function getProposalsCount(space, author) {
   const query = `
-    SELECT
-    COUNT(IF(created > (UNIX_TIMESTAMP() - 86400), 1, NULL)) AS count_1d,
-    COUNT(*) AS count_30d
-    FROM proposals WHERE space = ? AND created > (UNIX_TIMESTAMP() - 2592000)
+  SELECT
+    dayCount,
+    monthCount,
+    activeProposalsByAuthor
+  FROM
+    (SELECT
+        COUNT(IF(a.created > (UNIX_TIMESTAMP() - 86400), 1, NULL)) AS dayCount,
+        COUNT(*) AS monthCount
+    FROM proposals AS a
+    WHERE a.space = ? AND a.created > (UNIX_TIMESTAMP() - 2592000)
+    ) AS proposalsCountBySpace
+  CROSS JOIN
+    (SELECT
+        COUNT(*) AS activeProposalsByAuthor
+    FROM proposals AS b
+    WHERE b.author = ? and b.end > UNIX_TIMESTAMP()
+    ) AS proposalsCountByAuthor;
   `;
-  return await db.queryAsync(query, [space]);
+  return await db.queryAsync(query, [space, author]);
 }
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
   const created = parseInt(msg.timestamp);
+  const addressLC = body.address.toLowerCase();
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload);
   if (schemaIsValid !== true) {
+    capture(schemaIsValid);
     log.warn('[writer] Wrong proposal format', schemaIsValid);
     return Promise.reject('wrong proposal format');
   }
@@ -74,15 +90,26 @@ export async function verify(body): Promise<any> {
   }
 
   // Temporary fix to block proposal from scammer
+  const blockedAddress = [
+    '0x2c8829427ce20d57614c461f5b2e9ada53a3dd96',
+    '0x30323cf33a62651460405e3c1984835094168a60',
+    '0xd48b7d0b0a9af29aaebda2c6f27abc0b821341de'
+  ];
+  const blockedKeywords = [
+    '✅',
+    'drop claim'
+  ]
+  const blockedKeywordsInBody = [
+    'claim airdrop here'
+  ]
+  const proposalNameLC = msg.payload.name.toLowerCase();
+  const proposalBodyLC = msg.payload.body.toLowerCase()
   if (
-    body.address.toLowerCase() === '0x2c8829427ce20d57614c461f5b2e9ada53a3dd96' ||
-    body.address.toLowerCase() === '0x30323cf33a62651460405e3c1984835094168a60' ||
-    body.address.toLowerCase() === '0xd48b7d0b0a9af29aaebda2c6f27abc0b821341de' ||
-    msg.payload.body.toLowerCase().includes('claim airdrop here') ||
-    msg.payload.name.includes('✅') ||
-    msg.payload.name.toLowerCase().includes('drop claim')
+    blockedAddress.includes(addressLC) ||
+    blockedKeywordsInBody.some(keyword =>proposalBodyLC.includes(keyword)) ||
+    blockedKeywords.some(keyword => proposalNameLC.includes(keyword))
   )
-    return Promise.reject('oops something went wrong');
+    return Promise.reject('scam proposal detected, contact support');
 
   const onlyAuthors = space.filters?.onlyMembers;
   const members = [
@@ -90,7 +117,7 @@ export async function verify(body): Promise<any> {
     ...(space.admins || []),
     ...(space.moderators || [])
   ].map(member => member.toLowerCase());
-  const isAuthorized = members.includes(body.address.toLowerCase());
+  const isAuthorized = members.includes(addressLC);
 
   if (onlyAuthors && !isAuthorized) return Promise.reject('only space authors can propose');
   if (!isAuthorized) {
@@ -122,6 +149,7 @@ export async function verify(body): Promise<any> {
 
       if (!isValid) return Promise.reject('validation failed');
     } catch (e) {
+      capture(e, { context: { space: msg.space, address: body.address } });
       log.warn(
         `[writer] Failed to check proposal validation, ${msg.space}, ${
           body.address
@@ -139,13 +167,18 @@ export async function verify(body): Promise<any> {
     return Promise.reject('proposal snapshot must be in past');
 
   try {
-    const [{ count_1d: dayCount, count_30d: monthCount }] = await getRecentProposalsCount(space.id);
+    const [{ dayCount, monthCount, activeProposalsByAuthor }] = await getProposalsCount(
+      space.id,
+      body.address
+    );
     const [dayLimit, monthLimit] = getSpaceLimits(space.id);
 
-    if (dayCount >= dayLimit || monthCount >= monthLimit) {
+    if (dayCount >= dayLimit || monthCount >= monthLimit)
       return Promise.reject('proposal limit reached');
-    }
+    if (activeProposalsByAuthor >= ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT)
+      return Promise.reject('active proposal limit reached for author');
   } catch (e) {
+    capture(e);
     return Promise.reject('failed to check proposals limit');
   }
 }
