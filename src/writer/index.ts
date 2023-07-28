@@ -9,6 +9,7 @@ import * as alias from './alias';
 import * as subscribe from './subscribe';
 import * as unsubscribe from './unsubscribe';
 import * as profile from './profile';
+import * as statement from './statement';
 
 export default {
   proposal,
@@ -21,5 +22,6 @@ export default {
   subscribe,
   unsubscribe,
   alias,
-  profile
+  profile,
+  statement
 };

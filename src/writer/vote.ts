@@ -6,6 +6,7 @@ import { getProposal } from '../helpers/actions';
 import db from '../helpers/mysql';
 import { updateProposalAndVotes } from '../scores';
 import log from '../helpers/log';
+import { capture } from '../helpers/sentry';
 
 // async function isLimitReached(space) {
 //   const limit = 1500000;
@@ -19,6 +20,7 @@ export async function verify(body): Promise<any> {
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.vote, msg.payload);
   if (schemaIsValid !== true) {
+    capture(schemaIsValid);
     log.warn('[writer] Wrong vote format', schemaIsValid);
     return Promise.reject('wrong vote format');
   }
@@ -47,18 +49,24 @@ export async function verify(body): Promise<any> {
 
   if (proposal.validation?.name && proposal.validation.name !== 'any') {
     try {
-      const { validation } = proposal;
+      const {
+        validation: { name: validationName, params: validationParams }
+      } = proposal;
+      if (validationName === 'basic')
+        validationParams.strategies = validationParams.strategies ?? proposal.strategies;
+
       const validate = await snapshot.utils.validate(
-        validation.name,
+        validationName,
         body.address,
         msg.space,
         proposal.network,
         proposal.snapshot,
-        validation.params,
+        validationParams,
         {}
       );
       if (!validate) return Promise.reject('failed vote validation');
     } catch (e) {
+      capture(e, { context: { space: msg.space, address: body.address } });
       log.warn(
         `[writer] Failed to check vote validation, ${msg.space}, ${body.address}, ${JSON.stringify(
           e
@@ -81,6 +89,7 @@ export async function verify(body): Promise<any> {
     );
     if (vp.vp === 0) return Promise.reject('no voting power');
   } catch (e) {
+    capture(e, { context: { space: msg.space, address: body.address } });
     log.warn(
       `[writer] Failed to check voting power (vote), ${msg.space}, ${body.address}, ${
         proposal.snapshot
@@ -174,6 +183,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     const result = await updateProposalAndVotes(proposalId);
     if (!result) log.warn(`[writer] updateProposalAndVotes() false, ${proposalId}`);
   } catch (e) {
+    capture(e, { context: { space: msg.space, id: proposalId } });
     log.error(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
     console.log('[writer] updateProposalAndVotes() failed', e);
   }

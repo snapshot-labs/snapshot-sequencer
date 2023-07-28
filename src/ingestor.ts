@@ -10,27 +10,22 @@ import { isValidAlias } from './helpers/alias';
 import { getProposal, getSpace } from './helpers/actions';
 import { storeMsg } from './helpers/highlight';
 import log from './helpers/log';
+import { capture } from './helpers/sentry';
+import { flaggedIps } from './helpers/moderation';
 
 const NAME = 'snapshot';
 const VERSION = '0.1.4';
 
-const spam = [
-  '594c3796d3e139686d85fdfd48f58eb27748703689e93ac9404f8a6e3fe69488',
-  'f38f87bfd58860fdb0dac0374ee6e1f4ef823867cd01286de4b031d762ceb18e',
-  '516263be80d8ec183d89dbedf8093852775ed38ad2e2fff03f018522247651bd',
-  'aed8ab2423772377b19170381d72d1d7b85bc741bc77700c0ff14c3e081e3605',
-  '7d85f3c5a23d9773662ab276a04f064ed406215315a550dc337cf4276c22a747'
-];
-
 export default async function ingestor(req) {
   const body = req.body;
 
-  if (spam.includes(sha256(getIp(req)))) {
+  if (flaggedIps.includes(sha256(getIp(req)))) {
     return Promise.reject('unauthorized');
   }
 
   const schemaIsValid = snapshot.utils.validateSchema(envelope, body);
   if (schemaIsValid !== true) {
+    capture(schemaIsValid);
     log.warn(`[ingestor] Wrong envelope format ${JSON.stringify(schemaIsValid)}`);
     return Promise.reject('wrong envelope format');
   }
@@ -65,7 +60,14 @@ export default async function ingestor(req) {
 
   // Check if signing address is an alias
   const aliasTypes = ['follow', 'unfollow', 'subscribe', 'unsubscribe', 'profile'];
-  const aliasOptionTypes = ['vote', 'vote-array', 'vote-string', 'proposal', 'delete-proposal'];
+  const aliasOptionTypes = [
+    'vote',
+    'vote-array',
+    'vote-string',
+    'proposal',
+    'delete-proposal',
+    'statement'
+  ];
   if (body.address !== message.from) {
     if (!aliasTypes.includes(type) && !aliasOptionTypes.includes(type))
       return Promise.reject('wrong from');
@@ -80,6 +82,7 @@ export default async function ingestor(req) {
     const isValidSig = await snapshot.utils.verify(body.address, body.sig, body.data, network);
     if (!isValidSig) return Promise.reject('wrong signature');
   } catch (e) {
+    capture(e, { context: { address: body.address } });
     log.warn(`signature validation failed for ${body.address} ${JSON.stringify(e)}`);
     return Promise.reject('signature validation failed');
   }
@@ -105,6 +108,7 @@ export default async function ingestor(req) {
       app: kebabCase(message.app || '')
     };
 
+  if (type === 'statement') payload = { about: message.about, statement: message.statement };
   if (type === 'delete-proposal') payload = { proposal: message.proposal };
 
   if (['vote', 'vote-array', 'vote-string'].includes(type)) {
@@ -147,10 +151,11 @@ export default async function ingestor(req) {
   let context;
   try {
     context = await writer[type].verify(legacyBody);
-  } catch (e: any) {
+  } catch (e) {
     const errorMessage = e?.message || e;
-    log.warn(`[ingestor] verify method failed for ${type}. Error:`, errorMessage);
-    return Promise.reject(errorMessage);
+    capture(e);
+    log.warn(`[ingestor] verify failed ${JSON.stringify(e)}`);
+    return Promise.reject(e);
   }
 
   let pinned;
@@ -165,6 +170,7 @@ export default async function ingestor(req) {
     };
     [pinned, receipt] = await Promise.all([pin(ipfsBody), issueReceipt(body.sig)]);
   } catch (e) {
+    capture(e);
     return Promise.reject('pinning failed');
   }
   const ipfs = pinned.cid;
@@ -183,6 +189,7 @@ export default async function ingestor(req) {
       receipt
     );
   } catch (e) {
+    capture(e);
     return Promise.reject(e);
   }
 

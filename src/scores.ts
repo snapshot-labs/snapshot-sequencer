@@ -4,6 +4,7 @@ import db from './helpers/mysql';
 import { hasStrategyOverride, sha256 } from './helpers/utils';
 import log from './helpers/log';
 import { getDecryptionKey } from './helpers/shutter';
+import { capture } from './helpers/sentry';
 
 async function getProposal(id: string): Promise<any | undefined> {
   const query = 'SELECT * FROM proposals WHERE id = ? LIMIT 1';
@@ -66,6 +67,7 @@ export async function getScores(
     const obj = await res.json();
     return obj.result;
   } catch (e) {
+    capture(e);
     return Promise.reject(e);
   }
 }
@@ -139,9 +141,9 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     return true;
   }
 
-  // Ignore score calculation if proposal have more than 100k votes and scores_updated greater than 1 minute
+  // Ignore score calculation if proposal have more than 100k votes and scores_updated greater than 5 minute
   const ts = Number((Date.now() / 1e3).toFixed());
-  if (proposal.votes > 50000 && proposal.scores_updated > ts - 60) {
+  if (proposal.votes > 50000 && proposal.scores_updated > ts - 300) {
     console.log(
       'ignore score calculation',
       proposal.space,

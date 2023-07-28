@@ -8,6 +8,7 @@ import { getIp, jsonParse, rpcError, rpcSuccess } from './utils';
 import { updateProposalAndVotes } from '../scores';
 import db from './mysql';
 import log from './log';
+import { capture } from './sentry';
 
 init().then(() => log.info('[shutter] init'));
 
@@ -22,6 +23,7 @@ export async function shutterDecrypt(encryptedMsg: string, decryptionKey: string
     log.info(`[shutter] decrypted ${JSON.stringify(result)}`);
     return result;
   } catch (e) {
+    capture(e);
     log.warn(`[shutter] error ${JSON.stringify(e)}`);
     return false;
   }
@@ -104,6 +106,7 @@ export async function setProposalKey(params) {
     await updateProposalAndVotes(proposal.id, true);
     log.info(`[shutter] proposal scores updated for ${proposalId}`);
   } catch (e) {
+    capture(e);
     log.error(`[shutter] setProposalKey failed ${JSON.stringify(e)}`);
     return false;
   }
@@ -134,6 +137,7 @@ router.all('/', async (req, res) => {
 
     return rpcError(res, 500, 'wrong method', id);
   } catch (e) {
+    capture(e);
     log.warn(`[shutter] failed ${JSON.stringify(e)}`);
     return rpcError(res, 500, e, id);
   }
