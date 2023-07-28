@@ -4,7 +4,7 @@ import db from './helpers/mysql';
 import { hasStrategyOverride, sha256 } from './helpers/utils';
 import log from './helpers/log';
 import { getDecryptionKey } from './helpers/shutter';
-import { capture } from './helpers/sentry';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 
 async function getProposal(id: string): Promise<any | undefined> {
   const query = 'SELECT * FROM proposals WHERE id = ? LIMIT 1';

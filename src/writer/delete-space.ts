@@ -1,7 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getSpace, markSpaceAsDeleted } from '../helpers/actions';
 import { jsonParse, DEFAULT_NETWORK } from '../helpers/utils';
-import { capture } from '../helpers/sentry';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import log from '../helpers/log';
 
 export async function verify(body): Promise<any> {
