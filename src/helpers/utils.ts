@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 
-export const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK || '1';
+export const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
 
 export function jsonParse(input, fallback?) {
   try {

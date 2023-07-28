@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
     return res.json(result);
   } catch (e) {
     capture(e);
-    log.warn(`[ingestor] msg validation failed (typed data) ${JSON.stringify(e)}`);
+    log.warn(`[ingestor] msg validation failed (typed data)`, e);
     return sendError(res, e);
   }
 });

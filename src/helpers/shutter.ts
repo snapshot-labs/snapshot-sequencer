@@ -12,7 +12,7 @@ import { capture } from './sentry';
 
 init().then(() => log.info('[shutter] init'));
 
-const SHUTTER_URL = process.env.SHUTTER_URL || '';
+const SHUTTER_URL = process.env.SHUTTER_URL ?? '';
 const SHUTTER_IPS = ['164.92.221.74', '2a03:b0c0:2:d0::13be:6001'];
 const router = express.Router();
 
