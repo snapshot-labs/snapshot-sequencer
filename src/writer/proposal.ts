@@ -170,7 +170,7 @@ export async function verify(body): Promise<any> {
 
     if (dayCount >= dayLimit || monthCount >= monthLimit)
       return Promise.reject('proposal limit reached');
-    if (activeProposalsByAuthor >= ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT)
+    if (!isAuthorized && activeProposalsByAuthor >= ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT)
       return Promise.reject('active proposal limit reached for author');
   } catch (e) {
     capture(e);
