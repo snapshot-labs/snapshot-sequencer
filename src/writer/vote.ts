@@ -6,7 +6,7 @@ import { getProposal } from '../helpers/actions';
 import db from '../helpers/mysql';
 import { updateProposalAndVotes } from '../scores';
 import log from '../helpers/log';
-import { capture } from '../helpers/sentry';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 
 // async function isLimitReached(space) {
 //   const limit = 1500000;

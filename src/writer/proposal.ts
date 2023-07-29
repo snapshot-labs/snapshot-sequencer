@@ -7,7 +7,7 @@ import db from '../helpers/mysql';
 import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
-import { capture } from '../helpers/sentry';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 
 const network = process.env.NETWORK || 'testnet';
 

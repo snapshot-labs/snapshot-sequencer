@@ -8,7 +8,7 @@ import { getIp, jsonParse, rpcError, rpcSuccess } from './utils';
 import { updateProposalAndVotes } from '../scores';
 import db from './mysql';
 import log from './log';
-import { capture } from './sentry';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 
 init().then(() => log.info('[shutter] init'));
 

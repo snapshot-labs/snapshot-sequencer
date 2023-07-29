@@ -10,7 +10,7 @@ import { isValidAlias } from './helpers/alias';
 import { getProposal, getSpace } from './helpers/actions';
 import { storeMsg } from './helpers/highlight';
 import log from './helpers/log';
-import { capture } from './helpers/sentry';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedIps } from './helpers/moderation';
 
 const NAME = 'snapshot';
