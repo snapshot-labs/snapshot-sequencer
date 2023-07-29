@@ -13,7 +13,7 @@ export const ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT = 100;
 export const ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT = 1000;
 export const ECOSYSTEM_SPACES = ['orbapp.eth', 'cakevote.eth', 'outcome.eth', 'polls.lenster.xyz'];
 
-export const ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT = 200;
+export const ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT = 10;
 
 export function getSpaceLimits(space): number[] {
   if (flaggedSpaces.includes(space)) {
