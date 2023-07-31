@@ -1,9 +1,11 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import log from './log';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 
 const moderationURL = 'https://sh5.co/api/moderation';
 
 export let flaggedSpaces: Array<string> = [];
+export let flaggedIps: Array<string> = [];
 export let verifiedSpaces: Array<string> = [];
 export const flaggedIps: Array<string> = [
   '594c3796d3e139686d85fdfd48f58eb27748703689e93ac9404f8a6e3fe69488',
@@ -16,6 +18,7 @@ export const flaggedIps: Array<string> = [
 async function loadModerationData() {
   const res = await snapshot.utils.getJSON(moderationURL);
   flaggedSpaces = res?.flaggedSpaces;
+  flaggedIps = res?.flaggedIps;
   verifiedSpaces = res?.verifiedSpaces;
 }
 
@@ -23,6 +26,7 @@ async function run() {
   try {
     await loadModerationData();
   } catch (e) {
+    capture(e);
     log.error(`[moderation] failed to load ${JSON.stringify(e)}`);
   }
   await snapshot.utils.sleep(20e3);

@@ -5,7 +5,7 @@ import bluebird from 'bluebird';
 import parse from 'connection-string';
 import log from './log';
 
-const connectionLimit = parseInt(process.env.CONNECTION_LIMIT || '25');
+const connectionLimit = parseInt(process.env.CONNECTION_LIMIT ?? '25');
 log.info(`[mysql] connection limit ${connectionLimit}`);
 
 // @ts-ignore

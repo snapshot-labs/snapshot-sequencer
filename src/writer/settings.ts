@@ -2,6 +2,7 @@ import isEqual from 'lodash/isEqual';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { addOrUpdateSpace, getSpace } from '../helpers/actions';
 import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import log from '../helpers/log';
 
 export async function verify(body): Promise<any> {
@@ -9,6 +10,7 @@ export async function verify(body): Promise<any> {
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.space, msg.payload);
   if (schemaIsValid !== true) {
+    capture(schemaIsValid);
     log.warn('[writer] Wrong space format', schemaIsValid);
     return Promise.reject('wrong space format');
   }
@@ -33,6 +35,7 @@ export async function action(body): Promise<void> {
   try {
     await addOrUpdateSpace(space, msg.payload);
   } catch (e) {
+    capture(e, { context: { space } });
     log.error('[writer] Failed to store settings', msg.space, e);
     return Promise.reject('failed store settings');
   }

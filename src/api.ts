@@ -8,6 +8,7 @@ import typedData from './ingestor';
 import { sendError } from './helpers/utils';
 import log from './helpers/log';
 import { name, version } from '../package.json';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 
 const router = express.Router();
 const network = process.env.NETWORK || 'testnet';
@@ -20,7 +21,8 @@ router.post('/', async (req, res) => {
     const result = await typedData(req);
     return res.json(result);
   } catch (e) {
-    log.warn(`[ingestor] msg validation failed (typed data) ${JSON.stringify(e)}`);
+    capture(e);
+    log.warn(`[ingestor] msg validation failed (typed data)`, e);
     return sendError(res, e);
   }
 });
@@ -42,6 +44,7 @@ router.get('/scores/:proposalId', async (req, res) => {
     const result = await updateProposalAndVotes(proposalId);
     return res.json({ result });
   } catch (e) {
+    capture(e);
     log.warn(`[api] updateProposalAndVotes() failed ${proposalId}, ${JSON.stringify(e)}`);
     return res.json({ error: 'failed', message: e });
   }
@@ -59,6 +62,7 @@ router.get('/spaces/:key/poke', async (req, res) => {
     }
     return res.json(space);
   } catch (e) {
+    capture(e);
     log.warn(`[api] Load space failed ${key}`);
     return res.json(false);
   }
