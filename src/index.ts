@@ -4,7 +4,7 @@ import express from 'express';
 import api from './api';
 import shutter from './helpers/shutter';
 import log from './helpers/log';
-import { initLogger, fallbackLogger } from './helpers/sentry';
+import { initLogger, fallbackLogger } from '@snapshot-labs/snapshot-sentry';
 
 const app = express();
 

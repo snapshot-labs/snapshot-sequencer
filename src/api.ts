@@ -8,7 +8,7 @@ import typedData from './ingestor';
 import { sendError } from './helpers/utils';
 import log from './helpers/log';
 import { name, version } from '../package.json';
-import { capture } from './helpers/sentry';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 
 const router = express.Router();
 const network = process.env.NETWORK || 'testnet';
@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
     return res.json(result);
   } catch (e) {
     capture(e);
-    log.warn(`[ingestor] msg validation failed (typed data) ${JSON.stringify(e)}`);
+    log.warn(`[ingestor] msg validation failed (typed data)`, e);
     return sendError(res, e);
   }
 });

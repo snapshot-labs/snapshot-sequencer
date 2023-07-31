@@ -2,7 +2,7 @@ import isEqual from 'lodash/isEqual';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { addOrUpdateSpace, getSpace } from '../helpers/actions';
 import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
-import { capture } from '../helpers/sentry';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import log from '../helpers/log';
 
 export async function verify(body): Promise<any> {

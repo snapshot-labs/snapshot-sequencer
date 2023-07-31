@@ -3,7 +3,7 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import db from '../helpers/mysql';
 import { jsonParse } from '../helpers/utils';
 import log from '../helpers/log';
-import { capture } from '../helpers/sentry';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 
 export async function verify(body): Promise<any> {
   const profile = jsonParse(body.profile, {});

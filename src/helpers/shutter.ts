@@ -8,11 +8,11 @@ import { getIp, jsonParse, rpcError, rpcSuccess } from './utils';
 import { updateProposalAndVotes } from '../scores';
 import db from './mysql';
 import log from './log';
-import { capture } from './sentry';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 
 init().then(() => log.info('[shutter] init'));
 
-const SHUTTER_URL = process.env.SHUTTER_URL || '';
+const SHUTTER_URL = process.env.SHUTTER_URL ?? '';
 const SHUTTER_IPS = ['164.92.221.74', '2a03:b0c0:2:d0::13be:6001'];
 const router = express.Router();
 

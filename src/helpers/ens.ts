@@ -1,8 +1,8 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import log from './log';
-import { capture } from './sentry';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 
-const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK || '1';
+const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
 
 export async function getSpaceENS(id) {
   let space = false;
