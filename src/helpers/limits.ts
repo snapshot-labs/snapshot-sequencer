@@ -11,7 +11,13 @@ export const FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT = 50;
 
 export const ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT = 105;
 export const ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT = 1000;
-export const ECOSYSTEM_SPACES = ['orbapp.eth', 'cakevote.eth', 'outcome.eth', 'polls.lenster.xyz', 'daotest.dcl.eth'];
+export const ECOSYSTEM_SPACES = [
+  'orbapp.eth',
+  'cakevote.eth',
+  'outcome.eth',
+  'polls.lenster.xyz',
+  'daotest.dcl.eth'
+];
 
 export const ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT = 10;
 
