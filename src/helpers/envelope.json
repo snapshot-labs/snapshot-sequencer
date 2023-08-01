@@ -24,7 +24,10 @@
                   "type": "string"
                 }
               },
-              "required": ["name", "version"]
+              "required": [
+                "name",
+                "version"
+              ]
             },
             "message": {
               "type": "object",
@@ -39,20 +42,31 @@
                   "type": "string"
                 }
               },
-              "required": ["from", "timestamp"]
+              "required": [
+                "from",
+                "timestamp"
+              ]
             },
             "types": {
               "type": "object"
             }
           },
-          "required": ["domain", "message", "types"],
+          "required": [
+            "domain",
+            "message",
+            "types"
+          ],
           "additionalProperties": false
         },
         "sig": {
           "type": "string"
         }
       },
-      "required": ["address", "data", "sig"],
+      "required": [
+        "address",
+        "data",
+        "sig"
+      ],
       "additionalProperties": false
     }
   }
