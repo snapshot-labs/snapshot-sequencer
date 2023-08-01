@@ -9,7 +9,7 @@ export const VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT = 300;
 export const FLAGGED_SPACE_PROPOSAL_DAY_LIMIT = 5;
 export const FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT = 50;
 
-export const ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT = 100;
+export const ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT = 105;
 export const ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT = 1000;
 export const ECOSYSTEM_SPACES = ['orbapp.eth', 'cakevote.eth', 'outcome.eth', 'polls.lenster.xyz'];
 
