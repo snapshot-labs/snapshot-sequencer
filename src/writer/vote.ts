@@ -20,7 +20,6 @@ export async function verify(body): Promise<any> {
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.vote, msg.payload);
   if (schemaIsValid !== true) {
-    capture(schemaIsValid);
     log.warn('[writer] Wrong vote format', schemaIsValid);
     return Promise.reject('wrong vote format');
   }

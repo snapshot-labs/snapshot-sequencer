@@ -10,7 +10,6 @@ export async function verify(body): Promise<any> {
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.space, msg.payload);
   if (schemaIsValid !== true) {
-    capture(schemaIsValid);
     log.warn('[writer] Wrong space format', schemaIsValid);
     return Promise.reject('wrong space format');
   }
