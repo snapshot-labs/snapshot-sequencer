@@ -21,7 +21,6 @@ router.post('/', async (req, res) => {
     const result = await typedData(req);
     return res.json(result);
   } catch (e) {
-    capture(e);
     log.warn(`[ingestor] msg validation failed (typed data)`, e);
     return sendError(res, e);
   }

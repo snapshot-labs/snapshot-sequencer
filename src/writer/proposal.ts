@@ -46,7 +46,6 @@ export async function verify(body): Promise<any> {
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload);
   if (schemaIsValid !== true) {
-    capture(schemaIsValid);
     log.warn('[writer] Wrong proposal format', schemaIsValid);
     return Promise.reject('wrong proposal format');
   }

@@ -25,7 +25,6 @@ export default async function ingestor(req) {
 
   const schemaIsValid = snapshot.utils.validateSchema(envelope, body);
   if (schemaIsValid !== true) {
-    capture(schemaIsValid);
     log.warn(`[ingestor] Wrong envelope format ${JSON.stringify(schemaIsValid)}`);
     return Promise.reject('wrong envelope format');
   }
