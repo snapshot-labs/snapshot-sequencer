@@ -43,14 +43,14 @@ async function getVotes(proposalId: string): Promise<any[] | undefined> {
  * This should be implemented in snapshot.js, leading to either a breaking change or a new
  * function, e.g. named getFullScores while getScores still returns just the scores prop.
  */
-const scoreApiEndpoint = process.env.SCORE_API_URL || 'https://score.snapshot.org';
+const scoreApiURL = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 export async function getScores(
   space: string,
   strategies: any[],
   network: string,
   addresses: string[],
   snapshot: number | string = 'latest',
-  scoreApiUrl = `${scoreApiEndpoint}/api/scores`
+  scoreApiUrl = `${scoreApiURL}/api/scores`
 ) {
   try {
     const params = {
