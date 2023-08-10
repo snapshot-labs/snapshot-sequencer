@@ -4,6 +4,8 @@ import { hasStrategyOverride, sha256 } from './helpers/utils';
 import log from './helpers/log';
 import { getDecryptionKey } from './helpers/shutter';
 
+const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
+
 async function getProposal(id: string): Promise<any | undefined> {
   const query = 'SELECT * FROM proposals WHERE id = ? LIMIT 1';
   const [proposal] = await db.queryAsync(query, [id]);
@@ -132,8 +134,8 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
       proposal.network,
       votes.map(vote => vote.voter),
       parseInt(proposal.snapshot),
-      undefined,
-      { returnValue: null }
+      scoreAPIUrl,
+      { returnValue: 'all' }
     );
     vpState = state;
 
