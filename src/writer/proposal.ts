@@ -15,6 +15,7 @@ import {
 } from '../helpers/moderation';
 
 const network = process.env.NETWORK || 'testnet';
+const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
 async function getProposalsCount(space, author) {
   const query = `
@@ -134,7 +135,7 @@ export async function verify(body): Promise<any> {
           space.network,
           'latest',
           validationParams,
-          {}
+          { url: scoreAPIUrl }
         );
       }
 

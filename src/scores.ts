@@ -1,10 +1,10 @@
-import fetch from 'cross-fetch';
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from './helpers/mysql';
 import { hasStrategyOverride, sha256 } from './helpers/utils';
 import log from './helpers/log';
 import { getDecryptionKey } from './helpers/shutter';
-import { capture } from '@snapshot-labs/snapshot-sentry';
+
+const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
 async function getProposal(id: string): Promise<any | undefined> {
   const query = 'SELECT * FROM proposals WHERE id = ? LIMIT 1';
@@ -35,42 +35,6 @@ async function getVotes(proposalId: string): Promise<any[] | undefined> {
     vote.scores = vote.vp_by_strategy;
     return vote;
   });
-}
-
-/**
- * Copied from https://github.com/snapshot-labs/snapshot.js/blob/master/src/utils.ts#L147-L173
- * to return the whole result (obj.result) instead of just the scores property (obj.result.scores).
- * This should be implemented in snapshot.js, leading to either a breaking change or a new
- * function, e.g. named getFullScores while getScores still returns just the scores prop.
- */
-const scoreApiURL = process.env.SCORE_API_URL || 'https://score.snapshot.org';
-export async function getScores(
-  space: string,
-  strategies: any[],
-  network: string,
-  addresses: string[],
-  snapshot: number | string = 'latest',
-  scoreApiUrl = `${scoreApiURL}/api/scores`
-) {
-  try {
-    const params = {
-      space,
-      network,
-      snapshot,
-      strategies,
-      addresses
-    };
-    const res = await fetch(scoreApiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ params })
-    });
-    const obj = await res.json();
-    return obj.result;
-  } catch (e) {
-    capture(e);
-    return Promise.reject(e);
-  }
 }
 
 async function updateVotesVp(votes: any[], vpState: string, proposalId: string) {
@@ -164,12 +128,14 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     log.info(`[scores] Get scores', ${proposalId}`);
 
     // Get scores
-    const { scores, state } = await getScores(
+    const { scores, state } = await snapshot.utils.getScores(
       proposal.space,
       proposal.strategies,
       proposal.network,
       votes.map(vote => vote.voter),
-      parseInt(proposal.snapshot)
+      parseInt(proposal.snapshot),
+      scoreAPIUrl,
+      { returnValue: 'all' }
     );
     vpState = state;
 
