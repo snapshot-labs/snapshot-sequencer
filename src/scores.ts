@@ -96,6 +96,8 @@ async function updateProposalScores(proposalId: string, scores: any, votes: numb
   ]);
 }
 
+const pendingRequests = {};
+
 export async function updateProposalAndVotes(proposalId: string, force = false) {
   const proposal = await getProposal(proposalId);
   if (!proposal) return false;
@@ -108,7 +110,10 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
 
   // Ignore score calculation if proposal have more than 100k votes and scores_updated greater than 5 minute
   const ts = Number((Date.now() / 1e3).toFixed());
-  if (proposal.votes > 50000 && proposal.scores_updated > ts - 300) {
+  if (
+    (proposal.votes > 50000 && proposal.scores_updated > ts - 300) ||
+    pendingRequests[proposalId]
+  ) {
     console.log(
       'ignore score calculation',
       proposal.space,
@@ -118,56 +123,63 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     );
     return false;
   }
+  pendingRequests[proposalId] = true;
 
-  // Get votes
-  let votes: any = await getVotes(proposalId);
-  const isFinal = votes.every(vote => vote.vp_state === 'final');
-  let vpState = 'final';
+  try {
+    // Get votes
+    let votes: any = await getVotes(proposalId);
+    const isFinal = votes.every(vote => vote.vp_state === 'final');
+    let vpState = 'final';
 
-  if (!isFinal) {
-    log.info(`[scores] Get scores', ${proposalId}`);
+    if (!isFinal) {
+      log.info(`[scores] Get scores', ${proposalId}`);
 
-    // Get scores
-    const { scores, state } = await snapshot.utils.getScores(
-      proposal.space,
-      proposal.strategies,
-      proposal.network,
-      votes.map(vote => vote.voter),
-      parseInt(proposal.snapshot),
-      scoreAPIUrl,
-      { returnValue: 'all' }
+      // Get scores
+      const { scores, state } = await snapshot.utils.getScores(
+        proposal.space,
+        proposal.strategies,
+        proposal.network,
+        votes.map(vote => vote.voter),
+        parseInt(proposal.snapshot),
+        scoreAPIUrl,
+        { returnValue: 'all' }
+      );
+      vpState = state;
+
+      // Add vp to votes
+      votes = votes.map((vote: any) => {
+        vote.scores = proposal.strategies.map((strategy, i) => scores[i][vote.voter] || 0);
+        vote.balance = vote.scores.reduce((a, b: any) => a + b, 0);
+        return vote;
+      });
+    }
+
+    // Get results
+    const voting = new snapshot.utils.voting[proposal.type](proposal, votes, proposal.strategies);
+    const results = {
+      scores_state: proposal.state === 'closed' ? 'final' : 'pending',
+      scores: voting.getScores(),
+      scores_by_strategy: voting.getScoresByStrategy(),
+      scores_total: voting.getScoresTotal()
+    };
+
+    // Check if voting power is final
+    const withOverride = hasStrategyOverride(proposal.strategies);
+    if (vpState === 'final' && withOverride && proposal.state !== 'closed') vpState = 'pending';
+
+    // Update votes voting power
+    if (!isFinal) await updateVotesVp(votes, vpState, proposalId);
+
+    // Store scores
+    await updateProposalScores(proposalId, results, votes.length);
+    log.info(
+      `[scores] Proposal updated ${proposal.id}, ${proposal.space}, ${results.scores_state}, ${votes.length}`
     );
-    vpState = state;
 
-    // Add vp to votes
-    votes = votes.map((vote: any) => {
-      vote.scores = proposal.strategies.map((strategy, i) => scores[i][vote.voter] || 0);
-      vote.balance = vote.scores.reduce((a, b: any) => a + b, 0);
-      return vote;
-    });
+    delete pendingRequests[proposalId];
+    return true;
+  } catch (e) {
+    delete pendingRequests[proposalId];
+    throw e;
   }
-
-  // Get results
-  const voting = new snapshot.utils.voting[proposal.type](proposal, votes, proposal.strategies);
-  const results = {
-    scores_state: proposal.state === 'closed' ? 'final' : 'pending',
-    scores: voting.getScores(),
-    scores_by_strategy: voting.getScoresByStrategy(),
-    scores_total: voting.getScoresTotal()
-  };
-
-  // Check if voting power is final
-  const withOverride = hasStrategyOverride(proposal.strategies);
-  if (vpState === 'final' && withOverride && proposal.state !== 'closed') vpState = 'pending';
-
-  // Update votes voting power
-  if (!isFinal) await updateVotesVp(votes, vpState, proposalId);
-
-  // Store scores
-  await updateProposalScores(proposalId, results, votes.length);
-  log.info(
-    `[scores] Proposal updated ${proposal.id}, ${proposal.space}, ${results.scores_state}, ${votes.length}`
-  );
-
-  return true;
 }
