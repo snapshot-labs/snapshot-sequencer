@@ -5,10 +5,12 @@ import api from './api';
 import shutter from './helpers/shutter';
 import log from './helpers/log';
 import { initLogger, fallbackLogger } from '@snapshot-labs/snapshot-sentry';
+import refreshModeration from './helpers/moderation';
 
 const app = express();
 
 initLogger(app);
+refreshModeration();
 
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: false }));
