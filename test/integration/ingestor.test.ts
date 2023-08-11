@@ -5,7 +5,6 @@ import cloneDeep from 'lodash/cloneDeep';
 import omit from 'lodash/omit';
 import db from '../../src/helpers/mysql';
 import relayer from '../../src/helpers/relayer';
-import { FLAGGED_BODY_KEYWORDS } from '../../src/writer/proposal';
 
 jest.mock('../../src/helpers/moderation', () => {
   const originalModule = jest.requireActual('../../src/helpers/moderation');
@@ -14,7 +13,8 @@ jest.mock('../../src/helpers/moderation', () => {
     __esModule: true,
     ...originalModule,
     // sha256 of 1.2.3.4
-    flaggedIps: ['6694f83c9f476da31f5df6bcc520034e7e57d421d247b9d34f49edbfc84a764c']
+    flaggedIps: ['6694f83c9f476da31f5df6bcc520034e7e57d421d247b9d34f49edbfc84a764c'],
+    flaggedProposalBodyKeywords: ['claim drop']
   };
 });
 
@@ -90,6 +90,11 @@ describe('ingestor', () => {
   afterAll(async () => {
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.proposals;');
     await db.endAsync();
+  });
+
+  beforeAll(() => {
+    proposalInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
+    voteInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
   });
 
   it('rejects when the submitter IP is banned', async () => {
@@ -174,9 +179,9 @@ describe('ingestor', () => {
   });
 
   it('rejects when it fails the writer verification', async () => {
-    const invalidRequest = cloneWithNewMessage({ body: FLAGGED_BODY_KEYWORDS[0] });
+    const invalidRequest = cloneWithNewMessage({ body: 'claim drop' });
 
-    await expect(ingestor(invalidRequest)).rejects.toMatch('wrong');
+    await expect(ingestor(invalidRequest)).rejects.toMatch('scam proposal detected');
   });
 
   it('rejects when IPFS pinning fail', async () => {

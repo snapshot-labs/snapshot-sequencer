@@ -2,6 +2,10 @@ import * as writer from '../../../src/writer/proposal';
 import input from '../../fixtures/writer-payload/proposal.json';
 import omit from 'lodash/omit';
 
+const FLAGGED_BODY_KEYWORDS = ['claim drop'];
+const FLAGGED_TITLE_KEYWORDS = ['flagged title'];
+const FLAGGED_ADDRESSES = ['0x0'];
+
 const DEFAULT_SPACE: any = {
   id: 'fabien.eth',
   network: '5',
@@ -38,6 +42,20 @@ jest.mock('@snapshot-labs/snapshot.js', () => {
       ...originalModule.utils,
       validate: () => mockSnapshotUtilsValidate()
     }
+  };
+});
+
+jest.mock('../../../src/helpers/moderation', () => {
+  const originalModule = jest.requireActual('../../../src/helpers/moderation');
+
+  return {
+    __esModule: true,
+    ...originalModule,
+    // sha256 of 1.2.3.4
+    flaggedIps: ['6694f83c9f476da31f5df6bcc520034e7e57d421d247b9d34f49edbfc84a764c'],
+    flaggedProposalTitleKeywords: ['flagged title'],
+    flaggedProposalBodyKeywords: ['claim drop'],
+    flaggedAddresses: ['0x0']
   };
 });
 
@@ -188,13 +206,13 @@ describe('writer/proposal', () => {
     describe('when the proposal contains flagged contents', () => {
       const msg = JSON.parse(input.msg);
       const invalidInput = [
-        [{ ...input, address: writer.FLAGGED_ADDRESSES[0] }, 'submitted address is flagged'],
+        [{ ...input, address: FLAGGED_ADDRESSES[0] }, 'submitted address is flagged'],
         [
-          { ...input, msg: { ...msg, name: `${msg.name} - ${writer.FLAGGED_NAME_KEYWORDS}` } },
+          { ...input, msg: { ...msg, name: `${msg.name} - ${FLAGGED_TITLE_KEYWORDS[0]}` } },
           'name contains flagged keywords'
         ],
         [
-          { ...input, msg: { ...msg, body: `${msg.body} - ${writer.FLAGGED_BODY_KEYWORDS}` } },
+          { ...input, msg: { ...msg, body: `${msg.body} - ${FLAGGED_BODY_KEYWORDS[0]}` } },
           'body contains flagged keywords'
         ]
       ];
@@ -260,32 +278,41 @@ describe('writer/proposal', () => {
     });
 
     it('rejects if the space has exceeded the proposal daily post limit', async () => {
-      const mockGetRecentProposalsCount = jest
-        .spyOn(writer, 'getRecentProposalsCount')
-        .mockResolvedValueOnce([{ count_1d: 100, count_30d: 0 }]);
+      const mockGetProposalsCount = jest
+        .spyOn(writer, 'getProposalsCount')
+        .mockResolvedValueOnce([{ dayCount: 999, monthsCount: 0, activeProposalsByAuthor: 1 }]);
 
-      await expect(writer.verify(input)).rejects.toMatch('limit');
-      expect(mockGetRecentProposalsCount).toHaveBeenCalledTimes(1);
+      await expect(writer.verify(input)).rejects.toMatch('limit reached');
+      expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
     });
 
     it('rejects if the space has exceeded the proposal monthly post limit', async () => {
-      const mockGetRecentProposalsCount = jest
-        .spyOn(writer, 'getRecentProposalsCount')
-        .mockResolvedValueOnce([{ count_1d: 0, count_30d: 999 }]);
+      const mockGetProposalsCount = jest
+        .spyOn(writer, 'getProposalsCount')
+        .mockResolvedValueOnce([{ dayCount: 0, monthsCount: 999, activeProposalsByAuthor: 1 }]);
 
-      await expect(writer.verify(input)).rejects.toMatch('limit');
-      expect(mockGetRecentProposalsCount).toHaveBeenCalledTimes(1);
+      await expect(writer.verify(input)).rejects.toMatch('limit reached');
+      expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects if the user has exceed the number of proposals per space', async () => {
+      const mockGetProposalsCount = jest
+        .spyOn(writer, 'getProposalsCount')
+        .mockResolvedValueOnce([{ dayCount: 0, monthsCount: 0, activeProposalsByAuthor: 999 }]);
+
+      await expect(writer.verify(input)).rejects.toMatch('limit reached for author');
+      expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
     });
 
     it('rejects if the space limit checker fails', async () => {
-      const mockGetRecentProposalsCount = jest
-        .spyOn(writer, 'getRecentProposalsCount')
+      const mockGetProposalsCount = jest
+        .spyOn(writer, 'getProposalsCount')
         .mockImplementationOnce(() => {
           throw new Error();
         });
 
-      await expect(writer.verify(input)).rejects.toMatch('limit');
-      expect(mockGetRecentProposalsCount).toHaveBeenCalledTimes(1);
+      await expect(writer.verify(input)).rejects.toMatch('failed to check proposals limit');
+      expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
     });
 
     describe('when only members can propose', () => {
