@@ -123,7 +123,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     );
     return false;
   }
-  pendingRequests[proposalId] = true;
+  if (proposal.votes > 50000) pendingRequests[proposalId] = true;
 
   try {
     // Get votes
