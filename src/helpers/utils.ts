@@ -56,7 +56,8 @@ export function hasStrategyOverride(strategies: any[]) {
     '"erc20-votes-with-override"',
     '"esd-delegation"',
     '"ocean-dao-brightid"',
-    '"orbs-network-delegation"'
+    '"orbs-network-delegation"',
+    '"api-v2-override"'
   ];
   const strategiesStr = JSON.stringify(strategies).toLowerCase();
   return keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`));

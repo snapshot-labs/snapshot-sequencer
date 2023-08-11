@@ -2,10 +2,14 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import log from './log';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 
-const moderationURL = 'https://sh5.co/api/moderation';
+const sidekickURL = process.env.SIDEKICK_URL || 'https://sh5.co';
+const moderationURL = `${sidekickURL}/api/moderation`;
 
 export let flaggedSpaces: Array<string> = [];
 export let flaggedIps: Array<string> = [];
+export let flaggedAddresses: Array<string> = [];
+export let flaggedProposalTitleKeywords: Array<string> = [];
+export let flaggedProposalBodyKeywords: Array<string> = [];
 export let verifiedSpaces: Array<string> = [];
 export const flaggedIps: Array<string> = [
   '594c3796d3e139686d85fdfd48f58eb27748703689e93ac9404f8a6e3fe69488',
@@ -19,6 +23,9 @@ async function loadModerationData() {
   const res = await snapshot.utils.getJSON(moderationURL);
   flaggedSpaces = res?.flaggedSpaces;
   flaggedIps = res?.flaggedIps;
+  flaggedAddresses = res?.flaggedAddresses;
+  flaggedProposalTitleKeywords = res?.flaggedProposalTitleKeywords;
+  flaggedProposalBodyKeywords = res?.flaggedProposalBodyKeywords;
   verifiedSpaces = res?.verifiedSpaces;
 }
 

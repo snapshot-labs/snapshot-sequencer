@@ -8,6 +8,8 @@ import { updateProposalAndVotes } from '../scores';
 import log from '../helpers/log';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 
+const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
+
 // async function isLimitReached(space) {
 //   const limit = 1500000;
 //   const query = `SELECT COUNT(*) AS count FROM messages WHERE space = ? AND timestamp > (UNIX_TIMESTAMP() - 2592000)`;
@@ -20,7 +22,6 @@ export async function verify(body): Promise<any> {
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.vote, msg.payload);
   if (schemaIsValid !== true) {
-    capture(schemaIsValid);
     log.warn('[writer] Wrong vote format', schemaIsValid);
     return Promise.reject('wrong vote format');
   }
@@ -62,7 +63,7 @@ export async function verify(body): Promise<any> {
         proposal.network,
         proposal.snapshot,
         validationParams,
-        {}
+        { url: scoreAPIUrl }
       );
       if (!validate) return Promise.reject('failed vote validation');
     } catch (e) {
@@ -85,7 +86,7 @@ export async function verify(body): Promise<any> {
       proposal.snapshot,
       msg.space,
       proposal.delegation === 1,
-      {}
+      { url: scoreAPIUrl }
     );
     if (vp.vp === 0) return Promise.reject('no voting power');
   } catch (e) {

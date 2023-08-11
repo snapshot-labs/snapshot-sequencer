@@ -8,8 +8,14 @@ import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 import { capture } from '@snapshot-labs/snapshot-sentry';
+import {
+  flaggedAddresses,
+  flaggedProposalTitleKeywords,
+  flaggedProposalBodyKeywords
+} from '../helpers/moderation';
 
 const network = process.env.NETWORK || 'testnet';
+const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
 async function getProposalsCount(space, author) {
   const query = `
@@ -41,7 +47,6 @@ export async function verify(body): Promise<any> {
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload);
   if (schemaIsValid !== true) {
-    capture(schemaIsValid);
     log.warn('[writer] Wrong proposal format', schemaIsValid);
     return Promise.reject('wrong proposal format');
   }
@@ -89,20 +94,12 @@ export async function verify(body): Promise<any> {
     if (msg.payload.type !== space.voting.type) return Promise.reject('invalid voting type');
   }
 
-  // Temporary fix to block proposal from scammer
-  const blockedAddress = [
-    '0x2c8829427ce20d57614c461f5b2e9ada53a3dd96',
-    '0x30323cf33a62651460405e3c1984835094168a60',
-    '0xd48b7d0b0a9af29aaebda2c6f27abc0b821341de'
-  ];
-  const blockedKeywords = ['✅', 'drop claim'];
-  const blockedKeywordsInBody = ['claim airdrop here'];
   const proposalNameLC = msg.payload.name.toLowerCase();
   const proposalBodyLC = msg.payload.body.toLowerCase();
   if (
-    blockedAddress.includes(addressLC) ||
-    blockedKeywordsInBody.some(keyword => proposalBodyLC.includes(keyword)) ||
-    blockedKeywords.some(keyword => proposalNameLC.includes(keyword))
+    flaggedAddresses.includes(addressLC) ||
+    flaggedProposalBodyKeywords.some(keyword => proposalBodyLC.includes(keyword)) ||
+    flaggedProposalTitleKeywords.some(keyword => proposalNameLC.includes(keyword))
   )
     return Promise.reject('scam proposal detected, contact support');
 
@@ -138,7 +135,7 @@ export async function verify(body): Promise<any> {
           space.network,
           'latest',
           validationParams,
-          {}
+          { url: scoreAPIUrl }
         );
       }
 

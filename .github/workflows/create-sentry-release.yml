@@ -1,0 +1,13 @@
+name: Create a Sentry release
+
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  create-sentry-release:
+    uses: snapshot-labs/actions/.github/workflows/create-sentry-release.yml@main
+    secrets: inherit
+    with:
+      project: snapshot-sequencer
