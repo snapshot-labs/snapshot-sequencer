@@ -17,7 +17,7 @@ import {
 const network = process.env.NETWORK || 'testnet';
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
-async function getProposalsCount(space, author) {
+export const getProposalsCount = async (space, author) => {
   const query = `
   SELECT
     dayCount,
@@ -38,7 +38,7 @@ async function getProposalsCount(space, author) {
     ) AS proposalsCountByAuthor;
   `;
   return await db.queryAsync(query, [space, author]);
-}
+};
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);

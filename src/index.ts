@@ -5,11 +5,13 @@ import express from 'express';
 import api from './api';
 import shutter from './helpers/shutter';
 import log from './helpers/log';
+import refreshModeration from './helpers/moderation';
 import initMetrics from './helpers/metrics';
 
 const app = express();
 
 initLogger(app);
+refreshModeration();
 initMetrics(app);
 
 app.disable('x-powered-by');

@@ -22,7 +22,7 @@ async function loadModerationData() {
   verifiedSpaces = res?.verifiedSpaces;
 }
 
-async function run() {
+export default async function run() {
   try {
     await loadModerationData();
   } catch (e) {
@@ -32,5 +32,3 @@ async function run() {
   await snapshot.utils.sleep(20e3);
   run();
 }
-
-run();
