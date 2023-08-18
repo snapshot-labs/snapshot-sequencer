@@ -117,6 +117,7 @@ export default async function ingestor(req) {
     let choice = message.choice;
     if (type === 'vote-string') {
       const proposal = await getProposal(message.space, message.proposal);
+      if (!proposal) return Promise.reject('unknown proposal');
       if (proposal.privacy !== 'shutter') choice = JSON.parse(message.choice);
     }
 
