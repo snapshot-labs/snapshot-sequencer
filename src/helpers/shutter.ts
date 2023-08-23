@@ -131,6 +131,7 @@ router.all('/', async (req, res) => {
     }
 
     if (method === 'shutter_set_proposal_key') {
+      log.info(`[shutter] shutter_set_proposal_key ${JSON.stringify(params)}`);
       setProposalKey(params);
       return rpcSuccess(res, true, id);
     }
