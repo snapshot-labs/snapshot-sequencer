@@ -176,7 +176,18 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     );
   } else {
     // Store vote in dedicated table
-    await db.queryAsync('INSERT IGNORE INTO votes SET ?', params);
+    const result = await db.queryAsync('INSERT IGNORE INTO votes SET ?', params);
+
+    if (result.affectedRows > 0) {
+      await db.queryAsync(
+        `
+        INSERT INTO user_space (space_id, user_id, votes_count)
+        VALUES(?, ?, 1)
+        ON DUPLICATE KEY UPDATE votes_count = votes_count + 1
+        `,
+        [msg.space, voter]
+      );
+    }
   }
 
   // Update proposal scores and voters vp

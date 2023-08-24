@@ -223,5 +223,16 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const query = 'INSERT IGNORE INTO proposals SET ?; ';
   const params: any[] = [proposal];
 
-  await db.queryAsync(query, params);
+  const result = await db.queryAsync(query, params);
+
+  if (result.affectedRows > 0) {
+    await db.queryAsync(
+      `
+      INSERT INTO user_space (space_id, user_id, proposals_count)
+      VALUES(?, ?, 1)
+      ON DUPLICATE KEY UPDATE proposals_count = proposals_count + 1
+      `,
+      [space, author]
+    );
+  }
 }
