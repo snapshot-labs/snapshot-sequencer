@@ -33,4 +33,10 @@ export async function action(body): Promise<void> {
     `UPDATE user_space SET proposals_count = proposals_count - 1 WHERE user_id = ? AND space_id = ? LIMIT 1`,
     [proposal.author, msg.space]
   );
+  await db.queryAsync(
+    `INSERT INTO user_space (votes_count, user_id, space_id)
+    (select * from (select count(id) as votes_count, voter, space from votes where space = ? group by voter, space) as t)
+    ON DUPLICATE KEY UPDATE votes_count = t.votes_count`,
+    [msg.space]
+  );
 }
