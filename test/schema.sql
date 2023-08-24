@@ -164,3 +164,14 @@ CREATE TABLE messages (
   INDEX type (type),
   INDEX receipt (receipt)
 );
+
+CREATE TABLE user_space (
+  user_id varchar(64) NOT NULL,
+  space_id varchar(64) NOT NULL,
+  votes_count smallint unsigned NOT NULL DEFAULT '0',
+  proposals_count smallint unsigned NOT NULL DEFAULT '0',
+  UNIQUE KEY user_id_space_id (user_id,space_id),
+  INDEX space_id (space_id),
+  INDEX votes_count (votes_count),
+  INDEX proposals_count (proposals_count)
+);
