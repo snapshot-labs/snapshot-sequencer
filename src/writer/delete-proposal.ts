@@ -20,6 +20,7 @@ export async function verify(body): Promise<any> {
 
 export async function action(body): Promise<void> {
   const msg = jsonParse(body.msg);
+  const proposal = await getProposal(msg.space, msg.payload.proposal);
   const id = msg.payload.proposal;
 
   const query = `
@@ -27,4 +28,9 @@ export async function action(body): Promise<void> {
   DELETE FROM votes WHERE proposal = ?;
   `;
   await db.queryAsync(query, [id, id]);
+
+  await db.queryAsync(
+    `UPDATE user_space SET proposals_count = proposals_count - 1 WHERE user_id = ? AND space_id = ? LIMIT 1`,
+    [proposal.author, msg.space]
+  );
 }
