@@ -10,11 +10,9 @@ export async function verify(body): Promise<any> {
   const space = await getSpace(msg.space);
   if (!space) return Promise.reject('space not found');
 
-  const controller = await snapshot.utils.getSpaceController(
-    msg.space,
-    DEFAULT_NETWORK,
-    { broviderUrl: process.env.BROVIDER_URL }
-  );
+  const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
+    broviderUrl: process.env.BROVIDER_URL
+  });
   const isController = controller === body.address;
   if (!isController) return Promise.reject('not allowed');
 }

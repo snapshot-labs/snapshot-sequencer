@@ -14,11 +14,9 @@ export async function verify(body): Promise<any> {
     return Promise.reject('wrong space format');
   }
 
-  const controller = await snapshot.utils.getSpaceController(
-    msg.space,
-    DEFAULT_NETWORK,
-    { broviderUrl: process.env.BROVIDER_URL }
-  );
+  const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
+    broviderUrl: process.env.BROVIDER_URL
+  });
   const isController = controller === body.address;
   const space = await getSpace(msg.space, true);
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
