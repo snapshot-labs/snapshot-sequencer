@@ -6,7 +6,11 @@ const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
 
 export async function getSpaceENS(id) {
   let space = false;
-  const uri: any = await snapshot.utils.getSpaceUri(id, DEFAULT_NETWORK);
+  const uri: any = await snapshot.utils.getSpaceUri(
+    id,
+    DEFAULT_NETWORK,
+    { broviderUrl: process.env.BROVIDER_URL }
+  );
   if (uri) {
     try {
       space = await snapshot.utils.getJSON(uri);

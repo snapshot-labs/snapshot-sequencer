@@ -151,7 +151,10 @@ export async function verify(body): Promise<any> {
     }
   }
 
-  const provider = snapshot.utils.getProvider(space.network);
+  const provider = snapshot.utils.getProvider(
+    space.network,
+    { broviderUrl: process.env.BROVIDER_URL }
+  );
 
   const currentBlockNum = parseInt(await provider.getBlockNumber());
 

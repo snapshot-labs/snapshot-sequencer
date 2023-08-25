@@ -78,7 +78,12 @@ export default async function ingestor(req) {
 
   // Check if signature is valid
   try {
-    const isValidSig = await snapshot.utils.verify(body.address, body.sig, body.data, network);
+    const isValidSig = await snapshot.utils.verify(
+      body.address,
+      body.sig,
+      body.data, network,
+      { broviderUrl: process.env.BROVIDER_URL }
+    );
     if (!isValidSig) throw new Error('invalid signature');
   } catch (e: any) {
     log.warn(`signature validation failed for ${body.address} ${JSON.stringify(e)}`);
