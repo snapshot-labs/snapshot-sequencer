@@ -72,5 +72,5 @@ export function getIp(req) {
     ''
   ).split(',');
 
-  return ips[0].trim();
+  return sha256(ips[0].trim()).substring(0, 10);
 }
