@@ -28,12 +28,16 @@ export async function action(body): Promise<void> {
   const proposal = await getProposal(msg.space, msg.payload.proposal);
   const id = msg.payload.proposal;
 
-  const query = `
-    DELETE FROM proposals WHERE id = ? LIMIT 1;
-    DELETE FROM votes WHERE proposal = ?;
-  `;
-  await db.queryAsync(query, [id, id]);
+  const proposalDeleteResult = await db.queryAsync('DELETE FROM proposals WHERE id = ? LIMIT 1', [
+    id
+  ]);
 
-  await decrementProposalsCount(proposal.author, msg.space);
-  await refreshVotesCount(msg.space);
+  if (proposalDeleteResult.affectedRows > 0) {
+    const voteDeleteResult = await db.queryAsync('DELETE FROM votes WHERE proposal = ?', [id]);
+    await decrementProposalsCount(msg.space, proposal.author);
+
+    if (voteDeleteResult.affectedRows > 0) {
+      await refreshVotesCount(msg.space);
+    }
+  }
 }
