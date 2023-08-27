@@ -52,3 +52,70 @@ export async function markSpaceAsDeleted(space: string) {
 
   await db.queryAsync(query, [1, space]);
 }
+
+export function refreshProposalsCount(space_ids?: string[]) {
+  return db.queryAsync(
+    `INSERT INTO user_space (proposals_count, user_id, space_id)
+      (SELECT * FROM (
+        SELECT COUNT(id) AS proposals_count, author, space
+        FROM proposals
+        JOIN spaces ON spaces.id = proposals.space
+        GROUP BY author, space
+        WHERE spaces.deleted = 0
+        ${space_ids ? ' AND space IN (?)' : ''}
+      ) AS t)
+      ON DUPLICATE KEY UPDATE proposals_count = t.proposals_count`,
+    space_ids
+  );
+}
+
+export function refreshVotesCount(space_ids: string[]) {
+  return db.queryAsync(
+    `
+      INSERT INTO user_space (votes_count, user_id, space_id)
+        (SELECT * FROM (
+          SELECT COUNT(id) AS votes_count, voter, space
+          FROM votes
+          JOIN spaces ON spaces.id = votes.space
+          WHERE spaces.deleted = 0 AND space IN (?)
+          GROUP BY voter, space
+        ) AS t)
+      ON DUPLICATE KEY UPDATE votes_count = t.votes_count
+    `,
+    space_ids
+  );
+}
+
+export function incrementVotesCount(space_id: string, user_id: string) {
+  return db.queryAsync(
+    `
+      INSERT INTO user_space (space_id, user_id, votes_count)
+      VALUES(?, ?, 1)
+      ON DUPLICATE KEY UPDATE votes_count = votes_count + 1
+    `,
+    [space_id, user_id]
+  );
+}
+
+export function incrementProposalsCount(space_id: string, user_id: string) {
+  return db.queryAsync(
+    `
+      INSERT INTO user_space (space_id, user_id, proposals_count)
+      VALUES(?, ?, 1)
+      ON DUPLICATE KEY UPDATE proposals_count = proposals_count + 1
+      `,
+    [space_id, user_id]
+  );
+}
+
+export function decrementProposalsCount(space_id: string, user_id: string) {
+  return db.queryAsync(
+    `
+      UPDATE user_space
+      SET proposals_count = proposals_count - 1
+      WHERE user_id = ? AND space_id = ?
+      LIMIT 1
+    `,
+    [user_id, space_id]
+  );
+}

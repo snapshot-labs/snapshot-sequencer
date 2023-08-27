@@ -4,7 +4,7 @@ import { getAddress } from '@ethersproject/address';
 import kebabCase from 'lodash/kebabCase';
 import { jsonParse } from '../helpers/utils';
 import db from '../helpers/mysql';
-import { getSpace } from '../helpers/actions';
+import { getSpace, incrementProposalsCount } from '../helpers/actions';
 import log from '../helpers/log';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 import { capture } from '@snapshot-labs/snapshot-sentry';
@@ -226,13 +226,6 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const result = await db.queryAsync(query, params);
 
   if (result.affectedRows > 0) {
-    await db.queryAsync(
-      `
-      INSERT INTO user_space (space_id, user_id, proposals_count)
-      VALUES(?, ?, 1)
-      ON DUPLICATE KEY UPDATE proposals_count = proposals_count + 1
-      `,
-      [space, author]
-    );
+    await incrementProposalsCount(space, author);
   }
 }

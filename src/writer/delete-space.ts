@@ -1,5 +1,10 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import { getSpace, markSpaceAsDeleted } from '../helpers/actions';
+import {
+  getSpace,
+  markSpaceAsDeleted,
+  refreshProposalsCount,
+  refreshVotesCount
+} from '../helpers/actions';
 import { jsonParse, DEFAULT_NETWORK } from '../helpers/utils';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import log from '../helpers/log';
@@ -21,6 +26,8 @@ export async function action(body): Promise<void> {
 
   try {
     await markSpaceAsDeleted(space);
+    await refreshProposalsCount(space);
+    await refreshVotesCount(space);
   } catch (e) {
     capture(e, { context: { space } });
     log.error('[writer] Failed to store settings', space, e);

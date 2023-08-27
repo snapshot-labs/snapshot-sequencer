@@ -2,7 +2,7 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import { getAddress } from '@ethersproject/address';
 import kebabCase from 'lodash/kebabCase';
 import { hasStrategyOverride, jsonParse } from '../helpers/utils';
-import { getProposal } from '../helpers/actions';
+import { getProposal, incrementProposalsCount } from '../helpers/actions';
 import db from '../helpers/mysql';
 import { updateProposalAndVotes } from '../scores';
 import log from '../helpers/log';
@@ -179,14 +179,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     const result = await db.queryAsync('INSERT IGNORE INTO votes SET ?', params);
 
     if (result.affectedRows > 0) {
-      await db.queryAsync(
-        `
-        INSERT INTO user_space (space_id, user_id, votes_count)
-        VALUES(?, ?, 1)
-        ON DUPLICATE KEY UPDATE votes_count = votes_count + 1
-        `,
-        [msg.space, voter]
-      );
+      await incrementVotesCount(msg.space, voter);
     }
   }
 
