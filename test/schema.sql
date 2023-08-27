@@ -165,7 +165,7 @@ CREATE TABLE messages (
   INDEX receipt (receipt)
 );
 
-CREATE TABLE user_space (
+CREATE TABLE user_space_activities (
   user_id varchar(64) NOT NULL,
   space_id varchar(64) NOT NULL,
   votes_count smallint unsigned NOT NULL DEFAULT '0',

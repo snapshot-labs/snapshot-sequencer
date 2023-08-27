@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { refreshProposalsCount, refreshVotesCount } from '../src/helpers/actions';
 import db from '../src/helpers/mysql';
 
-// Usage: yarn ts-node scripts/generate_user_space_counters.ts
+// Usage: yarn ts-node scripts/generate_user_space_activities_counters.ts
 async function main() {
   console.log('Inserting/Updating proposals_count');
   const proposalsCountRes = await refreshProposalsCount();
