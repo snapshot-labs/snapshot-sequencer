@@ -16,6 +16,7 @@ import {
 
 const network = process.env.NETWORK || 'testnet';
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
+const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export const getProposalsCount = async (space, author) => {
   const query = `
@@ -151,7 +152,7 @@ export async function verify(body): Promise<any> {
     }
   }
 
-  const provider = snapshot.utils.getProvider(space.network);
+  const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
 
   const currentBlockNum = parseInt(await provider.getBlockNumber());
 
