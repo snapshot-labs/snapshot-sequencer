@@ -1,4 +1,5 @@
 import { createHash } from 'crypto';
+import { Response } from 'express';
 
 export const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
 
@@ -10,9 +11,10 @@ export function jsonParse(input, fallback?) {
   }
 }
 
-export function sendError(res, description, status = 500) {
-  return res.status(status).json({
-    error: 'unauthorized',
+export function sendError(res: Response, description: any, status?: number) {
+  const statusCode = status || (typeof description === 'string' ? 400 : 500);
+  return res.status(statusCode).json({
+    error: statusCode < 500 ? 'invalid_input' : 'server_error',
     error_description: description
   });
 }
