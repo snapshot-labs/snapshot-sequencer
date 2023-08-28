@@ -67,7 +67,7 @@ export async function verify(body): Promise<any> {
       );
       if (!validate) return Promise.reject('failed vote validation');
     } catch (e) {
-      capture(e, { context: { space: msg.space, address: body.address } });
+      capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
       log.warn(
         `[writer] Failed to check vote validation, ${msg.space}, ${body.address}, ${JSON.stringify(
           e
@@ -90,7 +90,7 @@ export async function verify(body): Promise<any> {
     );
     if (vp.vp === 0) return Promise.reject('no voting power');
   } catch (e) {
-    capture(e, { context: { space: msg.space, address: body.address } });
+    capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
     log.warn(
       `[writer] Failed to check voting power (vote), ${msg.space}, ${body.address}, ${
         proposal.snapshot
@@ -184,7 +184,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     const result = await updateProposalAndVotes(proposalId);
     if (!result) log.warn(`[writer] updateProposalAndVotes() false, ${proposalId}`);
   } catch (e) {
-    capture(e, { context: { space: msg.space, id: proposalId } });
+    capture(e, { contexts: { input: { space: msg.space, id: proposalId } } });
     log.error(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
     console.log('[writer] updateProposalAndVotes() failed', e);
   }
