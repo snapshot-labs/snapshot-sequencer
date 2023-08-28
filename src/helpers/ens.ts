@@ -3,7 +3,7 @@ import log from './log';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 
 const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
-const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org'
+const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export async function getSpaceENS(id) {
   let space = false;

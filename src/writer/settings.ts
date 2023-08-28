@@ -5,7 +5,7 @@ import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import log from '../helpers/log';
 
-const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org'
+const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
@@ -16,7 +16,9 @@ export async function verify(body): Promise<any> {
     return Promise.reject('wrong space format');
   }
 
-  const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, { broviderUrl });
+  const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
+    broviderUrl
+  });
   const isController = controller === body.address;
   const space = await getSpace(msg.space, true);
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
