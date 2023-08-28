@@ -155,7 +155,7 @@ export default async function ingestor(req) {
     context = await writer[type].verify(legacyBody);
   } catch (e) {
     capture(e);
-    log.warn(`[ingestor] [space: ${message.space}] verify failed ${JSON.stringify(e)}`);
+    log.warn(`[ingestor] [space: ${message?.space}] verify failed ${JSON.stringify(e)}`);
     return Promise.reject(e);
   }
 
