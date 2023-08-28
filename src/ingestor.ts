@@ -15,6 +15,7 @@ import { flaggedIps } from './helpers/moderation';
 
 const NAME = 'snapshot';
 const VERSION = '0.1.4';
+const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export default async function ingestor(req) {
   const body = req.body;
@@ -78,7 +79,9 @@ export default async function ingestor(req) {
 
   // Check if signature is valid
   try {
-    const isValidSig = await snapshot.utils.verify(body.address, body.sig, body.data, network);
+    const isValidSig = await snapshot.utils.verify(body.address, body.sig, body.data, network, {
+      broviderUrl
+    });
     if (!isValidSig) throw new Error('invalid signature');
   } catch (e: any) {
     log.warn(`signature validation failed for ${body.address} ${JSON.stringify(e)}`);
