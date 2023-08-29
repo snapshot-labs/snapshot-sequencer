@@ -38,7 +38,7 @@ export async function action(body): Promise<void> {
   try {
     await addOrUpdateSpace(space, msg.payload);
   } catch (e) {
-    capture(e, { context: { space } });
+    capture(e, { contexts: { input: { space } } });
     log.error('[writer] Failed to store settings', msg.space, e);
     return Promise.reject('failed store settings');
   }

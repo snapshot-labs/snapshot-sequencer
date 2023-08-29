@@ -16,7 +16,7 @@ const network = process.env.NETWORK || 'testnet';
 const maintenanceMsg = 'update in progress, try later';
 
 router.post('/', async (req, res) => {
-  if (process.env.MAINTENANCE) return sendError(res, maintenanceMsg);
+  if (process.env.MAINTENANCE) return sendError(res, maintenanceMsg, 503);
   try {
     const result = await typedData(req);
     return res.json(result);

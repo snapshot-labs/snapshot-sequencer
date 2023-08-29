@@ -154,7 +154,9 @@ export default async function ingestor(req) {
   try {
     context = await writer[type].verify(legacyBody);
   } catch (e) {
-    capture(e);
+    if (typeof e !== 'string') {
+      capture(e);
+    }
     log.warn(`[ingestor] [space: ${message?.space}] verify failed ${JSON.stringify(e)}`);
     return Promise.reject(e);
   }
@@ -193,7 +195,9 @@ export default async function ingestor(req) {
       receipt
     );
   } catch (e) {
-    capture(e);
+    if (typeof e !== 'string') {
+      capture(e);
+    }
     return Promise.reject(e);
   }
 
