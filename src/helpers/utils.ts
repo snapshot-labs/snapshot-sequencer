@@ -14,7 +14,7 @@ export function jsonParse(input, fallback?) {
 export function sendError(res: Response, description: any, status?: number) {
   const statusCode = status || (typeof description === 'string' ? 400 : 500);
   return res.status(statusCode).json({
-    error: statusCode < 500 ? 'invalid_input' : 'server_error',
+    error: statusCode < 500 ? 'client_error' : 'server_error',
     error_description: description
   });
 }
