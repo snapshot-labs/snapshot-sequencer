@@ -19,9 +19,9 @@ const VERSION = '0.1.4';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export default async function ingestor(req) {
-  const success = 0;
-  const type = '';
-  const network = '1';
+  let success = 0;
+  let type = '';
+  let network = '1';
   const endTimer = timeIngestorProcess.startTimer();
 
   try {
@@ -53,9 +53,9 @@ export default async function ingestor(req) {
 
     const hash = sha256(JSON.stringify(types));
     if (!Object.keys(hashTypes).includes(hash)) return Promise.reject('wrong types');
-    let type = hashTypes[hash];
+    type = hashTypes[hash];
 
-    let network = '1';
+    network = '1';
     let aliased = false;
     if (!['settings', 'alias', 'profile'].includes(type)) {
       if (!message.space) return Promise.reject('unknown space');
@@ -215,6 +215,7 @@ export default async function ingestor(req) {
       }", id: ${shortId}, IP: ${sha256(getIp(req))}`
     );
 
+    success = 1;
     return {
       id,
       ipfs,
