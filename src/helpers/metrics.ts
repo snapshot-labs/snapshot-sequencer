@@ -1,4 +1,4 @@
-import init from '@snapshot-labs/snapshot-metrics';
+import init, { client } from '@snapshot-labs/snapshot-metrics';
 import { Express } from 'express';
 
 export default function initMetrics(app: Express) {
@@ -10,3 +10,9 @@ export default function initMetrics(app: Express) {
     whitelistedPath: [/^\/$/, /^\/scores\/.+$/, /^\/spaces\/.+\/poke$/]
   });
 }
+
+export const timeIngestorProcess = new client.Histogram({
+  name: 'ingestor_process_duration_seconds',
+  help: 'Duration in seconds of each ingestor process',
+  labelNames: ['type', 'status', 'network']
+});
