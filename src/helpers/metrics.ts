@@ -2,6 +2,7 @@ import init, { client } from '@snapshot-labs/snapshot-metrics';
 import { Express } from 'express';
 
 const whitelistedPath = [/^\/$/, /^\/scores\/.+$/, /^\/spaces\/.+\/poke$/];
+let server;
 
 const rateLimitedRequestsCount = new client.Counter({
   name: 'http_requests_by_rate_limit_count',
@@ -27,11 +28,29 @@ export default function initMetrics(app: Express) {
     ],
     whitelistedPath
   });
+
   app.use(instrumentRateLimitedRequests);
+  app.use((req, res, next) => {
+    if (!server) {
+      // @ts-ignore
+      server = req.socket.server;
+    }
+    next();
+  });
 }
 
 export const timeIngestorProcess = new client.Histogram({
   name: 'ingestor_process_duration_seconds',
   help: 'Duration in seconds of each ingestor process',
   labelNames: ['type', 'status', 'network']
+});
+
+new client.Gauge({
+  name: 'express_open_connections_size',
+  help: 'Number of open connections on the express server',
+  async collect() {
+    if (server) {
+      this.set(server._connections);
+    }
+  }
 });
