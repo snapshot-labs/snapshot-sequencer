@@ -4,11 +4,6 @@ import db from '../src/helpers/mysql';
 
 // Usage: yarn ts-node scripts/generate_user_space_activities_counters.ts
 async function main() {
-  console.log('Inserting/Updating proposals_count');
-  const proposalsCountRes = await refreshProposalsCount();
-  console.log(proposalsCountRes);
-
-  console.log('Inserting/Updating votes_count');
   let page = 0;
   const batchSize = 1000;
   const results: any[] = [];
@@ -28,9 +23,16 @@ async function main() {
   }
 
   for (const index in results) {
-    console.log(`Processing batch ${index + 1}/${results.length}`);
-    const votesCountRes = await refreshVotesCount(results[index].map(d => d.id));
+    console.log(`Processing batch ${+index + 1}/${results.length}`);
+    const space_ids = results[index].map(d => d.id);
+
+    console.log('Inserting/Updating votes_count');
+    const votesCountRes = await refreshVotesCount(space_ids);
     console.log(votesCountRes);
+
+    console.log('Inserting/Updating proposals_count');
+    const proposalsCountRes = await refreshProposalsCount(space_ids);
+    console.log(proposalsCountRes);
   }
 }
 
