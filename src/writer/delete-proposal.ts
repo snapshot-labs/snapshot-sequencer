@@ -37,7 +37,7 @@ export async function action(body): Promise<void> {
     await decrementProposalsCount(msg.space, proposal.author);
 
     if (voteDeleteResult.affectedRows > 0) {
-      await refreshVotesCount(msg.space);
+      await refreshVotesCount([msg.space]);
     }
   }
 }

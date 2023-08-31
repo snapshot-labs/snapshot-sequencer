@@ -26,8 +26,8 @@ export async function action(body): Promise<void> {
 
   try {
     await markSpaceAsDeleted(space);
-    await refreshProposalsCount(space);
-    await refreshVotesCount(space);
+    await refreshProposalsCount([space]);
+    await refreshVotesCount([space]);
   } catch (e) {
     capture(e, { context: { space } });
     log.error('[writer] Failed to store settings', space, e);
