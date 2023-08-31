@@ -55,16 +55,18 @@ export async function markSpaceAsDeleted(space: string) {
 
 export function refreshProposalsCount(space_ids?: string[]) {
   return db.queryAsync(
-    `INSERT INTO user_space_activities (proposals_count, user_id, space_id)
-      (SELECT * FROM (
-        SELECT COUNT(id) AS proposals_count, author, space
-        FROM proposals
-        JOIN spaces ON spaces.id = proposals.space
-        GROUP BY author, space
-        WHERE spaces.deleted = 0
-        ${space_ids ? ' AND space IN (?)' : ''}
-      ) AS t)
-      ON DUPLICATE KEY UPDATE proposals_count = t.proposals_count`,
+    `
+      INSERT INTO user_space_activities (proposals_count, user_id, space_id)
+        (SELECT * FROM (
+          SELECT COUNT(proposals.id) AS proposals_count, author, space
+          FROM proposals
+          JOIN spaces ON spaces.id = proposals.space
+          WHERE spaces.deleted = 0
+          ${space_ids ? ' AND space IN (?)' : ''}
+          GROUP BY author, space
+        ) AS t)
+      ON DUPLICATE KEY UPDATE proposals_count = t.proposals_count
+    `.replace(/\n/gm, ' '),
     space_ids
   );
 }
@@ -74,14 +76,14 @@ export function refreshVotesCount(space_ids: string[]) {
     `
       INSERT INTO user_space_activities (votes_count, user_id, space_id)
         (SELECT * FROM (
-          SELECT COUNT(id) AS votes_count, voter, space
+          SELECT COUNT(votes.id) AS votes_count, voter, space
           FROM votes
           JOIN spaces ON spaces.id = votes.space
           WHERE spaces.deleted = 0 AND space IN (?)
           GROUP BY voter, space
         ) AS t)
       ON DUPLICATE KEY UPDATE votes_count = t.votes_count
-    `,
+    `.replace(/\n/gm, ' '),
     space_ids
   );
 }
@@ -92,7 +94,7 @@ export function incrementVotesCount(space_id: string, user_id: string) {
       INSERT INTO user_space_activities (space_id, user_id, votes_count)
       VALUES(?, ?, 1)
       ON DUPLICATE KEY UPDATE votes_count = votes_count + 1
-    `,
+    `.replace(/\n/gm, ' '),
     [space_id, user_id]
   );
 }
@@ -103,7 +105,7 @@ export function incrementProposalsCount(space_id: string, user_id: string) {
       INSERT INTO user_space_activities (space_id, user_id, proposals_count)
       VALUES(?, ?, 1)
       ON DUPLICATE KEY UPDATE proposals_count = proposals_count + 1
-      `,
+    `.replace(/\n/gm, ' '),
     [space_id, user_id]
   );
 }
@@ -115,7 +117,7 @@ export function decrementProposalsCount(space_id: string, user_id: string) {
       SET proposals_count = proposals_count - 1
       WHERE user_id = ? AND space_id = ?
       LIMIT 1
-    `,
+    `.replace(/\n/gm, ' '),
     [user_id, space_id]
   );
 }
