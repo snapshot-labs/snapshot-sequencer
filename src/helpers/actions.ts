@@ -53,28 +53,28 @@ export async function markSpaceAsDeleted(space: string) {
   await db.queryAsync(query, [1, space]);
 }
 
-export function refreshProposalsCount(space_ids?: string[]) {
+export function refreshProposalsCount(spaces?: string[]) {
   return db.queryAsync(
     `
-      INSERT INTO user_space_activities (proposals_count, user_id, space_id)
+      INSERT INTO user_space_activities (proposals_count, user, space)
         (SELECT * FROM (
           SELECT COUNT(proposals.id) AS proposals_count, author, space
           FROM proposals
           JOIN spaces ON spaces.id = proposals.space
           WHERE spaces.deleted = 0
-          ${space_ids ? ' AND space IN (?)' : ''}
+          ${spaces ? ' AND space IN (?)' : ''}
           GROUP BY author, space
         ) AS t)
       ON DUPLICATE KEY UPDATE proposals_count = t.proposals_count
     `.replace(/\n/gm, ' '),
-    space_ids
+    spaces
   );
 }
 
-export function refreshVotesCount(space_ids: string[]) {
+export function refreshVotesCount(spaces: string[]) {
   return db.queryAsync(
     `
-      INSERT INTO user_space_activities (votes_count, user_id, space_id)
+      INSERT INTO user_space_activities (votes_count, user, space)
         (SELECT * FROM (
           SELECT COUNT(votes.id) AS votes_count, voter, space
           FROM votes
@@ -84,40 +84,40 @@ export function refreshVotesCount(space_ids: string[]) {
         ) AS t)
       ON DUPLICATE KEY UPDATE votes_count = t.votes_count
     `.replace(/\n/gm, ' '),
-    space_ids
+    spaces
   );
 }
 
-export function incrementVotesCount(space_id: string, user_id: string) {
+export function incrementVotesCount(space: string, user: string) {
   return db.queryAsync(
     `
-      INSERT INTO user_space_activities (space_id, user_id, votes_count)
+      INSERT INTO user_space_activities (space, user, votes_count)
       VALUES(?, ?, 1)
       ON DUPLICATE KEY UPDATE votes_count = votes_count + 1
     `.replace(/\n/gm, ' '),
-    [space_id, user_id]
+    [space, user]
   );
 }
 
-export function incrementProposalsCount(space_id: string, user_id: string) {
+export function incrementProposalsCount(space: string, user: string) {
   return db.queryAsync(
     `
-      INSERT INTO user_space_activities (space_id, user_id, proposals_count)
+      INSERT INTO user_space_activities (space, user, proposals_count)
       VALUES(?, ?, 1)
       ON DUPLICATE KEY UPDATE proposals_count = proposals_count + 1
     `.replace(/\n/gm, ' '),
-    [space_id, user_id]
+    [space, user]
   );
 }
 
-export function decrementProposalsCount(space_id: string, user_id: string) {
+export function decrementProposalsCount(space: string, user: string) {
   return db.queryAsync(
     `
       UPDATE user_space
       SET proposals_count = proposals_count - 1
-      WHERE user_id = ? AND space_id = ?
+      WHERE user = ? AND space = ?
       LIMIT 1
     `.replace(/\n/gm, ' '),
-    [user_id, space_id]
+    [user, space]
   );
 }

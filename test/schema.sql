@@ -166,12 +166,12 @@ CREATE TABLE messages (
 );
 
 CREATE TABLE user_space_activities (
-  user_id varchar(64) NOT NULL,
-  space_id varchar(64) NOT NULL,
-  votes_count smallint unsigned NOT NULL DEFAULT '0',
-  proposals_count smallint unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY user_id_space_id (user_id,space_id),
-  INDEX space_id (space_id),
+  user VARCHAR(64) NOT NULL,
+  space VARCHAR(64) NOT NULL,
+  votes_count SMALLINT UNSIGNED NOT NULL DEFAULT '0',
+  proposals_count SMALLINT UNSIGNED NOT NULL DEFAULT '0',
+  PRIMARY KEY user_space (user,space),
+  INDEX space (space),
   INDEX votes_count (votes_count),
   INDEX proposals_count (proposals_count)
 );

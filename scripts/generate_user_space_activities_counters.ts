@@ -24,14 +24,14 @@ async function main() {
 
   for (const index in results) {
     console.log(`Processing batch ${+index + 1}/${results.length}`);
-    const space_ids = results[index].map(d => d.id);
+    const spaces = results[index].map(d => d.id);
 
     console.log('Inserting/Updating votes_count');
-    const votesCountRes = await refreshVotesCount(space_ids);
+    const votesCountRes = await refreshVotesCount(spaces);
     console.log(votesCountRes);
 
     console.log('Inserting/Updating proposals_count');
-    const proposalsCountRes = await refreshProposalsCount(space_ids);
+    const proposalsCountRes = await refreshProposalsCount(spaces);
     console.log(proposalsCountRes);
   }
 }
