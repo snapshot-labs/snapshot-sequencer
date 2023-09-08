@@ -105,7 +105,6 @@ export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.updateProposal, msg.payload);
-  // const schemaIsValid = snapshot.utils.validateSchema(schema, msg.payload);
   if (!schemaIsValid) {
     log.warn('[writer] Wrong proposal format', schemaIsValid);
     return Promise.reject('wrong proposal format');
@@ -118,7 +117,6 @@ export async function verify(body): Promise<any> {
   const proposal = await getProposal(msg.space, msg.payload.proposal);
   if (!proposal) return Promise.reject('unknown proposal');
 
-  console.log('proposal', proposal, body);
   if (proposal.author !== body.address) return Promise.reject('Not the author');
 
   const space = await getSpace(msg.space);

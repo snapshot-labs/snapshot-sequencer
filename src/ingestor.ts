@@ -52,7 +52,6 @@ export default async function ingestor(req) {
     if (domain.name !== NAME || domain.version !== VERSION) return Promise.reject('wrong domain');
 
     const hash = sha256(JSON.stringify(types));
-    console.log('types', hash, hashTypes);
     if (!Object.keys(hashTypes).includes(hash)) return Promise.reject('wrong types');
     type = hashTypes[hash];
 

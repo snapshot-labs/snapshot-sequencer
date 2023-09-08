@@ -16,9 +16,6 @@
   "eslintConfig": {
     "extends": "@snapshot-labs"
   },
-  "nodemonConfig": {
-    "ignore": ["test/*", "scripts/*"]
-  },
   "prettier": "@snapshot-labs/prettier-config",
   "dependencies": {
     "@ethersproject/address": "^5.0.1",
