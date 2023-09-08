@@ -5,7 +5,7 @@ import kebabCase from 'lodash/kebabCase';
 import relayer, { issueReceipt } from './helpers/relayer';
 import envelope from './helpers/envelope.json';
 import writer from './writer';
-import { getIp, jsonParse, sha256 } from './helpers/utils';
+import { getIp, jsonParse, sha256, getIpfsBody } from './helpers/utils';
 import { isValidAlias } from './helpers/alias';
 import { getProposal, getSpace } from './helpers/actions';
 import { storeMsg } from './helpers/highlight';
@@ -52,6 +52,7 @@ export default async function ingestor(req) {
     if (domain.name !== NAME || domain.version !== VERSION) return Promise.reject('wrong domain');
 
     const hash = sha256(JSON.stringify(types));
+    console.log('types', hash, hashTypes);
     if (!Object.keys(hashTypes).includes(hash)) return Promise.reject('wrong types');
     type = hashTypes[hash];
 
@@ -118,6 +119,19 @@ export default async function ingestor(req) {
 
     if (type === 'statement') payload = { about: message.about, statement: message.statement };
     if (type === 'delete-proposal') payload = { proposal: message.proposal };
+    if (type === 'update-proposal') {
+      payload = {
+        proposal: message.proposal,
+        name: message.title,
+        body: message.body,
+        discussion: message.discussion || '',
+        choices: message.choices,
+        metadata: {
+          plugins: JSON.parse(message.plugins)
+        },
+        type: message.type
+      };
+    }
 
     if (['vote', 'vote-array', 'vote-string'].includes(type)) {
       if (message.metadata && message.metadata.length > 2000)
@@ -171,13 +185,10 @@ export default async function ingestor(req) {
     let pinned;
     let receipt;
     try {
-      const { address, sig, ...restBody } = body;
-      const ipfsBody = {
-        address,
-        sig,
-        hash: id,
-        ...restBody
-      };
+      const ipfsBody = writer[type].getIpfsBody
+        ? writer[type].getIpfsBody(body, context)
+        : getIpfsBody(body);
+
       [pinned, receipt] = await Promise.all([
         pin(ipfsBody, process.env.PINEAPPLE_URL),
         issueReceipt(body.sig)

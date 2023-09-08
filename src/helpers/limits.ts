@@ -1,7 +1,7 @@
 import { flaggedSpaces, verifiedSpaces } from './moderation';
 
-export const SPACE_PROPOSAL_DAY_LIMIT = 5;
-export const SPACE_PROPOSAL_MONTH_LIMIT = 50;
+export const SPACE_PROPOSAL_DAY_LIMIT = 500;
+export const SPACE_PROPOSAL_MONTH_LIMIT = 50000;
 
 export const VERIFIED_SPACE_PROPOSAL_DAY_LIMIT = 20;
 export const VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT = 200;
