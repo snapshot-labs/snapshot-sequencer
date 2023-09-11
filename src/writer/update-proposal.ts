@@ -14,18 +14,22 @@ import {
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
-export function isChoicesValid({ type, choices }): boolean {
-  switch (type) {
-    case 'basic':
-      return isEqual(['For', 'Against', 'Abstain'], choices);
-    default:
-      return choices.length > 0;
+export function validateChoices({ type, choices }): boolean {
+  if (type && choices.length > 0) {
+    switch (type) {
+      case 'basic':
+        return isEqual(['For', 'Against', 'Abstain'], choices);
+      default:
+        return choices.length > 0;
+    }
+  } else {
+    return false;
   }
 }
 
 // We don't need most of the checks used https://github.com/snapshot-labs/snapshot-sequencer/blob/89992b49c96fedbbbe33b42041c9cbe5a82449dd/src/writer/proposal.ts#L62
 // because we assume that those checks were already done during the proposal creation
-export function getSpaceUpdateError({ type }, space): string | undefined {
+export function getSpaceUpdateError({ type, space }): string | undefined {
   const { voting = {} } = space;
 
   if (voting.type && type !== voting.type) return 'space voting type mismatch';
@@ -33,7 +37,7 @@ export function getSpaceUpdateError({ type }, space): string | undefined {
   return undefined;
 }
 
-export function isScamDetected(address, { name, body }): boolean {
+export function isScamDetected({ address, name, body }): boolean {
   const proposalNameLC = name.toLowerCase();
   const proposalBodyLC = body.toLowerCase();
   const addressLC = address.toLowerCase();
@@ -110,23 +114,34 @@ export async function verify(body): Promise<any> {
     return Promise.reject('wrong proposal format');
   }
 
-  if (!isChoicesValid(msg.payload)) {
-    return Promise.reject(`wrong choices for ${msg.payload.type} type voting`);
-  }
-
   const proposal = await getProposal(msg.space, msg.payload.proposal);
   if (!proposal) return Promise.reject('unknown proposal');
+
+  const isChoicesValid = validateChoices({
+    type: msg.payload.type || proposal.type,
+    choices: msg.payload.choices.length > 0 ? msg.payload.choices : proposal.choices
+  });
+  if (!isChoicesValid) {
+    return Promise.reject(`wrong choices for "${msg.payload.type || proposal.type}" type voting`);
+  }
 
   if (proposal.author !== body.address) return Promise.reject('Not the author');
 
   const space = await getSpace(msg.space);
   space.id = msg.space;
 
-  const spaceUpdateError = getSpaceUpdateError(msg.payload, space);
+  const spaceUpdateError = getSpaceUpdateError({
+    type: msg.payload.type || proposal.type,
+    space
+  });
   if (spaceUpdateError) return Promise.reject(spaceUpdateError);
 
-  if (isScamDetected(body.address, msg.payload))
-    return Promise.reject('scam proposal detected, contact support');
+  const hasScam = isScamDetected({
+    address: body.address,
+    name: msg.payload.name || proposal.title,
+    body: msg.payload.body || proposal.body
+  });
+  if (hasScam) return Promise.reject('scam proposal detected, contact support');
 
   const authorizationError = await checkAuthorization(body.address, space);
   if (authorizationError) return Promise.reject(authorizationError);
@@ -134,27 +149,25 @@ export async function verify(body): Promise<any> {
   return Promise.resolve(proposal);
 }
 
-export async function action(body, ipfs): Promise<void> {
+export async function action(body, ipfs, receipt, id, context): Promise<void> {
+  const originalProposal = context;
   const msg = jsonParse(body.msg);
-  const space = msg.space;
-
-  const author = getAddress(body.address);
   const updated = parseInt(msg.timestamp);
   const metadata = msg.payload.metadata || {};
   const plugins = JSON.stringify(metadata.plugins || {});
 
   const proposal = {
     ipfs,
-    author,
     updated,
-    space,
-    type: msg.payload.type || 'single-choice',
-    plugins,
-    title: msg.payload.name,
+    type: msg.payload.type || originalProposal.type,
+    plugins: plugins || originalProposal.plugins,
+    title: msg.payload.name || originalProposal.title,
     body: msg.payload.body,
-    discussion: msg.payload.discussion || '',
-    choices: JSON.stringify(msg.payload.choices)
+    discussion: msg.payload.discussion,
+    choices: JSON.stringify(msg.payload.choices) || originalProposal.choices
   };
+
+  console.log('proposal', proposal, originalProposal);
 
   const query = 'UPDATE proposals SET ? WHERE id = ?';
   const params: any[] = [proposal, msg.payload.proposal];
