@@ -45,17 +45,6 @@ export function isScamDetected({ address, name, body }): boolean {
   );
 }
 
-export function isAddressAuthorized(address: string, space: any): boolean {
-  const addressLC = address.toLowerCase();
-  const members = [
-    ...(space.members || []),
-    ...(space.admins || []),
-    ...(space.moderators || [])
-  ].map(member => member.toLowerCase());
-
-  return members.includes(addressLC);
-}
-
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
   const timestampNow = Math.floor(Date.now() / 1e3);
