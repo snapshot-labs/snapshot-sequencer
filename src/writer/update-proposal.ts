@@ -60,51 +60,6 @@ export function isAddressAuthorized(address: string, space: any): boolean {
   return members.includes(addressLC);
 }
 
-export async function checkAuthorization(address: string, space: any): Promise<string | undefined> {
-  const onlyAuthors = space.filters?.onlyMembers;
-  const isAuthorized = isAddressAuthorized(address, space);
-
-  if (onlyAuthors && !isAuthorized) return 'only space authors can propose';
-  if (!isAuthorized) {
-    try {
-      const validationName = space.validation?.name || 'basic';
-      const validationParams = space.validation?.params || {};
-      const minScore = space.validation?.params?.minScore || space.filters?.minScore;
-
-      let isValid = false;
-      // default case
-      if (validationName === 'any' || (validationName === 'basic' && !minScore)) {
-        isValid = true;
-      } else {
-        if (validationName === 'basic') {
-          validationParams.minScore = minScore;
-          validationParams.strategies = space.validation?.params?.strategies || space.strategies;
-        }
-
-        isValid = await snapshot.utils.validate(
-          validationName,
-          address,
-          space.id,
-          space.network,
-          'latest',
-          validationParams,
-          { url: scoreAPIUrl }
-        );
-      }
-
-      if (!isValid) return 'validation failed';
-    } catch (e) {
-      capture(e, { contexts: { input: { space: space.id, address } } });
-      log.warn(
-        `[writer] Failed to check proposal validation, ${space.id}, ${address}, ${JSON.stringify(
-          e
-        )}`
-      );
-      return 'failed to check validation';
-    }
-  }
-}
-
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
 
@@ -143,9 +98,6 @@ export async function verify(body): Promise<any> {
   });
   if (hasScam) return Promise.reject('scam proposal detected, contact support');
 
-  const authorizationError = await checkAuthorization(body.address, space);
-  if (authorizationError) return Promise.reject(authorizationError);
-
   return Promise.resolve(proposal);
 }
 
@@ -166,8 +118,6 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     discussion: msg.payload.discussion,
     choices: JSON.stringify(msg.payload.choices) || originalProposal.choices
   };
-
-  console.log('proposal', proposal, originalProposal);
 
   const query = 'UPDATE proposals SET ? WHERE id = ?';
   const params: any[] = [proposal, msg.payload.proposal];
