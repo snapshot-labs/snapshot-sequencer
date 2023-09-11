@@ -5,7 +5,7 @@ import kebabCase from 'lodash/kebabCase';
 import relayer, { issueReceipt } from './helpers/relayer';
 import envelope from './helpers/envelope.json';
 import writer from './writer';
-import { getIp, jsonParse, sha256, getIpfsBody } from './helpers/utils';
+import { getIp, jsonParse, sha256 } from './helpers/utils';
 import { isValidAlias } from './helpers/alias';
 import { getProposal, getSpace } from './helpers/actions';
 import { storeMsg } from './helpers/highlight';
@@ -184,9 +184,13 @@ export default async function ingestor(req) {
     let pinned;
     let receipt;
     try {
-      const ipfsBody = writer[type].getIpfsBody
-        ? writer[type].getIpfsBody(body, context)
-        : getIpfsBody(body);
+      const { address, sig, ...restBody } = body;
+      const ipfsBody = {
+        address,
+        sig,
+        hash: id,
+        ...restBody
+      };
 
       [pinned, receipt] = await Promise.all([
         pin(ipfsBody, process.env.PINEAPPLE_URL),

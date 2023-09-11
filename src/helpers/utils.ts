@@ -1,4 +1,3 @@
-import snapshot from '@snapshot-labs/snapshot.js';
 import { createHash } from 'crypto';
 import { Response } from 'express';
 
@@ -76,16 +75,4 @@ export function getIp(req) {
   ).split(',');
 
   return ips[0].trim();
-}
-
-export function getIpfsBody(body) {
-  const id = snapshot.utils.getHash(body.data);
-  const { address, sig, ...restBody } = body;
-  const ipfsBody = {
-    address,
-    sig,
-    hash: id,
-    ...restBody
-  };
-  return ipfsBody;
 }

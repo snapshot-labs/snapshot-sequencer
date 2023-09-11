@@ -111,26 +111,3 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
 
   await db.queryAsync(query, params);
 }
-
-export function getIpfsBody(body, context) {
-  const id = context.id;
-  const originIpfs = context.ipfs;
-  const { address, sig, ...restBody } = body;
-  const { message } = restBody.data;
-
-  const updatedProposal = {
-    ...context,
-    ...message
-  };
-
-  const ipfsBody = {
-    address,
-    sig,
-    hash: id,
-    originIpfs,
-    ...restBody,
-    data: restBody.data,
-    proposal: updatedProposal
-  };
-  return ipfsBody;
-}
