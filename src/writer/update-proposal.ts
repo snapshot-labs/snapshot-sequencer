@@ -58,6 +58,7 @@ export function isAddressAuthorized(address: string, space: any): boolean {
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
+  const timestampNow = Math.floor(Date.now() / 1e3);
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.updateProposal, msg.payload);
   if (!schemaIsValid) {
@@ -67,6 +68,7 @@ export async function verify(body): Promise<any> {
 
   const proposal = await getProposal(msg.space, msg.payload.proposal);
   if (!proposal) return Promise.reject('unknown proposal');
+  if (proposal.start < timestampNow) return Promise.reject('proposal already started');
 
   const isChoicesValid = validateChoices({
     type: msg.payload.type || proposal.type,
