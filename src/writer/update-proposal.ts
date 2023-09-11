@@ -1,18 +1,14 @@
 import isEqual from 'lodash/isEqual';
 import snapshot from '@snapshot-labs/snapshot.js';
-import { getAddress } from '@ethersproject/address';
 import { jsonParse } from '../helpers/utils';
 import db from '../helpers/mysql';
 import { getSpace, getProposal } from '../helpers/actions';
 import log from '../helpers/log';
-import { capture } from '@snapshot-labs/snapshot-sentry';
 import {
   flaggedAddresses,
   flaggedProposalTitleKeywords,
   flaggedProposalBodyKeywords
 } from '../helpers/moderation';
-
-const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
 export function validateChoices({ type, choices }): boolean {
   if (type && choices.length > 0) {
