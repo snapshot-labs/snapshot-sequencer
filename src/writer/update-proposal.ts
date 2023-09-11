@@ -115,7 +115,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     choices: JSON.stringify(msg.payload.choices) || originalProposal.choices
   };
 
-  const query = 'UPDATE proposals SET ? WHERE id = ?';
+  const query = 'UPDATE proposals SET ? WHERE id = ? LIMIT 1';
   const params: any[] = [proposal, msg.payload.proposal];
 
   await db.queryAsync(query, params);
