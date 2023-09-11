@@ -26,7 +26,7 @@ export async function action(body): Promise<void> {
   try {
     await markSpaceAsDeleted(space);
   } catch (e) {
-    capture(e, { contexts: { input: { space } } });
+    capture(e, { space });
     log.error('[writer] Failed to store settings', space, e);
     return Promise.reject('failed store settings');
   }

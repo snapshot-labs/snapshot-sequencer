@@ -142,7 +142,7 @@ export async function verify(body): Promise<any> {
 
       if (!isValid) return Promise.reject('validation failed');
     } catch (e) {
-      capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
+      capture(e, { space: msg.space, address: body.address });
       log.warn(
         `[writer] Failed to check proposal validation, ${msg.space}, ${
           body.address
