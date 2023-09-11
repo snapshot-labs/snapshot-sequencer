@@ -12,7 +12,7 @@ export async function getSpaceENS(id) {
     try {
       space = await snapshot.utils.getJSON(uri);
     } catch (e) {
-      capture(e, { contexts: { input: { id, uri } } });
+      capture(e, { id, uri });
       log.warn(`[ens] getSpaceENS failed ${id}, ${JSON.stringify(e)}`);
     }
   }
