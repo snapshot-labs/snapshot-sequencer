@@ -141,8 +141,20 @@ export async function verify(body): Promise<any> {
       }
 
       if (!isValid) return Promise.reject('validation failed');
-    } catch (e) {
-      capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
+    } catch (e: any) {
+      if (e instanceof Error) {
+        capture(e, { space: msg.space, address: body.address });
+      } else {
+        capture(new Error('Validation failed'), {
+          contexts: {
+            validationError: e,
+            input: {
+              space: msg.space,
+              address: body.address
+            }
+          }
+        });
+      }
       log.warn(
         `[writer] Failed to check proposal validation, ${msg.space}, ${
           body.address
