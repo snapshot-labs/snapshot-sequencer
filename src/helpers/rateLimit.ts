@@ -29,7 +29,11 @@ export default rateLimit({
   legacyHeaders: false,
   handler: (req, res) => {
     log.info(`too many requests ${hashedIp(req)}`);
-    sendError(res, 'too many requests', 429);
+    sendError(
+      res,
+      'too many requests, Refer to https://docs.snapshot.org/tools/api/api-keys#limits',
+      429
+    );
   },
   store: client
     ? new RedisStore({
