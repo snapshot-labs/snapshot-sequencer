@@ -27,7 +27,7 @@ export default function initMetrics(app: Express) {
       ['/spaces/.+/poke', '/spaces/#key/poke']
     ],
     whitelistedPath,
-    errorHandler: (e: any) => capture(e)
+    errorHandler: capture
   });
 
   app.use(instrumentRateLimitedRequests);
