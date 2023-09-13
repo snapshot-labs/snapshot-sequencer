@@ -49,8 +49,11 @@ export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
   const timestampNow = Math.floor(Date.now() / 1e3);
 
-  const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.updateProposal, msg.payload);
-  if (!schemaIsValid) {
+  const schemaIsValid: any = snapshot.utils.validateSchema(
+    snapshot.schemas.updateProposal,
+    msg.payload
+  );
+  if (schemaIsValid !== true) {
     log.warn('[writer] Wrong proposal format', schemaIsValid);
     return Promise.reject('wrong proposal format');
   }
@@ -60,11 +63,11 @@ export async function verify(body): Promise<any> {
   if (proposal.start < timestampNow) return Promise.reject('proposal already started');
 
   const isChoicesValid = validateChoices({
-    type: msg.payload.type || proposal.type,
-    choices: msg.payload.choices.length > 0 ? msg.payload.choices : proposal.choices
+    type: msg.payload.type,
+    choices: msg.payload.choices
   });
   if (!isChoicesValid) {
-    return Promise.reject(`wrong choices for "${msg.payload.type || proposal.type}" type voting`);
+    return Promise.reject(`wrong choices for "${msg.payload.type}" type voting`);
   }
 
   if (proposal.author !== body.address) return Promise.reject('Not the author');
@@ -73,15 +76,15 @@ export async function verify(body): Promise<any> {
   space.id = msg.space;
 
   const spaceUpdateError = getSpaceUpdateError({
-    type: msg.payload.type || proposal.type,
+    type: msg.payload.type,
     space
   });
   if (spaceUpdateError) return Promise.reject(spaceUpdateError);
 
   const hasScam = isScamDetected({
     address: body.address,
-    name: msg.payload.name || proposal.title,
-    body: msg.payload.body || proposal.body
+    name: msg.payload.name,
+    body: msg.payload.body
   });
   if (hasScam) return Promise.reject('scam proposal detected, contact support');
 
@@ -98,12 +101,12 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   const proposal = {
     ipfs,
     updated,
-    type: msg.payload.type || originalProposal.type,
-    plugins: plugins || originalProposal.plugins,
+    type: msg.payload.type,
+    plugins: plugins,
     title: msg.payload.name || originalProposal.title,
     body: msg.payload.body,
     discussion: msg.payload.discussion,
-    choices: JSON.stringify(msg.payload.choices) || originalProposal.choices
+    choices: JSON.stringify(msg.payload.choices)
   };
 
   const query = 'UPDATE proposals SET ? WHERE id = ? LIMIT 1';
