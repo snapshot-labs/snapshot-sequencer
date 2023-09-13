@@ -91,8 +91,7 @@ export async function verify(body): Promise<any> {
   return Promise.resolve(proposal);
 }
 
-export async function action(body, ipfs, receipt, id, context): Promise<void> {
-  const originalProposal = context;
+export async function action(body, ipfs): Promise<void> {
   const msg = jsonParse(body.msg);
   const updated = parseInt(msg.timestamp);
   const metadata = msg.payload.metadata || {};
@@ -103,7 +102,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     updated,
     type: msg.payload.type,
     plugins: plugins,
-    title: msg.payload.name || originalProposal.title,
+    title: msg.payload.name,
     body: msg.payload.body,
     discussion: msg.payload.discussion,
     choices: JSON.stringify(msg.payload.choices)
