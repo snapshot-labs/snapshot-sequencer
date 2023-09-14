@@ -2,8 +2,6 @@ import * as writer from '../../../src/writer/proposal';
 import input from '../../fixtures/writer-payload/proposal.json';
 import omit from 'lodash/omit';
 
-const FLAGGED_BODY_KEYWORDS = ['claim drop'];
-const FLAGGED_TITLE_KEYWORDS = ['flagged title'];
 const FLAGGED_ADDRESSES = ['0x0'];
 
 const DEFAULT_SPACE: any = {
@@ -53,8 +51,6 @@ jest.mock('../../../src/helpers/moderation', () => {
     ...originalModule,
     // sha256 of 1.2.3.4
     flaggedIps: ['6694f83c9f476da31f5df6bcc520034e7e57d421d247b9d34f49edbfc84a764c'],
-    flaggedProposalTitleKeywords: ['flagged title'],
-    flaggedProposalBodyKeywords: ['claim drop'],
     flaggedAddresses: ['0x0']
   };
 });
@@ -206,15 +202,7 @@ describe('writer/proposal', () => {
     describe('when the proposal contains flagged contents', () => {
       const msg = JSON.parse(input.msg);
       const invalidInput = [
-        [{ ...input, address: FLAGGED_ADDRESSES[0] }, 'submitted address is flagged'],
-        [
-          { ...input, msg: { ...msg, name: `${msg.name} - ${FLAGGED_TITLE_KEYWORDS[0]}` } },
-          'name contains flagged keywords'
-        ],
-        [
-          { ...input, msg: { ...msg, body: `${msg.body} - ${FLAGGED_BODY_KEYWORDS[0]}` } },
-          'body contains flagged keywords'
-        ]
+        [{ ...input, address: FLAGGED_ADDRESSES[0] }, 'submitted address is flagged']
       ];
 
       it.each(invalidInput)('rejects when the %s', async (title, val) => {
