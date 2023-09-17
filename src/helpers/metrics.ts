@@ -31,6 +31,7 @@ export default function initMetrics(app: Express) {
   });
 
   app.use(instrumentRateLimitedRequests);
+  app.use(ingestorInstrumentation);
 }
 
 export const timeIngestorProcess = new client.Histogram({
@@ -38,3 +39,32 @@ export const timeIngestorProcess = new client.Histogram({
   help: 'Duration in seconds of each ingestor process',
   labelNames: ['type', 'status', 'network']
 });
+
+const timeIngestorErrorProcess = new client.Histogram({
+  name: 'ingestor_error_process_duration_seconds',
+  help: 'Duration in seconds of each ingestor failed process.',
+  labelNames: ['error', 'type']
+});
+
+const ingestorInstrumentation = (req, res, next) => {
+  if (req.method !== 'POST' && req.originalUrl !== '/') {
+    return next();
+  }
+
+  const endTimer = timeIngestorErrorProcess.startTimer();
+  const oldJson = res.json;
+
+  res.json = body => {
+    if (res.statusCode >= 400 && res.statusCode < 500 && body) {
+      endTimer({
+        type: Object.keys(req.body?.data?.types || {})[0],
+        error: body.error_description
+      });
+    }
+
+    res.locals.body = body;
+    return oldJson.call(res, body);
+  };
+
+  next();
+};
