@@ -180,7 +180,7 @@ describe('ingestor', () => {
 
   it('rejects when IPFS pinning fail', async () => {
     mockPin.mockImplementationOnce(() => {
-      throw new Error();
+      return Promise.reject('');
     });
 
     await expect(ingestor(proposalRequest)).rejects.toMatch('pin');
