@@ -8,11 +8,7 @@ import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 import { capture } from '@snapshot-labs/snapshot-sentry';
-import {
-  flaggedAddresses,
-  flaggedProposalTitleKeywords,
-  flaggedProposalBodyKeywords
-} from '../helpers/moderation';
+import { flaggedAddresses } from '../helpers/moderation';
 
 const network = process.env.NETWORK || 'testnet';
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
@@ -95,14 +91,8 @@ export async function verify(body): Promise<any> {
     if (msg.payload.type !== space.voting.type) return Promise.reject('invalid voting type');
   }
 
-  const proposalNameLC = msg.payload.name.toLowerCase();
-  const proposalBodyLC = msg.payload.body.toLowerCase();
-  if (
-    flaggedAddresses.includes(addressLC) ||
-    flaggedProposalBodyKeywords.some(keyword => proposalBodyLC.includes(keyword)) ||
-    flaggedProposalTitleKeywords.some(keyword => proposalNameLC.includes(keyword))
-  )
-    return Promise.reject('scam proposal detected, contact support');
+  if (flaggedAddresses.includes(addressLC))
+    return Promise.reject('invalid proposal, please contact support');
 
   const onlyAuthors = space.filters?.onlyMembers;
   const members = [
@@ -142,7 +132,7 @@ export async function verify(body): Promise<any> {
 
       if (!isValid) return Promise.reject('validation failed');
     } catch (e) {
-      capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
+      capture(e, { space: msg.space, address: body.address });
       log.warn(
         `[writer] Failed to check proposal validation, ${msg.space}, ${
           body.address
