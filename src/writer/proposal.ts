@@ -1,4 +1,3 @@
-import isEqual from 'lodash/isEqual';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getAddress } from '@ethersproject/address';
 import kebabCase from 'lodash/kebabCase';
