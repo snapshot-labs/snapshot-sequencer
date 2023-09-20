@@ -182,8 +182,8 @@ export default async function ingestor(req) {
         pin(ipfsBody, process.env.PINEAPPLE_URL),
         issueReceipt(body.sig)
       ]);
-    } catch (e) {
-      capture(e);
+    } catch (e: any) {
+      capture(e.error || e);
       return Promise.reject('pinning failed');
     }
     const ipfs = pinned.cid;
