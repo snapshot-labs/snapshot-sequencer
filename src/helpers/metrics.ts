@@ -1,8 +1,9 @@
 import init, { client } from '@snapshot-labs/snapshot-metrics';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import { Express } from 'express';
+import db from './mysql';
 
 const whitelistedPath = [/^\/$/, /^\/scores\/.+$/, /^\/spaces\/.+\/poke$/];
-let server;
 
 const rateLimitedRequestsCount = new client.Counter({
   name: 'http_requests_by_rate_limit_count',
@@ -26,17 +27,13 @@ export default function initMetrics(app: Express) {
       ['/scores/.+', '/scores/#id'],
       ['/spaces/.+/poke', '/spaces/#key/poke']
     ],
-    whitelistedPath
+    whitelistedPath,
+    errorHandler: capture,
+    db
   });
 
   app.use(instrumentRateLimitedRequests);
-  app.use((req, res, next) => {
-    if (!server) {
-      // @ts-ignore
-      server = req.socket.server;
-    }
-    next();
-  });
+  app.use(ingestorInstrumentation);
 }
 
 export const timeIngestorProcess = new client.Histogram({
@@ -45,12 +42,31 @@ export const timeIngestorProcess = new client.Histogram({
   labelNames: ['type', 'status', 'network']
 });
 
-new client.Gauge({
-  name: 'express_open_connections_size',
-  help: 'Number of open connections on the express server',
-  async collect() {
-    if (server) {
-      this.set(server._connections);
-    }
-  }
+const timeIngestorErrorProcess = new client.Histogram({
+  name: 'ingestor_error_process_duration_seconds',
+  help: 'Duration in seconds of each ingestor failed process.',
+  labelNames: ['error', 'type']
 });
+
+const ingestorInstrumentation = (req, res, next) => {
+  if (req.method !== 'POST' && req.originalUrl !== '/') {
+    return next();
+  }
+
+  const endTimer = timeIngestorErrorProcess.startTimer();
+  const oldJson = res.json;
+
+  res.json = body => {
+    if (res.statusCode >= 400 && res.statusCode < 500 && res.statusCode !== 429 && body) {
+      endTimer({
+        type: Object.keys(req.body?.data?.types || {})[0],
+        error: body.error_description
+      });
+    }
+
+    res.locals.body = body;
+    return oldJson.call(res, body);
+  };
+
+  next();
+};

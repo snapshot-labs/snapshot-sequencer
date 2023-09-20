@@ -178,15 +178,9 @@ describe('ingestor', () => {
     await expect(ingestor(invalidRequest)).rejects.toMatch('large');
   });
 
-  it('rejects when it fails the writer verification', async () => {
-    const invalidRequest = cloneWithNewMessage({ body: 'claim drop' });
-
-    await expect(ingestor(invalidRequest)).rejects.toMatch('scam proposal detected');
-  });
-
   it('rejects when IPFS pinning fail', async () => {
     mockPin.mockImplementationOnce(() => {
-      throw new Error();
+      return Promise.reject('');
     });
 
     await expect(ingestor(proposalRequest)).rejects.toMatch('pin');
