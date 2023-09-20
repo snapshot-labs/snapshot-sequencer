@@ -1,3 +1,4 @@
+import isEqual from 'lodash/isEqual';
 import { createHash } from 'crypto';
 import { Response } from 'express';
 
@@ -63,6 +64,19 @@ export function hasStrategyOverride(strategies: any[]) {
   ];
   const strategiesStr = JSON.stringify(strategies).toLowerCase();
   return keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`));
+}
+
+export function validateChoices({ type, choices }): boolean {
+  if (type && choices.length > 0) {
+    switch (type) {
+      case 'basic':
+        return isEqual(['For', 'Against', 'Abstain'], choices);
+      default:
+        return choices.length > 0;
+    }
+  } else {
+    return false;
+  }
 }
 
 export function getIp(req) {

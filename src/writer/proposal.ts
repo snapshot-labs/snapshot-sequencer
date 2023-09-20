@@ -2,7 +2,7 @@ import isEqual from 'lodash/isEqual';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getAddress } from '@ethersproject/address';
 import kebabCase from 'lodash/kebabCase';
-import { jsonParse } from '../helpers/utils';
+import { jsonParse, validateChoices } from '../helpers/utils';
 import db from '../helpers/mysql';
 import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
@@ -48,12 +48,11 @@ export async function verify(body): Promise<any> {
     return Promise.reject('wrong proposal format');
   }
 
-  if (
-    msg.payload.type === 'basic' &&
-    !isEqual(['For', 'Against', 'Abstain'], msg.payload.choices)
-  ) {
-    return Promise.reject('wrong choices for basic type voting');
-  }
+  const isChoicesValid = validateChoices({
+    type: msg.payload.type,
+    choices: msg.payload.choices
+  });
+  if (!isChoicesValid) return Promise.reject('wrong choices for basic type voting');
 
   const space = await getSpace(msg.space);
 
