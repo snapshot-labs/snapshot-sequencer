@@ -72,7 +72,7 @@ export function validateChoices({ type, choices }): boolean {
       case 'basic':
         return isEqual(['For', 'Against', 'Abstain'], choices);
       default:
-        return choices.length > 0;
+        return true;
     }
   } else {
     return false;
