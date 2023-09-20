@@ -1,6 +1,7 @@
 import init, { client } from '@snapshot-labs/snapshot-metrics';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { Express } from 'express';
+import db from './mysql';
 
 const whitelistedPath = [/^\/$/, /^\/scores\/.+$/, /^\/spaces\/.+\/poke$/];
 
@@ -27,7 +28,8 @@ export default function initMetrics(app: Express) {
       ['/spaces/.+/poke', '/spaces/#key/poke']
     ],
     whitelistedPath,
-    errorHandler: capture
+    errorHandler: capture,
+    db
   });
 
   app.use(instrumentRateLimitedRequests);
