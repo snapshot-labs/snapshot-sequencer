@@ -19,5 +19,6 @@ export default {
   moduleFileExtensions: ['js', 'ts'],
   fakeTimers: {
     enableGlobally: true
-  }
+  },
+  verbose: true
 };

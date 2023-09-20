@@ -1,6 +1,7 @@
 import init, { client } from '@snapshot-labs/snapshot-metrics';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { Express } from 'express';
+import db from './mysql';
 
 const whitelistedPath = [/^\/$/, /^\/scores\/.+$/, /^\/spaces\/.+\/poke$/];
 
@@ -27,7 +28,8 @@ export default function initMetrics(app: Express) {
       ['/spaces/.+/poke', '/spaces/#key/poke']
     ],
     whitelistedPath,
-    errorHandler: capture
+    errorHandler: capture,
+    db
   });
 
   app.use(instrumentRateLimitedRequests);
@@ -55,7 +57,7 @@ const ingestorInstrumentation = (req, res, next) => {
   const oldJson = res.json;
 
   res.json = body => {
-    if (res.statusCode >= 400 && res.statusCode < 500 && body) {
+    if (res.statusCode >= 400 && res.statusCode < 500 && res.statusCode !== 429 && body) {
       endTimer({
         type: Object.keys(req.body?.data?.types || {})[0],
         error: body.error_description
