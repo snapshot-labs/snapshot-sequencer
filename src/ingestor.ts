@@ -121,8 +121,8 @@ export default async function ingestor(req) {
     if (type === 'update-proposal') {
       payload = {
         proposal: message.proposal,
-        name: message.title,
-        body: message.body,
+        name: message.title.trim(),
+        body: message.body.trim(),
         discussion: message.discussion || '',
         choices: message.choices,
         metadata: {
