@@ -55,7 +55,7 @@ const ingestorInstrumentation = (req, res, next) => {
   const oldJson = res.json;
 
   res.json = body => {
-    if (res.statusCode >= 400 && res.statusCode < 500 && body) {
+    if (res.statusCode >= 400 && res.statusCode < 500 && res.statusCode !== 429 && body) {
       endTimer({
         type: Object.keys(req.body?.data?.types || {})[0],
         error: body.error_description
