@@ -1253,10 +1253,10 @@
   dependencies:
     "@snapshot-labs/eslint-config-base" "^0.1.0-beta.11"
 
-"@snapshot-labs/pineapple@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@snapshot-labs/pineapple/-/pineapple-1.0.2.tgz#0782d4d6860cc0bf0ff781921ec705028628435e"
-  integrity sha512-2RfQgkk5tzXNvC/67Ksh1f2e6z58kd3XUN7JoTNGL29zLO0ah3sksYa9QDQYZt4suVcGovFA2i7CVBZoaJ1+SQ==
+"@snapshot-labs/pineapple@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@snapshot-labs/pineapple/-/pineapple-1.1.0.tgz#cccd1b8c81889b2109a46fddc362908493a8c07c"
+  integrity sha512-LIWmpdO3UF8WhKSlMkGsnCk2eY8KktVUS+qhMWIpXI+ffv0KTSBEnUj7J0v8baoOgSfv1u9HIgG+V2zJFrdk1w==
   dependencies:
     ofetch "^1.3.3"
 
