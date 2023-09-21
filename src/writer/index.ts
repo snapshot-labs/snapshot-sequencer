@@ -3,6 +3,7 @@ import * as vote from './vote';
 import * as settings from './settings';
 import * as deleteSpace from './delete-space';
 import * as deleteProposal from './delete-proposal';
+import * as updateProposal from './update-proposal';
 import * as follow from './follow';
 import * as unfollow from './unfollow';
 import * as alias from './alias';
@@ -17,6 +18,7 @@ export default {
   settings,
   'delete-space': deleteSpace,
   'delete-proposal': deleteProposal,
+  'update-proposal': updateProposal,
   follow,
   unfollow,
   subscribe,

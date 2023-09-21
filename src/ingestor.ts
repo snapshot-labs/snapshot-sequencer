@@ -118,6 +118,19 @@ export default async function ingestor(req) {
 
     if (type === 'statement') payload = { about: message.about, statement: message.statement };
     if (type === 'delete-proposal') payload = { proposal: message.proposal };
+    if (type === 'update-proposal') {
+      payload = {
+        proposal: message.proposal,
+        name: message.title,
+        body: message.body,
+        discussion: message.discussion || '',
+        choices: message.choices,
+        metadata: {
+          plugins: JSON.parse(message.plugins)
+        },
+        type: message.type
+      };
+    }
 
     if (['vote', 'vote-array', 'vote-string'].includes(type)) {
       if (message.metadata && message.metadata.length > 2000)
