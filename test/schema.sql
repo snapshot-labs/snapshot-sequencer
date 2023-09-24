@@ -162,5 +162,6 @@ CREATE TABLE messages (
   INDEX timestamp (timestamp),
   INDEX space (space),
   INDEX type (type),
+  INDEX sig (sig),
   INDEX receipt (receipt)
 );

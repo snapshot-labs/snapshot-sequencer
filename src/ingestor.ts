@@ -8,7 +8,7 @@ import writer from './writer';
 import { getIp, jsonParse, sha256 } from './helpers/utils';
 import { isValidAlias } from './helpers/alias';
 import { getProposal, getSpace } from './helpers/actions';
-import { storeMsg } from './helpers/highlight';
+import { storeMsg, isDuplicateMsg } from './helpers/highlight';
 import log from './helpers/log';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedIps } from './helpers/moderation';
@@ -45,6 +45,10 @@ export default async function ingestor(req) {
     const { domain, message, types } = body.data;
 
     if (JSON.stringify(body).length > 1e5) return Promise.reject('too large message');
+
+    if (await isDuplicateMsg(body.sig)) {
+      return Promise.reject('duplicate message');
+    }
 
     if (message.timestamp > overTs || message.timestamp < underTs)
       return Promise.reject('wrong timestamp');

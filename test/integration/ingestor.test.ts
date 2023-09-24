@@ -92,6 +92,10 @@ describe('ingestor', () => {
     await db.endAsync();
   });
 
+  afterEach(async () => {
+    await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages');
+  });
+
   beforeAll(() => {
     proposalInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
     voteInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
