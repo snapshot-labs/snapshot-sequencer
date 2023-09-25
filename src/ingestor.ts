@@ -51,6 +51,9 @@ export default async function ingestor(req) {
 
     if (domain.name !== NAME || domain.version !== VERSION) return Promise.reject('wrong domain');
 
+    // Ignore EIP712Domain type, it's not used
+    delete types.EIP712Domain;
+
     const hash = sha256(JSON.stringify(types));
     if (!Object.keys(hashTypes).includes(hash)) return Promise.reject('wrong types');
     type = hashTypes[hash];

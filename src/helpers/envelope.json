@@ -49,6 +49,9 @@
             },
             "types": {
               "type": "object"
+            },
+            "primaryType": {
+              "type": "string"
             }
           },
           "required": [
