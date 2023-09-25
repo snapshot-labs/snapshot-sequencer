@@ -18,8 +18,7 @@ export async function verify(body): Promise<any> {
 
   const isAuthorizedToFlag = isAuthorized({
     space,
-    address: body.address,
-    proposal
+    address: body.address
   });
   if (!isAuthorizedToFlag) return Promise.reject('not authorized to flag proposal');
 
