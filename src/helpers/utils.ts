@@ -96,8 +96,6 @@ export function verifyAuth(req, res, next) {
   const authHash = sha256(auth);
   const secretHash = process.env.AUTH_SECRET;
 
-  console.log('auth', authHash);
-
   if (!secretHash || authHash !== secretHash) {
     return sendError(res, 'Unauthorized', 401);
   }
