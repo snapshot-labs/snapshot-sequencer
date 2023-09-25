@@ -66,7 +66,7 @@ export function refreshProposalsCount(spaces?: string[]) {
           GROUP BY author, space
         ) AS t)
       ON DUPLICATE KEY UPDATE proposals_count = t.proposals_count
-    `.replace(/\n/gm, ' '),
+    `,
     spaces
   );
 }
@@ -83,7 +83,7 @@ export function refreshVotesCount(spaces: string[]) {
           GROUP BY voter, space
         ) AS t)
       ON DUPLICATE KEY UPDATE votes_count = t.votes_count
-    `.replace(/\n/gm, ' '),
+    `,
     spaces
   );
 }
@@ -94,7 +94,7 @@ export function incrementVotesCount(space: string, user: string) {
       INSERT INTO user_space_activities (space, user, votes_count)
       VALUES(?, ?, 1)
       ON DUPLICATE KEY UPDATE votes_count = votes_count + 1
-    `.replace(/\n/gm, ' '),
+    `,
     [space, user]
   );
 }
@@ -105,7 +105,7 @@ export function incrementProposalsCount(space: string, user: string) {
       INSERT INTO user_space_activities (space, user, proposals_count)
       VALUES(?, ?, 1)
       ON DUPLICATE KEY UPDATE proposals_count = proposals_count + 1
-    `.replace(/\n/gm, ' '),
+    `,
     [space, user]
   );
 }
@@ -117,7 +117,7 @@ export function decrementProposalsCount(space: string, user: string) {
       SET proposals_count = proposals_count - 1
       WHERE user = ? AND space = ?
       LIMIT 1
-    `.replace(/\n/gm, ' '),
+    `,
     [user, space]
   );
 }
