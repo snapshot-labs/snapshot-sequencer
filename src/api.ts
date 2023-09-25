@@ -5,7 +5,8 @@ import { addOrUpdateSpace } from './helpers/actions';
 import { getSpaceENS } from './helpers/ens';
 import { updateProposalAndVotes } from './scores';
 import typedData from './ingestor';
-import { sendError } from './helpers/utils';
+import { sendError, verifyAuth } from './helpers/utils';
+import { flagEntity } from './helpers/moderation';
 import log from './helpers/log';
 import { name, version } from '../package.json';
 import { capture } from '@snapshot-labs/snapshot-sentry';
@@ -64,6 +65,17 @@ router.get('/spaces/:key/poke', async (req, res) => {
     capture(e);
     log.warn(`[api] Load space failed ${key}`);
     return res.json(false);
+  }
+});
+
+router.post('/flag', verifyAuth, async (req, res) => {
+  const { type, value, action } = req.body;
+
+  try {
+    await flagEntity({ type, value, action });
+    return res.json({ success: true });
+  } catch (e: any) {
+    return sendError(res, e.message || 'failed');
   }
 });
 

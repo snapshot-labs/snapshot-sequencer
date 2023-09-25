@@ -90,3 +90,17 @@ export function getIp(req) {
 
   return ips[0].trim();
 }
+
+export function verifyAuth(req, res, next) {
+  const auth = req.headers.secret || '';
+  const authHash = sha256(auth);
+  const secretHash = process.env.AUTH_SECRET;
+
+  console.log('auth', authHash);
+
+  if (!secretHash || authHash !== secretHash) {
+    return sendError(res, 'Unauthorized', 401);
+  }
+
+  return next();
+}
