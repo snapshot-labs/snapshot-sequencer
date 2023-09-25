@@ -2,11 +2,9 @@ import { jsonParse } from '../helpers/utils';
 import db from '../helpers/mysql';
 import { getSpace, getProposal } from '../helpers/actions';
 
-export function isAuthorized({ space, address, proposal }): boolean {
+export function isAuthorized({ space, address }): boolean {
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());
   const mods = (space?.moderators || []).map(mod => mod.toLowerCase());
-
-  console.log('isAuthorized', space?.admins, space?.moderators, proposal.author, address);
 
   return admins.includes(address.toLowerCase()) || mods.includes(address.toLowerCase());
 }
