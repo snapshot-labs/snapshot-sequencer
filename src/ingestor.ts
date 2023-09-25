@@ -46,10 +46,6 @@ export default async function ingestor(req) {
 
     if (JSON.stringify(body).length > 1e5) return Promise.reject('too large message');
 
-    if (await isDuplicateMsg(body.sig)) {
-      return Promise.reject('duplicate message');
-    }
-
     if (message.timestamp > overTs || message.timestamp < underTs)
       return Promise.reject('wrong timestamp');
 
@@ -104,6 +100,10 @@ export default async function ingestor(req) {
 
     const id = snapshot.utils.getHash(body.data);
     let payload = {};
+
+    if (await isDuplicateMsg(id)) {
+      return Promise.reject('duplicate message');
+    }
 
     if (type === 'settings') payload = JSON.parse(message.settings);
 

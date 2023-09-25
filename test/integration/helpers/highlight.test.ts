@@ -5,7 +5,7 @@ describe('highlight', () => {
   describe('isDuplicateMsg()', () => {
     afterAll(async () => {
       await db.queryAsync(
-        'DELETE from snapshot_sequencer_test.messages where sig = ?',
+        'DELETE from snapshot_sequencer_test.messages where id = ?',
         'test-exists'
       );
       return db.endAsync();
@@ -16,7 +16,7 @@ describe('highlight', () => {
     });
 
     it('returns true when message already exist', async () => {
-      await storeMsg('', '', '', '', '', '', '', 'test-exists', '');
+      await storeMsg('test-exists', '', '', '', '', '', '', '', '');
       expect(await isDuplicateMsg('test-exists')).toEqual(true);
     });
   });

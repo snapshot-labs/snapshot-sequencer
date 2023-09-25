@@ -17,7 +17,7 @@ export async function storeMsg(id, ipfs, address, version, timestamp, space, typ
   ]);
 }
 
-export async function isDuplicateMsg(sig: string) {
-  const result = await db.queryAsync('SELECT 1 FROM messages WHERE sig = ? LIMIT 1', sig);
+export async function isDuplicateMsg(id: string) {
+  const result = await db.queryAsync('SELECT 1 FROM messages WHERE id = ? LIMIT 1', id);
   return result.length > 0;
 }
