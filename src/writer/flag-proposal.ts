@@ -14,6 +14,7 @@ export async function verify(body): Promise<any> {
 
   const proposal = await getProposal(msg.space, msg.payload.proposal);
   if (!proposal) return Promise.reject('unknown proposal');
+  if (proposal.flagged) return Promise.reject('proposal already flagged');
   const space = await getSpace(msg.space);
 
   const isAuthorizedToFlag = isAuthorized({
