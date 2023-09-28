@@ -35,7 +35,7 @@ export default async function run() {
 }
 
 export function flagEntity({ type, action, value }) {
-  if (!type || !action || !value )
+  if (!type || !action || !value)
     throw new Error(`missing params. 'type', 'action' and 'value' required`);
   if (!['proposal', 'space'].includes(type)) throw new Error('invalid type');
   if (type === 'proposal' && action !== 'flag') throw new Error('invalid action');
