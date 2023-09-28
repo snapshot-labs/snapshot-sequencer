@@ -134,6 +134,7 @@ export default async function ingestor(req) {
         type: message.type
       };
     }
+    if (type === 'flag-proposal') payload = { proposal: message.proposal };
 
     if (['vote', 'vote-array', 'vote-string'].includes(type)) {
       if (message.metadata && message.metadata.length > 2000)
