@@ -20,6 +20,7 @@ export async function loadModerationData(url = moderationURL) {
     const body = await res.json();
 
     if (body.error) {
+      capture(body.error);
       return;
     }
 
