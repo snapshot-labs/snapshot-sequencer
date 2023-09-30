@@ -1,8 +1,8 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import { capture } from '@snapshot-labs/snapshot-sentry';
-import fetch from 'cross-fetch';
 import log from './log';
 import db from './mysql';
+import { fetchWithKeepAlive } from './utils';
 
 const sidekickURL = process.env.SIDEKICK_URL || 'https://sh5.co';
 const moderationURL = `${sidekickURL}/api/moderation`;
@@ -16,7 +16,7 @@ export let verifiedSpaces: Array<string> = [];
 
 export async function loadModerationData(url = moderationURL) {
   try {
-    const res = await fetch(url);
+    const res = await fetchWithKeepAlive(url, { timeout: 5e3 });
     const body = await res.json();
 
     if (body.error) {
