@@ -28,7 +28,7 @@ describe('moderation', () => {
         ['no response', 'http://localhost:9999'],
         ['empty url', ''],
         ['invalid hostname', 'test'],
-        ['timeout', 'https://httpstat.us/200?sleep=5000']
+        ['timeout', 'https://httpstat.us/200?sleep=10000']
       ])('returns nothing on network error (%s)', (title, url) => {
         expect(loadModerationData(url)).resolves.toBeUndefined();
       });
