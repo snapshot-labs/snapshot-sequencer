@@ -1,6 +1,6 @@
 import express from 'express';
 import { randomBytes } from 'crypto';
-import fetch from 'cross-fetch';
+import fetch from 'node-fetch';
 import { init, decrypt } from '@shutter-network/shutter-crypto';
 import { arrayify } from '@ethersproject/bytes';
 import { toUtf8String } from '@ethersproject/strings';
