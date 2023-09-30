@@ -3,6 +3,8 @@ import https from 'https';
 import isEqual from 'lodash/isEqual';
 import { createHash } from 'crypto';
 import { Response } from 'express';
+import fetch from 'node-fetch';
+import { URL } from 'url';
 
 export const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
 
