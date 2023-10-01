@@ -191,6 +191,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     type: msg.payload.type || 'single-choice',
     strategies,
     plugins,
+    delegation: 0,
     title: msg.payload.name,
     body: msg.payload.body,
     discussion: msg.payload.discussion || '',
