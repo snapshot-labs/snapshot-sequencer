@@ -26,7 +26,8 @@ const DEFAULT_SPACE: any = {
   members: [],
   admins: [],
   moderators: [],
-  validation: { name: 'basic' }
+  validation: { name: 'basic' },
+  voteValidation: { name: 'basic' }
 };
 
 const mockGetSpace = jest.fn((id: any): any => {
