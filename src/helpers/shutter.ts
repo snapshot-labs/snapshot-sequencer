@@ -93,7 +93,7 @@ export async function setProposalKey(params) {
     for (const vote of votes) {
       const choice = await shutterDecrypt(jsonParse(vote.choice), `0x${key}`);
       log.info(`[shutter] decrypted choice ${JSON.stringify(choice)}`);
-      if (choice !== false) {
+      if (choice !== false && choice !== '') {
         sqlQuery += `UPDATE votes SET choice = ? WHERE id = ? LIMIT 1; `;
         sqlParams.push(choice);
         sqlParams.push(vote.id);
