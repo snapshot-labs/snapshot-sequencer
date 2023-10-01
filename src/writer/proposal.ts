@@ -209,7 +209,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     votes: 0,
     validation
   };
-  const query = 'INSERT IGNORE INTO proposals SET ?; ';
+  const query = 'INSERT INTO proposals SET ?; ';
   const params: any[] = [proposal];
 
   await db.queryAsync(query, params);

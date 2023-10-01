@@ -218,10 +218,15 @@ export default async function ingestor(req) {
         body.sig,
         receipt
       );
-    } catch (e) {
+    } catch (e: any) {
       if (typeof e !== 'string') {
         capture(e);
       }
+
+      if (e.errno === 1062) {
+        return Promise.reject('duplicate message');
+      }
+
       return Promise.reject(e);
     }
 

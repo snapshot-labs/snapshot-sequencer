@@ -13,5 +13,5 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
     alias: getAddress(message.alias),
     created: message.timestamp
   };
-  await db.queryAsync('INSERT IGNORE INTO aliases SET ?', params);
+  await db.queryAsync('INSERT INTO aliases SET ?', params);
 }
