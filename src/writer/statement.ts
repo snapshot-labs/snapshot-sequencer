@@ -30,7 +30,6 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   };
 
   const query = 'INSERT INTO statements SET ?';
-  const params = [item];
 
-  await db.queryAsync(query, params);
+  await db.queryAsync(query, item);
 }

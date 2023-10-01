@@ -210,7 +210,6 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     validation
   };
   const query = 'INSERT INTO proposals SET ?; ';
-  const params: any[] = [proposal];
 
-  await db.queryAsync(query, params);
+  await db.queryAsync(query, proposal);
 }
