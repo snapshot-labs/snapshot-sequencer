@@ -8,7 +8,7 @@ import writer from './writer';
 import { getIp, jsonParse, sha256 } from './helpers/utils';
 import { isValidAlias } from './helpers/alias';
 import { getProposal, getSpace } from './helpers/actions';
-import { storeMsg } from './helpers/highlight';
+import { storeMsg, isDuplicateMsg } from './helpers/highlight';
 import log from './helpers/log';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedIps } from './helpers/moderation';
@@ -100,6 +100,14 @@ export default async function ingestor(req) {
 
     const id = snapshot.utils.getHash(body.data);
     let payload = {};
+
+    if (body.hash && body.hash !== id) {
+      return Promise.reject('wrong hash');
+    }
+
+    if (await isDuplicateMsg(id)) {
+      return Promise.reject('duplicate message');
+    }
 
     if (type === 'settings') payload = JSON.parse(message.settings);
 

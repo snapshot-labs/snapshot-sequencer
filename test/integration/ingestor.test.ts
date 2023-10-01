@@ -88,14 +88,19 @@ function cloneWithNewMessage(data: Record<string, any>) {
 }
 
 describe('ingestor', () => {
-  afterAll(async () => {
-    await db.queryAsync('DELETE FROM snapshot_sequencer_test.proposals;');
-    await db.endAsync();
-  });
-
   beforeAll(() => {
     proposalInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
     voteInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
+  });
+
+  afterEach(async () => {
+    await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages');
+  });
+
+  afterAll(async () => {
+    await db.queryAsync('DELETE FROM snapshot_sequencer_test.proposals;');
+    await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages;');
+    return db.endAsync();
   });
 
   it('rejects when the submitter IP is banned', async () => {
@@ -199,14 +204,14 @@ describe('ingestor', () => {
       expect(result.relayer).toHaveProperty('receipt');
     });
 
-    it.each([['proposals', proposalRequest]])('saves the %s in the DB', async (title, request) => {
-      const typeResult = await ingestor(request);
+    it('saves the proposal in the DB', async () => {
+      const typeResult = await ingestor(proposalRequest);
       const dbResult = await db.queryAsync(
-        `SELECT * from ${title} WHERE id = ? LIMIT 1`,
+        `SELECT * from proposals WHERE id = ? LIMIT 1`,
         typeResult.id
       );
 
-      await expect(dbResult.length).toBe(1);
+      expect(dbResult.length).toBe(1);
     });
 
     ['vote', 'follow', 'unfollow', 'subscribe', 'unsubscribe'].forEach(type => {
