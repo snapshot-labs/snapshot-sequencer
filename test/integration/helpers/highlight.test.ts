@@ -16,7 +16,7 @@ describe('highlight', () => {
     });
 
     it('returns true when message already exist', async () => {
-      await storeMsg('test-exists', '', '', '', '', '', '', '', '');
+      await storeMsg('test-exists', '', '', '', 0, '', '', '', '');
       expect(await isDuplicateMsg('test-exists')).toEqual(true);
     });
   });
