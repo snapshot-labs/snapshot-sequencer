@@ -85,7 +85,7 @@ export async function verify(body): Promise<any> {
       proposal.strategies,
       proposal.snapshot,
       msg.space,
-      proposal.delegation === 1,
+      false,
       { url: scoreAPIUrl }
     );
     if (vp.vp === 0) return Promise.reject('no voting power');
