@@ -1,6 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import log from './log';
 import { capture } from '@snapshot-labs/snapshot-sentry';
+import fetch from 'cross-fetch';
+import log from './log';
 import db from './mysql';
 
 const sidekickURL = process.env.SIDEKICK_URL || 'https://sh5.co';
@@ -13,14 +14,25 @@ export let flaggedProposalTitleKeywords: Array<string> = [];
 export let flaggedProposalBodyKeywords: Array<string> = [];
 export let verifiedSpaces: Array<string> = [];
 
-async function loadModerationData() {
-  const res = await snapshot.utils.getJSON(moderationURL);
-  flaggedSpaces = res?.flaggedSpaces;
-  flaggedIps = res?.flaggedIps;
-  flaggedAddresses = res?.flaggedAddresses;
-  flaggedProposalTitleKeywords = res?.flaggedProposalTitleKeywords;
-  flaggedProposalBodyKeywords = res?.flaggedProposalBodyKeywords;
-  verifiedSpaces = res?.verifiedSpaces;
+export async function loadModerationData(url = moderationURL) {
+  try {
+    const res = await fetch(url);
+    const body = await res.json();
+
+    if (body.error) {
+      capture(body.error);
+      return;
+    }
+
+    flaggedSpaces = body.flaggedSpaces;
+    flaggedIps = body.flaggedIps;
+    flaggedAddresses = body.flaggedAddresses;
+    flaggedProposalTitleKeywords = body.flaggedProposalTitleKeywords;
+    flaggedProposalBodyKeywords = body.flaggedProposalBodyKeywords;
+    verifiedSpaces = body.verifiedSpaces;
+  } catch (e: any) {
+    capture(e);
+  }
 }
 
 export default async function run() {
