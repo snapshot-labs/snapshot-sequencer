@@ -50,7 +50,7 @@ export function flagEntity({ type, action, value }) {
       query = `UPDATE spaces SET verified = 1, flagged = 0 WHERE id = ? LIMIT 1`;
       break;
     case 'proposal-flag':
-      query = `UPDATE proposals SET flagged = 1, verified=0 WHERE id = ? LIMIT 1`;
+      query = `UPDATE proposals SET flagged = 1, verified = 0 WHERE id = ? LIMIT 1`;
       break;
   }
 
