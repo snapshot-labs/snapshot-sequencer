@@ -9,7 +9,7 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
   const params = {
     id,
     ipfs,
-    address: getAddress(message.from),
+    address: message.from,
     alias: getAddress(message.alias),
     created: message.timestamp
   };
