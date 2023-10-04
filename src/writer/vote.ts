@@ -185,7 +185,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     if (!result) log.warn(`[writer] updateProposalAndVotes() false, ${proposalId}`);
   } catch (e) {
     capture(e, { contexts: { input: { space: msg.space, id: proposalId } } });
-    log.error(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
     console.log('[writer] updateProposalAndVotes() failed', e);
+    log.warn(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
   }
 }
