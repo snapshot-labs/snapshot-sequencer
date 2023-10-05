@@ -36,5 +36,4 @@ sequencerConfig.charset = 'utf8mb4';
 bluebird.promisifyAll([Pool, Connection]);
 const sequencerDB = mysql.createPool(sequencerConfig);
 
-export default hubDB;
-export { hubDB, sequencerDB };
+export { hubDB as default, sequencerDB };
