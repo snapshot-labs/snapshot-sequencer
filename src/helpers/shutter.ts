@@ -1,6 +1,6 @@
 import express from 'express';
 import { randomBytes } from 'crypto';
-import fetch from 'cross-fetch';
+import fetch from 'node-fetch';
 import { init, decrypt } from '@shutter-network/shutter-crypto';
 import { arrayify } from '@ethersproject/bytes';
 import { toUtf8String } from '@ethersproject/strings';
@@ -107,7 +107,7 @@ export async function setProposalKey(params) {
     log.info(`[shutter] proposal scores updated for ${proposalId}`);
   } catch (e) {
     capture(e);
-    log.error(`[shutter] setProposalKey failed ${JSON.stringify(e)}`);
+    log.warn(`[shutter] setProposalKey failed ${JSON.stringify(e)}`);
     return false;
   }
   return true;

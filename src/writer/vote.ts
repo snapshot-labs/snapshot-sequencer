@@ -85,7 +85,7 @@ export async function verify(body): Promise<any> {
       proposal.strategies,
       proposal.snapshot,
       msg.space,
-      proposal.delegation === 1,
+      false,
       { url: scoreAPIUrl }
     );
     if (vp.vp === 0) return Promise.reject('no voting power');
@@ -185,7 +185,6 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     if (!result) log.warn(`[writer] updateProposalAndVotes() false, ${proposalId}`);
   } catch (e) {
     capture(e, { contexts: { input: { space: msg.space, id: proposalId } } });
-    log.error(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
-    console.log('[writer] updateProposalAndVotes() failed', e);
+    log.warn(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
   }
 }
