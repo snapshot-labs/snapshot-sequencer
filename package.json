@@ -39,7 +39,7 @@
     "express-rate-limit": "^6.9.0",
     "lodash": "^4.17.21",
     "mysql": "^2.18.1",
-    "node-fetch": "^1.7.0",
+    "node-fetch": "^2.7.0",
     "rate-limit-redis": "^3.0.2",
     "redis": "^4.6.8",
     "ts-node": "^10.9.1",

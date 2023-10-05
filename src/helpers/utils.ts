@@ -1,6 +1,10 @@
+import http from 'http';
+import https from 'https';
 import isEqual from 'lodash/isEqual';
 import { createHash } from 'crypto';
 import { Response } from 'express';
+import fetch from 'node-fetch';
+import { URL } from 'url';
 
 export const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
 
@@ -102,3 +106,15 @@ export function verifyAuth(req, res, next) {
 
   return next();
 }
+
+const agentOptions = { keepAlive: true };
+const httpAgent = new http.Agent(agentOptions);
+const httpsAgent = new https.Agent(agentOptions);
+
+function agent(url: string) {
+  return new URL(url).protocol === 'http:' ? httpAgent : httpsAgent;
+}
+
+export const fetchWithKeepAlive = (uri: any, options: any = {}) => {
+  return fetch(uri, { agent: agent(uri), ...options });
+};
