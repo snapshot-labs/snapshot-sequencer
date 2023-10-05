@@ -101,10 +101,6 @@ export default async function ingestor(req) {
     const id = snapshot.utils.getHash(body.data);
     let payload = {};
 
-    if (body.hash && body.hash !== id) {
-      return Promise.reject('wrong hash');
-    }
-
     if (await isDuplicateMsg(id)) {
       return Promise.reject('duplicate message');
     }
