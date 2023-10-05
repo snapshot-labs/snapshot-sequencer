@@ -1,8 +1,8 @@
-import { isDuplicateMsg, storeMsg } from '../../../src/helpers/highlight';
+import { doesMessageExist, storeMsg } from '../../../src/helpers/highlight';
 import db from '../../../src/helpers/mysql';
 
 describe('highlight', () => {
-  describe('isDuplicateMsg()', () => {
+  describe('doesMessageExist()', () => {
     afterAll(async () => {
       await db.queryAsync(
         'DELETE from snapshot_sequencer_test.messages where id = ?',
@@ -12,12 +12,12 @@ describe('highlight', () => {
     });
 
     it('returns false when message does not exist yet', async () => {
-      expect(await isDuplicateMsg('test-not-exists')).toEqual(false);
+      expect(await doesMessageExist('test-not-exists')).toEqual(false);
     });
 
     it('returns true when message already exist', async () => {
       await storeMsg('test-exists', '', '', '', 0, '', '', '', '');
-      expect(await isDuplicateMsg('test-exists')).toEqual(true);
+      expect(await doesMessageExist('test-exists')).toEqual(true);
     });
   });
 });
