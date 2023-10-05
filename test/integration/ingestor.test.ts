@@ -3,7 +3,7 @@ import proposalInput from '../fixtures/ingestor-payload/proposal.json';
 import voteInput from '../fixtures/ingestor-payload/vote.json';
 import cloneDeep from 'lodash/cloneDeep';
 import omit from 'lodash/omit';
-import db from '../../src/helpers/mysql';
+import { default as db, sequencerDB } from '../../src/helpers/mysql';
 import relayer from '../../src/helpers/relayer';
 
 jest.mock('../../src/helpers/moderation', () => {
@@ -90,6 +90,7 @@ describe('ingestor', () => {
   afterAll(async () => {
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.proposals;');
     await db.endAsync();
+    await sequencerDB.endAsync();
   });
 
   beforeAll(() => {
