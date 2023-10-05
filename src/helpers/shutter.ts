@@ -107,7 +107,7 @@ export async function setProposalKey(params) {
     log.info(`[shutter] proposal scores updated for ${proposalId}`);
   } catch (e) {
     capture(e);
-    log.error(`[shutter] setProposalKey failed ${JSON.stringify(e)}`);
+    log.warn(`[shutter] setProposalKey failed ${JSON.stringify(e)}`);
     return false;
   }
   return true;

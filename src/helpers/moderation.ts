@@ -40,7 +40,7 @@ export default async function run() {
     await loadModerationData();
   } catch (e) {
     capture(e);
-    log.error(`[moderation] failed to load ${JSON.stringify(e)}`);
+    log.warn(`[moderation] failed to load ${JSON.stringify(e)}`);
   }
   await snapshot.utils.sleep(20e3);
   run();
