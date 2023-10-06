@@ -9,7 +9,7 @@ export async function verify(message): Promise<any> {
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.alias, msg.payload);
   if (schemaIsValid !== true) {
     log.warn(`[writer] Wrong alias format ${JSON.stringify(schemaIsValid)}`);
-    return Promise.reject('wrong statement format');
+    return Promise.reject('wrong alias format');
   }
   return message.from !== msg.payload.alias;
 }
