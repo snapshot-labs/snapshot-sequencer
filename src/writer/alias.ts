@@ -12,8 +12,8 @@ export async function verify(message): Promise<any> {
     return Promise.reject('wrong alias format');
   }
   if (message.from === msg.payload.alias) {
-	    return Promise.reject('alias cannot be the same as the address');
-	}
+    return Promise.reject('alias cannot be the same as the address');
+  }
   return true;
 }
 
