@@ -16,10 +16,11 @@ export const ECOSYSTEM_SPACES = [
   'cakevote.eth',
   'outcome.eth',
   'polls.lenster.xyz',
-  'daotest.dcl.eth'
+  'daotest.dcl.eth',
+  'arbitrumfoundation.eth'
 ];
 
-export const ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT = 10;
+export const ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT = 100;
 
 export function getSpaceLimits(space): number[] {
   if (flaggedSpaces.includes(space)) {
