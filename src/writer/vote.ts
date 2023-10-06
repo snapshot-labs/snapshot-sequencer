@@ -48,6 +48,17 @@ export async function verify(body): Promise<any> {
       return Promise.reject('invalid choice');
   }
 
+  // Check if voter already voted
+  const votes = await db.queryAsync(
+    'SELECT created FROM votes WHERE voter = ? AND proposal = ? AND space = ? ORDER BY created DESC LIMIT 1',
+    [body.address, msg.payload.proposal, msg.space]
+  );
+
+  // Reject vote with later timestamp
+  if (votes[0]?.created > msgTs) {
+    return Promise.reject('already voted at later time');
+  }
+
   if (proposal.validation?.name && proposal.validation.name !== 'any') {
     try {
       const {
