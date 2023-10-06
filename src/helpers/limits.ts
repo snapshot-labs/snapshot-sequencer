@@ -19,7 +19,7 @@ export const ECOSYSTEM_SPACES = [
   'daotest.dcl.eth'
 ];
 
-export const ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT = 10;
+export const ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT = 20;
 
 export function getSpaceLimits(space): number[] {
   if (flaggedSpaces.includes(space)) {
