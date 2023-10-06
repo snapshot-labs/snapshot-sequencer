@@ -8,7 +8,7 @@ export async function verify(message): Promise<any> {
   const msg = jsonParse(message.msg, {});
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.alias, msg.payload);
   if (schemaIsValid !== true) {
-    log.warn(`[writer] Wrong statement format ${JSON.stringify(schemaIsValid)}`);
+    log.warn(`[writer] Wrong alias format ${JSON.stringify(schemaIsValid)}`);
     return Promise.reject('wrong statement format');
   }
   return message.from !== msg.payload.alias;
