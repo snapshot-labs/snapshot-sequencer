@@ -1,4 +1,3 @@
-import { getAddress } from '@ethersproject/address';
 import db from '../helpers/mysql';
 
 export async function verify(message): Promise<any> {
@@ -10,7 +9,7 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
     id,
     ipfs,
     address: message.from,
-    alias: getAddress(message.alias),
+    alias: message.alias,
     created: message.timestamp
   };
   await db.queryAsync('INSERT IGNORE INTO aliases SET ?', params);
