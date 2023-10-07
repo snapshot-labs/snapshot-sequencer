@@ -174,7 +174,7 @@ export default async function ingestor(req) {
     };
     const msg = jsonParse(legacyBody.msg);
 
-    if (['follow', 'unfollow', 'alias', 'subscribe', 'unsubscribe', 'profile'].includes(type)) {
+    if (['follow', 'unfollow', 'subscribe', 'unsubscribe', 'profile'].includes(type)) {
       legacyBody = message;
     }
 
