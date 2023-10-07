@@ -18,11 +18,12 @@ export async function verify(message): Promise<any> {
 }
 
 export async function action(message, ipfs, receipt, id): Promise<void> {
+  const msg = jsonParse(message.msg);
   const params = {
     id,
     ipfs,
-    address: getAddress(message.from),
-    alias: getAddress(message.alias),
+    address: getAddress(message.address),
+    alias: getAddress(msg.payload.alias),
     created: message.timestamp
   };
   await db.queryAsync('INSERT IGNORE INTO aliases SET ?', params);
