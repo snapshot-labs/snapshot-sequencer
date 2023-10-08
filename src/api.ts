@@ -7,6 +7,7 @@ import { updateProposalAndVotes } from './scores';
 import typedData from './ingestor';
 import { sendError, verifyAuth } from './helpers/utils';
 import { flagEntity } from './helpers/moderation';
+import { hibernate, reactivate } from './helpers/hibernation';
 import log from './helpers/log';
 import { name, version } from '../package.json';
 import { capture } from '@snapshot-labs/snapshot-sentry';
@@ -73,6 +74,17 @@ router.post('/flag', verifyAuth, async (req, res) => {
 
   try {
     await flagEntity({ type, value, action });
+    return res.json({ success: true });
+  } catch (e: any) {
+    return sendError(res, e.message || 'failed');
+  }
+});
+
+router.post('/hibernation', verifyAuth, async (req, res) => {
+  const { id, action } = req.body;
+
+  try {
+    await hibernate(id, action);
     return res.json({ success: true });
   } catch (e: any) {
     return sendError(res, e.message || 'failed');
