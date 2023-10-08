@@ -7,7 +7,7 @@ import { updateProposalAndVotes } from './scores';
 import typedData from './ingestor';
 import { sendError, verifyAuth } from './helpers/utils';
 import { flagEntity } from './helpers/moderation';
-import { hibernate } from './helpers/hibernation';
+import hibernate from './helpers/hibernation';
 import log from './helpers/log';
 import { name, version } from '../package.json';
 import { capture } from '@snapshot-labs/snapshot-sentry';

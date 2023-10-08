@@ -1,6 +1,6 @@
 import db from './mysql';
 
-export function hibernate(id: string, action: string) {
+export default function hibernate(id: string, action: string) {
   if (!id || !action) throw new Error(`missing params. 'id' and 'action' required`);
   if (!['hibernate', 'reactivate'].includes(action)) throw new Error('invalid action');
 
