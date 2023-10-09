@@ -12,7 +12,7 @@ describe('highlight', () => {
 
   afterAll(async () => {
     await db.queryAsync('DELETE from snapshot_sequencer_test.messages where id = ?', 'test-exists');
-    return db.endAsync();
+    await db.endAsync();
   });
 
   describe('doesMessageExist()', () => {
