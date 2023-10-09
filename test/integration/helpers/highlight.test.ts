@@ -1,5 +1,5 @@
 import { doesMessageExist, storeMsg } from '../../../src/helpers/highlight';
-import db from '../../../src/helpers/mysql';
+import db, { sequencerDB } from '../../../src/helpers/mysql';
 
 describe('highlight', () => {
   describe('doesMessageExist()', () => {
