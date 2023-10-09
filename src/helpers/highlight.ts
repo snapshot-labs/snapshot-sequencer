@@ -2,6 +2,7 @@ import { default as hubDB, sequencerDB } from './mysql';
 
 export async function storeMsg(id, ipfs, address, version, timestamp, space, type, sig, receipt) {
   const query = 'INSERT INTO messages SET ?';
+  // TODO: remove this once migration is done
   const result = await hubDB.queryAsync(query, [
     {
       id,
@@ -16,7 +17,8 @@ export async function storeMsg(id, ipfs, address, version, timestamp, space, typ
     }
   ]);
   if (result.insertId) {
-    await sequencerDB.queryAsync(query, [
+    // TODO: remove IGNORE once migration is done
+    await sequencerDB.queryAsync('INSERT IGNORE INTO messages SET ?', [
       {
         id,
         mci: result.insertId,
