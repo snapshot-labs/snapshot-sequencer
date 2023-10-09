@@ -100,7 +100,7 @@ describe('ingestor', () => {
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.proposals;');
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages;');
     await db.endAsync();
-    return sequencerDB.endAsync();
+    await sequencerDB.endAsync();
   });
 
   it('rejects when the submitter IP is banned', async () => {
