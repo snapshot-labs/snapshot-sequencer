@@ -1,4 +1,3 @@
-import { getAddress } from '@ethersproject/address';
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from '../helpers/mysql';
 import { jsonParse } from '../helpers/utils';
@@ -17,7 +16,7 @@ export async function verify(body): Promise<any> {
 export async function action(body, ipfs, receipt, id): Promise<void> {
   const msg = jsonParse(body.msg);
   const space = msg.space;
-  const delegate = getAddress(body.address);
+  const delegate = body.address;
   const created = parseInt(msg.timestamp);
   const item = {
     id,
