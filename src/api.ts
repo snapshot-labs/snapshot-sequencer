@@ -81,10 +81,10 @@ router.post('/flag', verifyAuth, async (req, res) => {
 });
 
 router.post('/hibernation', verifyAuth, async (req, res) => {
-  const { id, action } = req.body;
+  const { value, action } = req.body;
 
   try {
-    await hibernate(id, action);
+    await hibernate(value, action);
     return res.json({ success: true });
   } catch (e: any) {
     return sendError(res, e.message || 'failed');
