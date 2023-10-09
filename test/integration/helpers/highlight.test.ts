@@ -1,5 +1,5 @@
 import { doesMessageExist, storeMsg } from '../../../src/helpers/highlight';
-import db from '../../../src/helpers/mysql';
+import db, { sequencerDB } from '../../../src/helpers/mysql';
 
 describe('highlight', () => {
   describe('doesMessageExist()', () => {
@@ -15,6 +15,7 @@ describe('highlight', () => {
         'test-exists'
       );
       return db.endAsync();
+      return sequencerDB.endAsync();
     });
 
     it('returns false when message does not exist yet', async () => {
