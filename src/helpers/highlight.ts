@@ -34,6 +34,6 @@ export async function storeMsg(id, ipfs, address, version, timestamp, space, typ
 }
 
 export async function doesMessageExist(id: string): Promise<boolean> {
-  const result = await db.queryAsync('SELECT 1 FROM messages WHERE id = ? LIMIT 1', id);
+  const result = await sequencerDB.queryAsync('SELECT 1 FROM messages WHERE id = ? LIMIT 1', id);
   return result.length > 0;
 }
