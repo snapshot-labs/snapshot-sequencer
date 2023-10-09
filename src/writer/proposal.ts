@@ -54,6 +54,10 @@ export async function verify(body): Promise<any> {
 
   const space = await getSpace(msg.space);
 
+  if (!space) {
+    return Promise.reject('invalid space');
+  }
+
   space.id = msg.space;
   const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
   const hasVotingValidation =
@@ -151,7 +155,7 @@ export async function verify(body): Promise<any> {
       space.id,
       body.address
     );
-    const [dayLimit, monthLimit] = getSpaceLimits(space.id);
+    const [dayLimit, monthLimit] = getSpaceLimits(space);
 
     if (dayCount >= dayLimit || monthCount >= monthLimit)
       return Promise.reject('proposal limit reached');
