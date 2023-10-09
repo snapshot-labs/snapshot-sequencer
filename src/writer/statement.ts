@@ -29,7 +29,8 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     created
   };
 
-  const query = 'INSERT INTO statements SET ?';
-
-  await db.queryAsync(query, item);
+  const query =
+    'INSERT INTO statements SET ? ON DUPLICATE KEY UPDATE ipfs = ?, about = ?, statement = ?, updated = ?';
+  const params = [item, item.ipfs, item.about, item.statement, item.created];
+  await db.queryAsync(query, params);
 }
