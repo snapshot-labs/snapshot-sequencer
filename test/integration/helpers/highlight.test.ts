@@ -6,6 +6,10 @@ describe('highlight', () => {
     await db.queryAsync('DELETE from snapshot_sequencer_test.messages where id = ?', 'test-exists');
   });
 
+  beforeAll(async () => {
+    await db.queryAsync('DELETE from snapshot_sequencer_test.messages where id = ?', 'test-exists');
+  });
+
   afterAll(async () => {
     await db.queryAsync('DELETE from snapshot_sequencer_test.messages where id = ?', 'test-exists');
     return db.endAsync();

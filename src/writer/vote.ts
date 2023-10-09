@@ -1,5 +1,4 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import { getAddress } from '@ethersproject/address';
 import kebabCase from 'lodash/kebabCase';
 import { hasStrategyOverride, jsonParse } from '../helpers/utils';
 import { getProposal } from '../helpers/actions';
@@ -106,7 +105,7 @@ export async function verify(body): Promise<any> {
 
 export async function action(body, ipfs, receipt, id, context): Promise<void> {
   const msg = jsonParse(body.msg);
-  const voter = getAddress(body.address);
+  const voter = body.address;
   const created = parseInt(msg.timestamp);
   const choice = JSON.stringify(msg.payload.choice);
   const metadata = JSON.stringify(msg.payload.metadata || {});

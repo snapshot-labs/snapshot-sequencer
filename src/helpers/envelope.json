@@ -7,9 +7,7 @@
       "properties": {
         "address": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9]*$",
-          "minLength": 42,
-          "maxLength": 42
+          "format": "address"
         },
         "data": {
           "type": "object",
@@ -33,7 +31,8 @@
               "type": "object",
               "properties": {
                 "from": {
-                  "type": "string"
+                  "type": "string",
+                  "format": "address"
                 },
                 "timestamp": {
                   "type": "number"

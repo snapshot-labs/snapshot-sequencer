@@ -1,5 +1,4 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import { getAddress } from '@ethersproject/address';
 import kebabCase from 'lodash/kebabCase';
 import { jsonParse, validateChoices } from '../helpers/utils';
 import db from '../helpers/mysql';
@@ -171,7 +170,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   /* Store the proposal in dedicated table 'proposals' */
   const spaceSettings = await getSpace(space);
 
-  const author = getAddress(body.address);
+  const author = body.address;
   const created = parseInt(msg.timestamp);
   const metadata = msg.payload.metadata || {};
   const strategies = JSON.stringify(spaceSettings.strategies);

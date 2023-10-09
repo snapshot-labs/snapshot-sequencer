@@ -1,4 +1,3 @@
-import { getAddress } from '@ethersproject/address';
 import db from '../helpers/mysql';
 
 export async function verify(): Promise<any> {
@@ -9,7 +8,7 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
   const params = {
     id,
     ipfs,
-    follower: getAddress(message.from),
+    follower: message.from,
     space: message.space,
     created: message.timestamp
   };
