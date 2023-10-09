@@ -55,7 +55,7 @@ export async function verify(body): Promise<any> {
   const space = await getSpace(msg.space);
 
   if (!space) {
-    return Promise.reject('invalid space');
+    return Promise.reject('unknown space');
   }
 
   space.id = msg.space;
