@@ -14,7 +14,6 @@ describe('highlight', () => {
         'DELETE from snapshot_sequencer_test.messages where id = ?',
         'test-exists'
       );
-      return db.endAsync();
     });
 
     it('returns false when message does not exist yet', async () => {
