@@ -200,7 +200,6 @@ describe('writer/proposal', () => {
     });
 
     describe('when the proposal contains flagged contents', () => {
-      const msg = JSON.parse(input.msg);
       const invalidInput = [
         [{ ...input, address: FLAGGED_ADDRESSES[0] }, 'submitted address is flagged']
       ];
