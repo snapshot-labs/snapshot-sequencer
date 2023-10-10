@@ -1,10 +1,11 @@
 import { getSpace } from '../../../src/helpers/actions';
-import db from '../../../src/helpers/mysql';
+import db, { sequencerDB } from '../../../src/helpers/mysql';
 import fixtures from '../../fixtures/space';
 
 describe('helpers/actions', () => {
   afterAll(async () => {
     await db.endAsync();
+    await sequencerDB.endAsync();
   });
 
   describe('getSpace()', () => {
