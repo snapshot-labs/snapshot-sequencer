@@ -41,12 +41,12 @@ export async function getSpace(id: string, includeDeleted = false) {
 
   if (!spaces[0]) return false;
 
-  const space = jsonParse(spaces[0].settings, {});
-  if (spaces[0].deleted) space.deleted = true;
-  space.verified = spaces[0].verified;
-  space.flagged = spaces[0].flagged;
-
-  return space;
+  return {
+    ...jsonParse(spaces[0].settings, {}),
+    deleted: spaces[0].deleted === 1,
+    verified: spaces[0].verified === 1,
+    flagged: spaces[0].flagged === 1
+  };
 }
 
 export async function markSpaceAsDeleted(space: string) {
