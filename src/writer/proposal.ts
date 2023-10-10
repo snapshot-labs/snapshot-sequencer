@@ -151,8 +151,7 @@ export async function verify(body): Promise<any> {
       space.id,
       body.address
     );
-    const [dayLimit, monthLimit] = getSpaceLimits(space.id);
-
+    const [dayLimit, monthLimit] = getSpaceLimits(space.id, space.verified, space.flagged);
     if (dayCount >= dayLimit || monthCount >= monthLimit)
       return Promise.reject('proposal limit reached');
     if (!isAuthorized && activeProposalsByAuthor >= ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT)
