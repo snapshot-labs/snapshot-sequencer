@@ -225,12 +225,14 @@ describe('writer/proposal', () => {
 
     describe('when the proposal contains flagged contents', () => {
       const invalidInput = [
-        [{ ...input, address: FLAGGED_ADDRESSES[0] }, 'submitted address is flagged']
+        ['submitted address is flagged', { ...input, address: FLAGGED_ADDRESSES[0] }]
       ];
 
       it.each(invalidInput)('rejects when the %s', async (title, val) => {
         expect.assertions(1);
-        await expect(writer.verify(val)).rejects.toMatch('wrong');
+        await expect(writer.verify(val)).rejects.toMatch(
+          'invalid proposal, please contact support'
+        );
       });
     });
 
