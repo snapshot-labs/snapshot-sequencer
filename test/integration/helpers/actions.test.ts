@@ -29,12 +29,7 @@ describe('helpers/actions', () => {
         admins: ['0xFC01614d28595d9ea5963daD9f44C0E0F0fE10f0'],
         symbol: 'TEST',
         network: '1',
-        strategies: [
-          {
-            name: 'ticket',
-            params: {}
-          }
-        ]
+        strategies: []
       });
     });
 
@@ -59,12 +54,7 @@ describe('helpers/actions', () => {
         admins: ['0xFC01614d28595d9ea5963daD9f44C0E0F0fE10f0'],
         symbol: 'TEST',
         network: '1',
-        strategies: [
-          {
-            name: 'ticket',
-            params: {}
-          }
-        ]
+        strategies: []
       });
     });
 
