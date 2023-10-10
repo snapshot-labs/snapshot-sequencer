@@ -1,11 +1,9 @@
 import {
   loadModerationData,
-  flaggedSpaces,
   flaggedIps,
   flaggedAddresses,
   flaggedProposalTitleKeywords,
-  flaggedProposalBodyKeywords,
-  verifiedSpaces
+  flaggedProposalBodyKeywords
 } from '../../../src/helpers/moderation';
 
 describe('moderation', () => {
@@ -14,12 +12,10 @@ describe('moderation', () => {
       it('loads moderation data from sidekick', async () => {
         await loadModerationData();
 
-        expect(flaggedSpaces).not.toHaveLength(0);
         expect(flaggedIps).not.toHaveLength(0);
         expect(flaggedAddresses).not.toHaveLength(0);
         expect(flaggedProposalTitleKeywords).not.toHaveLength(0);
         expect(flaggedProposalBodyKeywords).not.toHaveLength(0);
-        expect(verifiedSpaces).not.toHaveLength(0);
       });
     });
 
