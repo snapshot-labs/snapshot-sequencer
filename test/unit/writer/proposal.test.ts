@@ -303,6 +303,13 @@ describe('writer/proposal', () => {
       expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
     });
 
+    it('rejects if the space is not found', async () => {
+      mockGetSpace.mockResolvedValueOnce(false);
+
+      await expect(writer.verify(input)).rejects.toMatch('unknown space');
+      expect(mockGetSpace).toHaveBeenCalledTimes(1);
+    });
+
     describe('when only members can propose', () => {
       it('rejects if the submitter is not a space member', async () => {
         mockGetSpace.mockResolvedValueOnce({
