@@ -12,6 +12,8 @@
     "start:test": "dotenv -e test/.env.test yarn dev",
     "test:setup": "./test/setup.sh",
     "test": "PORT=3003 start-server-and-test 'yarn start:test' 3003 'dotenv -e test/.env.test jest --runInBand'",
+    "test:unit": "dotenv -e test/.env.test jest --runInBand --collectCoverage=false test/unit",
+    "test:integration": "dotenv -e test/.env.test jest --runInBand --collectCoverage=false test/integration",
     "test:e2e": "PORT=3003 start-server-and-test 'yarn start:test' 3003 'dotenv -e test/.env.test jest --runInBand --collectCoverage=false test/e2e/'"
   },
   "eslintConfig": {

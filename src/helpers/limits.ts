@@ -1,5 +1,3 @@
-import { flaggedSpaces, verifiedSpaces } from './moderation';
-
 export const FLAGGED_SPACE_PROPOSAL_DAY_LIMIT = 1;
 export const FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT = 5;
 
@@ -24,15 +22,15 @@ export const ECOSYSTEM_SPACES = [
 export const ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT = 20;
 
 export function getSpaceLimits(space): number[] {
-  if (flaggedSpaces.includes(space)) {
+  if (space.flagged) {
     return [FLAGGED_SPACE_PROPOSAL_DAY_LIMIT, FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
-  if (ECOSYSTEM_SPACES.includes(space)) {
+  if (ECOSYSTEM_SPACES.includes(space.id)) {
     return [ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT, ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
-  if (verifiedSpaces.includes(space)) {
+  if (space.verified) {
     return [VERIFIED_SPACE_PROPOSAL_DAY_LIMIT, VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
