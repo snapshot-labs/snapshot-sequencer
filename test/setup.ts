@@ -4,6 +4,8 @@ const setup = async () => {
   try {
     await db.queryAsync('SELECT 1 + 1');
     await sequencerDB.queryAsync('SELECT 1 + 1');
+    await db.endAsync();
+    await sequencerDB.endAsync();
   } catch (e: any) {
     if (e.code === 'ER_BAD_DB_ERROR') {
       console.error('Test database not setup, please run `yarn test:setup`');
