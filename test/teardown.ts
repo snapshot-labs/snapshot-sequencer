@@ -1,4 +1,4 @@
-import { default as db, sequencerDB } from '../src/helpers/mysql';
+import db, { sequencerDB } from '../src/helpers/mysql';
 
 const teardown = async () => {
   await db.endAsync();
