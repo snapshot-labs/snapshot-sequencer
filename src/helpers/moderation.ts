@@ -7,12 +7,10 @@ import { fetchWithKeepAlive } from './utils';
 const sidekickURL = process.env.SIDEKICK_URL || 'https://sh5.co';
 const moderationURL = `${sidekickURL}/api/moderation`;
 
-export let flaggedSpaces: Array<string> = [];
 export let flaggedIps: Array<string> = [];
 export let flaggedAddresses: Array<string> = [];
 export let flaggedProposalTitleKeywords: Array<string> = [];
 export let flaggedProposalBodyKeywords: Array<string> = [];
-export let verifiedSpaces: Array<string> = [];
 
 export async function loadModerationData(url = moderationURL) {
   try {
@@ -24,12 +22,10 @@ export async function loadModerationData(url = moderationURL) {
       return;
     }
 
-    flaggedSpaces = body.flaggedSpaces;
     flaggedIps = body.flaggedIps;
     flaggedAddresses = body.flaggedAddresses;
     flaggedProposalTitleKeywords = body.flaggedProposalTitleKeywords;
     flaggedProposalBodyKeywords = body.flaggedProposalBodyKeywords;
-    verifiedSpaces = body.verifiedSpaces;
   } catch (e: any) {
     capture(e);
   }

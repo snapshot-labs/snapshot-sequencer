@@ -4,11 +4,13 @@ CREATE TABLE spaces (
   settings JSON,
   verified INT NOT NULL DEFAULT '0',
   deleted INT NOT NULL DEFAULT '0',
+  flagged INT NOT NULL DEFAULT '0',
   created_at BIGINT NOT NULL,
   updated_at BIGINT NOT NULL,
   PRIMARY KEY (id),
   INDEX name (name),
   INDEX verified (verified),
+  INDEX flagged (flagged),
   INDEX deleted (deleted),
   INDEX created_at (created_at),
   INDEX updated_at (updated_at)
@@ -19,6 +21,7 @@ CREATE TABLE proposals (
   ipfs VARCHAR(64) NOT NULL,
   author VARCHAR(64) NOT NULL,
   created INT(11) NOT NULL,
+  updated INT(11) DEFAULT NULL,
   space VARCHAR(64) NOT NULL,
   network VARCHAR(12) NOT NULL,
   symbol VARCHAR(16) NOT NULL,
@@ -42,10 +45,12 @@ CREATE TABLE proposals (
   scores_total DECIMAL(64,30) NOT NULL,
   scores_updated INT(11) NOT NULL,
   votes INT(12) NOT NULL,
+  flagged INT NOT NULL DEFAULT 0,
   PRIMARY KEY (id),
   INDEX ipfs (ipfs),
   INDEX author (author),
   INDEX created (created),
+  INDEX updated (updated),
   INDEX network (network),
   INDEX space (space),
   INDEX start (start),
@@ -53,7 +58,8 @@ CREATE TABLE proposals (
   INDEX app (app),
   INDEX scores_state (scores_state),
   INDEX scores_updated (scores_updated),
-  INDEX votes (votes)
+  INDEX votes (votes),
+  INDEX flagged (flagged)
 );
 
 CREATE TABLE votes (

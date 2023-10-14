@@ -1,5 +1,5 @@
 import { doesMessageExist, storeMsg } from '../../../src/helpers/highlight';
-import db from '../../../src/helpers/mysql';
+import db, { sequencerDB } from '../../../src/helpers/mysql';
 
 describe('highlight', () => {
   afterEach(async () => {
@@ -11,8 +11,8 @@ describe('highlight', () => {
   });
 
   afterAll(async () => {
-    await db.queryAsync('DELETE from snapshot_sequencer_test.messages where id = ?', 'test-exists');
     await db.endAsync();
+    await sequencerDB.endAsync();
   });
 
   describe('doesMessageExist()', () => {
