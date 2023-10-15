@@ -1,14 +1,21 @@
 import { doesMessageExist, storeMsg } from '../../../src/helpers/highlight';
-import db from '../../../src/helpers/mysql';
+import db, { sequencerDB } from '../../../src/helpers/mysql';
 
 describe('highlight', () => {
   describe('doesMessageExist()', () => {
+    beforeAll(async () => {
+      await db.queryAsync(
+        'DELETE from snapshot_sequencer_test.messages where id = ?',
+        'test-exists'
+      );
+    });
     afterAll(async () => {
       await db.queryAsync(
         'DELETE from snapshot_sequencer_test.messages where id = ?',
         'test-exists'
       );
-      return db.endAsync();
+      await db.endAsync();
+      await sequencerDB.endAsync();
     });
 
     it('returns false when message does not exist yet', async () => {

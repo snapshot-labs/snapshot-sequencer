@@ -1,4 +1,3 @@
-import { getAddress } from '@ethersproject/address';
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from '../helpers/mysql';
 import { jsonParse } from '../helpers/utils';
@@ -22,8 +21,8 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
   const params = {
     id,
     ipfs,
-    address: getAddress(message.address),
-    alias: getAddress(msg.payload.alias),
+    address: message.address,
+    alias: msg.payload.alias,
     created: message.timestamp
   };
   await db.queryAsync('INSERT IGNORE INTO aliases SET ?', params);

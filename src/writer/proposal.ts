@@ -1,5 +1,4 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import { getAddress } from '@ethersproject/address';
 import kebabCase from 'lodash/kebabCase';
 import { jsonParse, validateChoices } from '../helpers/utils';
 import db from '../helpers/mysql';
@@ -54,6 +53,10 @@ export async function verify(body): Promise<any> {
   if (!isChoicesValid) return Promise.reject('wrong choices for basic type voting');
 
   const space = await getSpace(msg.space);
+
+  if (!space) {
+    return Promise.reject('unknown space');
+  }
 
   space.id = msg.space;
   const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
@@ -152,7 +155,7 @@ export async function verify(body): Promise<any> {
       space.id,
       body.address
     );
-    const [dayLimit, monthLimit] = getSpaceLimits(space.id);
+    const [dayLimit, monthLimit] = getSpaceLimits(space);
 
     if (dayCount >= dayLimit || monthCount >= monthLimit)
       return Promise.reject('proposal limit reached');
@@ -171,7 +174,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   /* Store the proposal in dedicated table 'proposals' */
   const spaceSettings = await getSpace(space);
 
-  const author = getAddress(body.address);
+  const author = body.address;
   const created = parseInt(msg.timestamp);
   const metadata = msg.payload.metadata || {};
   const strategies = JSON.stringify(spaceSettings.strategies);

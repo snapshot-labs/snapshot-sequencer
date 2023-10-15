@@ -10,7 +10,10 @@
     "dev": "nodemon src/index.ts",
     "start": "node build/src/index.js",
     "start:test": "dotenv -e test/.env.test yarn dev",
+    "test:setup": "dotenv -e test/.env.test yarn ts-node ./test/setupDb.ts",
     "test": "PORT=3003 start-server-and-test 'yarn start:test' 3003 'dotenv -e test/.env.test jest --runInBand'",
+    "test:unit": "dotenv -e test/.env.test jest --runInBand --collectCoverage=false test/unit",
+    "test:integration": "dotenv -e test/.env.test jest --runInBand --collectCoverage=false test/integration",
     "test:e2e": "PORT=3003 start-server-and-test 'yarn start:test' 3003 'dotenv -e test/.env.test jest --runInBand --collectCoverage=false test/e2e/'"
   },
   "eslintConfig": {
@@ -18,7 +21,6 @@
   },
   "prettier": "@snapshot-labs/prettier-config",
   "dependencies": {
-    "@ethersproject/address": "^5.0.1",
     "@ethersproject/bytes": "^5.6.1",
     "@ethersproject/contracts": "^5.6.2",
     "@ethersproject/hash": "^5.5.0",
