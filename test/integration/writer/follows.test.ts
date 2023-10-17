@@ -1,6 +1,6 @@
 import { verify } from '../../../src/writer/follow';
 import { FOLLOWS_LIMIT_PER_USER } from '../../../src/helpers/limits';
-import db from '../../../src/helpers/mysql';
+import db, { sequencerDB } from '../../../src/helpers/mysql';
 
 describe('writer/follow', () => {
   describe('verify()', () => {
@@ -22,6 +22,7 @@ describe('writer/follow', () => {
     afterAll(async () => {
       await db.queryAsync('DELETE FROM follows');
       await db.endAsync();
+      await sequencerDB.endAsync();
     });
 
     it('rejects when the user has followed too much spaces', () => {
