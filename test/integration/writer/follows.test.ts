@@ -8,15 +8,20 @@ describe('writer/follow', () => {
 
     beforeAll(async () => {
       let i = 0;
+      const promises: Promise<any>[] = [];
 
       while (i <= FOLLOWS_LIMIT_PER_USER) {
-        await db.queryAsync(
-          'INSERT INTO follows SET id = ?, ipfs = ?, follower = ?, space = ?, created = ?',
-          [i, i, followerId, `test-${i}.eth`, i]
+        promises.push(
+          db.queryAsync(
+            'INSERT INTO follows SET id = ?, ipfs = ?, follower = ?, space = ?, created = ?',
+            [i, i, followerId, `test-${i}.eth`, i]
+          )
         );
 
         i++;
       }
+
+      await Promise.all(promises);
     });
 
     afterAll(async () => {
