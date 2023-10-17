@@ -25,12 +25,16 @@ describe('moderation', () => {
         ['empty url', ''],
         ['invalid hostname', 'test'],
         ['timeout', 'https://httpstat.us/200?sleep=10000']
-      ])('returns nothing on network error (%s)', (title, url) => {
-        expect(loadModerationData(url)).resolves.toBeUndefined();
-      });
+      ])(
+        'returns nothing on network error (%s)',
+        async (title, url) => {
+          await expect(loadModerationData(url)).resolves.toBe(false);
+        },
+        6e3
+      );
 
-      it('returns nothing on not-json response', () => {
-        expect(loadModerationData('https://snapshot.org')).resolves.toBeUndefined();
+      it('returns nothing on not-json response', async () => {
+        await expect(loadModerationData('https://snapshot.org')).resolves.toBe(false);
       });
     });
   });
