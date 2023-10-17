@@ -171,10 +171,10 @@ describe('ingestor', () => {
     it.todo('rejects when the submitted is not an allowed alias');
   });
 
-  it('rejects when the signature is not valid', () => {
+  it('rejects when the signature is not valid', async () => {
     mockSnapshotUtilsVerify.mockReturnValueOnce(false);
 
-    expect(ingestor(proposalRequest)).rejects.toMatch('signature');
+    await expect(ingestor(proposalRequest)).rejects.toMatch('signature');
   });
 
   it('rejects when the metadata is too large', async () => {
