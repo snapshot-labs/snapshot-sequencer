@@ -6,11 +6,16 @@ const HOST = `http://localhost:${process.env.PORT || 3003}`;
 describe('POST /', () => {
   describe('on invalid client input', () => {
     it('returns a 400 error', async () => {
-      const result = await fetch(HOST, { method: 'POST', body: JSON.stringify(proposalInput) });
+      const response = await fetch(HOST, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(proposalInput)
+      });
+      const body = await response.json();
 
-      expect(result.status).toBe(400);
-      expect(result.body.error).toBe('client_error');
-      expect(result.body.error_description).toBe('wrong timestamp');
+      expect(response.status).toBe(400);
+      expect(body.error).toBe('client_error');
+      expect(body.error_description).toBe('wrong timestamp');
     });
   });
 });
