@@ -1,6 +1,7 @@
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { createClient } from 'redis';
+import type { Request, Response, NextFunction } from 'express';
 import { getIp, sendError, sha256 } from './utils';
 import log from './log';
 
@@ -20,6 +21,7 @@ let client;
 })();
 
 const hashedIp = (req): string => sha256(getIp(req)).slice(0, 7);
+const hashedBody = (req): string => sha256(req.body);
 
 export default rateLimit({
   windowMs: 60 * 1e3,
@@ -42,3 +44,21 @@ export default rateLimit({
       })
     : undefined
 });
+
+export async function duplicateRequestLimit(req: Request, res: Response, next: NextFunction) {
+  const key = 'snapshot-sequencer:processing-requests';
+  const value = hashedBody(req);
+  const duplicate = await client.SISMEMBER(key, value);
+
+  if (duplicate) {
+    return sendError(res, 'request already being processed', 429);
+  }
+
+  await client.SADD(key, value);
+
+  res.on('finish', async () => {
+    await client.SREM(key, value);
+  });
+
+  next();
+}
