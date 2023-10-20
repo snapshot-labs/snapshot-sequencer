@@ -6,13 +6,17 @@ import { getIp, sendError, sha256 } from './utils';
 import log from './log';
 
 let client;
+const DUPLICATOR_SET_KEY = 'snapshot-sequencer:processing-requests';
 
 (async () => {
   if (!process.env.RATE_LIMIT_DATABASE_URL) return;
 
   log.info('[redis-rl] Connecting to Redis');
   client = createClient({ url: process.env.RATE_LIMIT_DATABASE_URL });
-  client.on('connect', () => log.info('[redis-rl] Redis connect'));
+  client.on('connect', () => {
+    log.info('[redis-rl] Redis connect');
+    client.DEL(DUPLICATOR_SET_KEY);
+  });
   client.on('ready', () => log.info('[redis-rl] Redis ready'));
   client.on('reconnecting', err => log.info('[redis-rl] Redis reconnecting', err));
   client.on('error', err => log.info('[redis-rl] Redis error', err));
@@ -21,7 +25,7 @@ let client;
 })();
 
 const hashedIp = (req): string => sha256(getIp(req)).slice(0, 7);
-const hashedBody = (req): string => sha256(req.body);
+const hashedBody = (req): string => sha256(JSON.stringify(req.body));
 
 export default rateLimit({
   windowMs: 60 * 1e3,
@@ -46,18 +50,23 @@ export default rateLimit({
 });
 
 export async function duplicateRequestLimit(req: Request, res: Response, next: NextFunction) {
-  const key = 'snapshot-sequencer:processing-requests';
+  if (!client) {
+    return next();
+  }
+
   const value = hashedBody(req);
-  const duplicate = await client.SISMEMBER(key, value);
+  const [duplicate] = await client
+    .multi()
+    .SISMEMBER(DUPLICATOR_SET_KEY, value)
+    .SADD(DUPLICATOR_SET_KEY, value)
+    .exec();
 
   if (duplicate) {
     return sendError(res, 'request already being processed', 429);
   }
 
-  await client.SADD(key, value);
-
   res.on('finish', async () => {
-    await client.SREM(key, value);
+    await client.SREM(DUPLICATOR_SET_KEY, value);
   });
 
   next();
