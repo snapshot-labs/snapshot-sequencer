@@ -10,7 +10,7 @@ export const VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT = 100;
 export const ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT = 150;
 export const ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT = 750;
 
-export const FOLLOWS_LIMIT_PER_USER = 50;
+export const FOLLOWS_LIMIT_PER_USER = 25;
 
 export const ECOSYSTEM_SPACES = [
   'orbapp.eth',
