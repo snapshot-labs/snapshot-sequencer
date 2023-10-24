@@ -47,7 +47,7 @@ export async function verify(body): Promise<any> {
   }
 
   const tsInt = (Date.now() / 1e3).toFixed();
-  if (msg.payload.end < tsInt) {
+  if (msg.payload.end <= tsInt) {
     return Promise.reject('proposal end date must be in the future');
   }
 
