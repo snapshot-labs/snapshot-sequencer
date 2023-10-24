@@ -79,6 +79,10 @@ mockGetProposalsCount.mockResolvedValue([
 describe('writer/proposal', () => {
   afterEach(jest.clearAllMocks);
 
+  const msg = JSON.parse(input.msg);
+  msg.payload.end = Math.floor(Date.now() / 1000) + 60;
+  input.msg = JSON.stringify(msg);
+
   describe('verify()', () => {
     describe('when the schema is invalid', () => {
       const msg = JSON.parse(input.msg);
@@ -164,16 +168,19 @@ describe('writer/proposal', () => {
     });
 
     describe('when the space has set a voting period', () => {
-      const VOTING_PERIOD = 1e6;
+      const VOTING_PERIOD = 120;
+      const msg = JSON.parse(input.msg);
+      msg.payload.start = Math.floor(Date.now() / 1000) - 60;
+      const inputWithVotingPeriod = { ...input, msg: JSON.stringify(msg) };
 
       it('rejects if the proposal voting period is not matching the space', async () => {
         expect.assertions(2);
         mockGetSpace.mockResolvedValueOnce({
           ...DEFAULT_SPACE,
-          voting: { ...DEFAULT_SPACE.voting, period: VOTING_PERIOD }
+          voting: { ...DEFAULT_SPACE.voting, period: VOTING_PERIOD + 1000 }
         });
 
-        await expect(writer.verify(input)).rejects.toMatch('period');
+        await expect(writer.verify(inputWithVotingPeriod)).rejects.toMatch('period');
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
       });
 
@@ -184,12 +191,7 @@ describe('writer/proposal', () => {
           voting: { ...DEFAULT_SPACE.voting, period: VOTING_PERIOD }
         });
 
-        const msg = JSON.parse(input.msg);
-        msg.payload.end = msg.payload.start + VOTING_PERIOD;
-
-        await expect(
-          writer.verify({ ...input, msg: JSON.stringify(msg) })
-        ).resolves.toBeUndefined();
+        await expect(writer.verify(inputWithVotingPeriod)).resolves.toBeUndefined();
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
         expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
       });
@@ -308,6 +310,16 @@ describe('writer/proposal', () => {
 
       await expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).rejects.toMatch(
         'snapshot'
+      );
+    });
+
+    it('rejects if the end period is in the past', async () => {
+      expect.assertions(1);
+      const msg = JSON.parse(input.msg);
+      msg.payload.end = Math.floor(Date.now() / 1000) - 60 * 5;
+
+      await expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).rejects.toMatch(
+        'proposal end date must be in the future'
       );
     });
 
