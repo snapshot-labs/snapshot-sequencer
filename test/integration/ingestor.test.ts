@@ -89,11 +89,13 @@ function cloneWithNewMessage(data: Record<string, any>) {
 describe('ingestor', () => {
   beforeAll(() => {
     proposalInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
+    proposalInput.data.message.end = Math.floor(Date.now() / 1e3) + 60;
     voteInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
   });
 
   afterEach(async () => {
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages');
+    jest.clearAllMocks();
   });
 
   afterAll(async () => {
