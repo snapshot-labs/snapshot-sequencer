@@ -6,7 +6,8 @@ import { getIp, sendError, sha256 } from './utils';
 import log from './log';
 
 let client;
-const DUPLICATOR_SET_KEY = 'snapshot-sequencer:processing-requests';
+const KEYS_PREFIX = process.env.RATE_LIMIT_KEYS_PREFIX || 'snapshot-sequencer:';
+const DUPLICATOR_SET_KEY = `${KEYS_PREFIX}processing-requests`;
 
 (async () => {
   if (!process.env.RATE_LIMIT_DATABASE_URL) return;
@@ -44,7 +45,7 @@ export default rateLimit({
   store: client
     ? new RedisStore({
         sendCommand: (...args: string[]) => client.sendCommand(args),
-        prefix: 'snapshot-sequencer:'
+        prefix: KEYS_PREFIX
       })
     : undefined
 });

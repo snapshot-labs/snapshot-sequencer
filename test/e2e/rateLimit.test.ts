@@ -9,7 +9,7 @@ describe('POST /', () => {
   describe('when the same request is already being processed', () => {
     let client;
     const payload = { test: 'test' };
-    const key = 'snapshot-sequencer:processing-requests';
+    const key = `${process.env.RATE_LIMIT_KEYS_PREFIX}processing-requests`;
 
     beforeAll(async () => {
       client = createClient({ url: process.env.RATE_LIMIT_DATABASE_URL });
