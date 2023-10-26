@@ -1,21 +1,11 @@
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import type { Request, Response, NextFunction } from 'express';
-import Redis from 'ioredis';
 import { getIp, sendError, sha256 } from './utils';
-import log from './log';
+import redisClient from './redis';
 
-let client;
 const KEYS_PREFIX = process.env.RATE_LIMIT_KEYS_PREFIX || 'snapshot-sequencer:';
 const DUPLICATOR_SET_KEY = `${KEYS_PREFIX}processing-requests`;
-
-(async () => {
-  if (!process.env.RATE_LIMIT_DATABASE_URL) return;
-
-  log.info('[redis-rl] Connecting to Redis');
-  client = new Redis(process.env.RATE_LIMIT_DATABASE_URL);
-  client.DEL(DUPLICATOR_SET_KEY);
-})();
 
 const hashedIp = (req): string => sha256(getIp(req)).slice(0, 7);
 const hashedBody = (req): string => sha256(JSON.stringify(req.body));
@@ -33,21 +23,21 @@ export default rateLimit({
       429
     );
   },
-  store: client
+  store: redisClient
     ? new RedisStore({
-        sendCommand: (...args: string[]) => client.call(...args),
-        prefix: process.env.RATE_LIMIT_KEYS_PREFIX
+        sendCommand: (...args: string[]) => redisClient.call(...args),
+        prefix: KEYS_PREFIX
       })
     : undefined
 });
 
 export async function duplicateRequestLimit(req: Request, res: Response, next: NextFunction) {
-  if (!client || req.method !== 'POST') {
+  if (!redisClient || req.method !== 'POST') {
     return next();
   }
 
   const value = hashedBody(req);
-  const [duplicate] = await client
+  const [duplicate] = await redisClient
     .multi()
     .SISMEMBER(DUPLICATOR_SET_KEY, value)
     .SADD(DUPLICATOR_SET_KEY, value)
@@ -58,7 +48,7 @@ export async function duplicateRequestLimit(req: Request, res: Response, next: N
   }
 
   res.on('finish', async () => {
-    await client.SREM(DUPLICATOR_SET_KEY, value);
+    await redisClient.SREM(DUPLICATOR_SET_KEY, value);
   });
 
   next();
