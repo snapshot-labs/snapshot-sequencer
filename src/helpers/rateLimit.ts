@@ -22,7 +22,8 @@ export default rateLimit({
   },
   store: redisClient
     ? new RedisStore({
-        sendCommand: (...args: string[]) => redisClient.call(...args),
+        // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
+        sendCommand: (...args: string[]) => redisClient?.call(...args),
         prefix: process.env.RATE_LIMIT_KEYS_PREFIX
       })
     : undefined

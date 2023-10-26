@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import log from './log';
 
-let client;
+let client: Redis | undefined;
 
 (async () => {
   if (!process.env.RATE_LIMIT_DATABASE_URL) return;
