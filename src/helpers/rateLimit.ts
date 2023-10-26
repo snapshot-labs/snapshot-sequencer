@@ -31,7 +31,8 @@ export default rateLimit({
   },
   store: client
     ? new RedisStore({
-        sendCommand: (...args: string[]) => client.call(...args)
+        sendCommand: (...args: string[]) => client.call(...args),
+        prefix: process.env.RATE_LIMIT_KEYS_PREFIX
       })
     : undefined
 });
