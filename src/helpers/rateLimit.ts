@@ -12,7 +12,7 @@ const DUPLICATOR_SET_KEY = `${KEYS_PREFIX}processing-requests`;
 (async () => {
   if (!process.env.RATE_LIMIT_DATABASE_URL) return;
 
-  log.info('[redis-rl] Connecting to Redis');
+  log.info(`[redis-rl] Connecting to Redis ${process.env.RATE_LIMIT_DATABASE_URL}`);
   client = createClient({ url: process.env.RATE_LIMIT_DATABASE_URL });
   client.on('connect', () => {
     log.info('[redis-rl] Redis connect');
