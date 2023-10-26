@@ -50,7 +50,7 @@ export default rateLimit({
 });
 
 export async function duplicateRequestLimit(req: Request, res: Response, next: NextFunction) {
-  if (!client) {
+  if (!client || req.method !== 'POST') {
     return next();
   }
 
