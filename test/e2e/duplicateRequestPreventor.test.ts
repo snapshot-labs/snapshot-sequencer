@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import Redis from 'ioredis';
+import RedisClient from '../../src/helpers/redis';
 import { sha256 } from '../../src/helpers/utils';
 import proposalInput from '../fixtures/ingestor-payload/proposal.json';
 
@@ -10,16 +10,15 @@ describe('POST /', () => {
     it.todo('needs to set RATE_LIMIT_DATABASE_URL to test this feature');
   } else {
     describe('when the same request is already being processed', () => {
-      const client = new Redis(process.env.RATE_LIMIT_DATABASE_URL as string);
       const payload = { test: 'test' };
       const key = `${process.env.RATE_LIMIT_KEYS_PREFIX}processing-requests`;
 
       beforeAll(async () => {
-        await client.sadd(key, sha256(JSON.stringify(payload)));
+        await RedisClient?.sadd(key, sha256(JSON.stringify(payload)));
       });
 
       afterAll(async () => {
-        await client.del(key);
+        await RedisClient?.del(key);
       });
 
       it('returns a 429 error', async () => {
