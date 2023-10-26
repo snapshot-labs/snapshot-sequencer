@@ -31,7 +31,7 @@ describe('writer/follow', () => {
     });
 
     it('rejects when the user has followed too much spaces', () => {
-      expect(verify({ from: followerId })).rejects.toEqual('follows limit reached');
+      expect(verify({ from: followerId })).rejects.toEqual('you can join max 25 spaces');
     });
 
     it('returns true when the user has not reached the limit', () => {
