@@ -1,17 +1,8 @@
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
-import Redis from 'ioredis';
 import { getIp, sendError, sha256 } from './utils';
+import redisClient from './redis';
 import log from './log';
-
-let client;
-
-(async () => {
-  if (!process.env.RATE_LIMIT_DATABASE_URL) return;
-
-  log.info('[redis-rl] Connecting to Redis');
-  client = new Redis(process.env.RATE_LIMIT_DATABASE_URL);
-})();
 
 const hashedIp = (req): string => sha256(getIp(req)).slice(0, 7);
 
@@ -29,9 +20,9 @@ export default rateLimit({
       429
     );
   },
-  store: client
+  store: redisClient
     ? new RedisStore({
-        sendCommand: (...args: string[]) => client.call(...args),
+        sendCommand: (...args: string[]) => redisClient.call(...args),
         prefix: process.env.RATE_LIMIT_KEYS_PREFIX
       })
     : undefined
