@@ -1,12 +1,12 @@
 import type { Request, Response, NextFunction } from 'express';
-import { sha256, sendError } from './utils';
+import { sendError } from './utils';
 import redisClient from './redis';
 
 const KEYS_PREFIX = process.env.RATE_LIMIT_KEYS_PREFIX || 'snapshot-sequencer:';
 export const DUPLICATOR_SET_KEY = `${KEYS_PREFIX}processing-requests`;
 export const ERROR_MESSAGE = 'request already being processed';
 
-const hashedBody = (req: Request): string => sha256(JSON.stringify(req.body));
+const hashedBody = (req: Request): string => JSON.stringify(req.body.sig);
 
 redisClient.on('ready', async () => await redisClient.del(DUPLICATOR_SET_KEY));
 
@@ -15,7 +15,7 @@ export default async function duplicateRequestPreventor(
   res: Response,
   next: NextFunction
 ) {
-  if (!redisClient || req.method !== 'POST') {
+  if (!redisClient || req.method !== 'POST' || !req.body) {
     return next();
   }
 

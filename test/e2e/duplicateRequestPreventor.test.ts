@@ -1,6 +1,5 @@
 import fetch from 'node-fetch';
 import RedisClient from '../../src/helpers/redis';
-import { sha256 } from '../../src/helpers/utils';
 import proposalInput from '../fixtures/ingestor-payload/proposal.json';
 import { ERROR_MESSAGE, DUPLICATOR_SET_KEY } from '../../src/helpers/duplicateRequestPreventor';
 
@@ -19,11 +18,11 @@ describe('POST /', () => {
     it.todo('needs to set RATE_LIMIT_DATABASE_URL to test this feature');
   } else {
     describe('when the same request is already being processed', () => {
-      const payload = { test: 'test' };
+      const payload = { sig: 'test' };
 
       beforeAll(async () => {
         await new Promise(resolve => setTimeout(resolve, 500));
-        await RedisClient.sAdd(DUPLICATOR_SET_KEY, sha256(JSON.stringify(payload)));
+        await RedisClient.sAdd(DUPLICATOR_SET_KEY, JSON.stringify(payload.sig));
       });
 
       afterAll(async () => {
