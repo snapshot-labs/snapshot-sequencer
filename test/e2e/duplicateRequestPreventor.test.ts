@@ -1,9 +1,19 @@
 import fetch from 'node-fetch';
+import snapshot from '@snapshot-labs/snapshot.js';
 import RedisClient from '../../src/helpers/redis';
 import { sha256 } from '../../src/helpers/utils';
 import proposalInput from '../fixtures/ingestor-payload/proposal.json';
+import { ERROR_MESSAGE, DUPLICATOR_SET_KEY } from '../../src/helpers/duplicateRequestPreventor';
 
 const HOST = `http://localhost:${process.env.PORT || 3003}`;
+
+async function send(payload) {
+  return await fetch(HOST, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+}
 
 describe('POST /', () => {
   if (!process.env.RATE_LIMIT_DATABASE_URL) {
@@ -11,37 +21,30 @@ describe('POST /', () => {
   } else {
     describe('when the same request is already being processed', () => {
       const payload = { test: 'test' };
-      const key = `${process.env.RATE_LIMIT_KEYS_PREFIX}processing-requests`;
 
       beforeAll(async () => {
-        await RedisClient?.sadd(key, sha256(JSON.stringify(payload)));
+        await snapshot.utils.sleep(500);
+        await RedisClient.sAdd(DUPLICATOR_SET_KEY, sha256(JSON.stringify(payload)));
       });
 
       afterAll(async () => {
-        await RedisClient?.del(key);
+        await RedisClient.del(DUPLICATOR_SET_KEY);
+        await RedisClient.quit();
       });
 
       it('returns a 429 error', async () => {
-        const response = await fetch(HOST, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+        const response = await send(payload);
         const body = await response.json();
 
         expect(response.status).toBe(429);
         expect(body.error).toBe('client_error');
-        expect(body.error_description).toBe('request already being processed');
+        expect(body.error_description).toBe(ERROR_MESSAGE);
       });
     });
 
     describe('when the request is not already being processed', () => {
       it('process and return response from the ingestor', async () => {
-        const response = await fetch(HOST, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(proposalInput)
-        });
+        const response = await send(proposalInput);
         const body = await response.json();
 
         expect(response.status).toBe(400);
