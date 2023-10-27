@@ -6,7 +6,7 @@ const KEYS_PREFIX = process.env.RATE_LIMIT_KEYS_PREFIX || 'snapshot-sequencer:';
 export const DUPLICATOR_SET_KEY = `${KEYS_PREFIX}processing-requests`;
 export const ERROR_MESSAGE = 'request already being processed';
 
-const hashedBody = (req: Request): string => JSON.stringify(req.body.sig);
+const hashedBody = (req: Request): string => JSON.stringify(req.body?.sig || {});
 
 redisClient.on('ready', async () => await redisClient.del(DUPLICATOR_SET_KEY));
 
