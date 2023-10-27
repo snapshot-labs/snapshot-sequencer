@@ -23,7 +23,6 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     if (process.env.MAINTENANCE) return sendError(res, maintenanceMsg, 503);
     try {
-      await new Promise(resolve => setTimeout(resolve, 10000));
       const result = await typedData(req);
       res.json(result);
     } catch (e) {
