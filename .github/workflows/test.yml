@@ -4,9 +4,9 @@ on: [push]
 
 jobs:
   test:
-    uses: snapshot-labs/actions/.github/workflows/test.yml@main
+    uses: snapshot-labs/actions/.github/workflows/test.yml@fix-redis
     secrets: inherit
     with:
       mysql_database_name: snapshot_sequencer_test
       mysql_schema_path: 'test/schema.sql'
-      redis: true
+      redis-version: 7
