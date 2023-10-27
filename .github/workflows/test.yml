@@ -3,10 +3,11 @@ name: Test
 on: [push]
 
 jobs:
+  redis:
+    uses: supercharge/redis-github-action/blob/main/action.yml@1.7.0
   test:
     uses: snapshot-labs/actions/.github/workflows/test.yml@main
     secrets: inherit
     with:
       mysql_database_name: snapshot_sequencer_test
       mysql_schema_path: 'test/schema.sql'
-      redis: true
