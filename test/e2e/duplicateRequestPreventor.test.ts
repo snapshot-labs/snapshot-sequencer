@@ -1,5 +1,4 @@
 import fetch from 'node-fetch';
-import snapshot from '@snapshot-labs/snapshot.js';
 import RedisClient from '../../src/helpers/redis';
 import { sha256 } from '../../src/helpers/utils';
 import proposalInput from '../fixtures/ingestor-payload/proposal.json';
@@ -23,7 +22,7 @@ describe('POST /', () => {
       const payload = { test: 'test' };
 
       beforeAll(async () => {
-        await snapshot.utils.sleep(500);
+        await new Promise(resolve => setTimeout(resolve, 500));
         await RedisClient.sAdd(DUPLICATOR_SET_KEY, sha256(JSON.stringify(payload)));
       });
 
