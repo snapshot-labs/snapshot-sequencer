@@ -10,4 +10,3 @@ jobs:
       mysql_database_name: snapshot_sequencer_test
       mysql_schema_path: 'test/schema.sql'
       redis: true
-      dotenv_vars: 'RATE_LIMIT_DATABASE_URL=redis://localhost:6379'

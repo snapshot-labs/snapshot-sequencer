@@ -3,8 +3,6 @@ import RedisStore from 'rate-limit-redis';
 import { getIp, sendError, sha256 } from './utils';
 import redisClient from './redis';
 
-const KEYS_PREFIX = process.env.RATE_LIMIT_KEYS_PREFIX || 'snapshot-sequencer:';
-
 const hashedIp = (req): string => sha256(getIp(req)).slice(0, 7);
 
 export default rateLimit({
@@ -22,9 +20,8 @@ export default rateLimit({
   },
   store: redisClient
     ? new RedisStore({
-        // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
-        sendCommand: (...args: string[]) => redisClient?.call(...args),
-        prefix: KEYS_PREFIX
+        sendCommand: (...args: string[]) => redisClient.sendCommand(args),
+        prefix: process.env.RATE_LIMIT_KEYS_PREFIX || 'snapshot-sequencer:'
       })
     : undefined
 });
