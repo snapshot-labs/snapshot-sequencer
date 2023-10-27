@@ -30,7 +30,7 @@ export default async function duplicateRequestPreventor(
     return sendError(res, ERROR_MESSAGE, 429);
   }
 
-  res.on('finish', async () => {
+  res.on('close', async () => {
     await redisClient.sRem(DUPLICATOR_SET_KEY, value);
   });
 
