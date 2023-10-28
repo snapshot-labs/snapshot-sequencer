@@ -1,47 +1,40 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import { capture } from '@snapshot-labs/snapshot-sentry';
-import log from './log';
 import db from './mysql';
 import { fetchWithKeepAlive } from './utils';
 
 const sidekickURL = process.env.SIDEKICK_URL || 'https://sh5.co';
 const moderationURL = `${sidekickURL}/api/moderation`;
 
-export let flaggedSpaces: Array<string> = [];
 export let flaggedIps: Array<string> = [];
 export let flaggedAddresses: Array<string> = [];
 export let flaggedProposalTitleKeywords: Array<string> = [];
 export let flaggedProposalBodyKeywords: Array<string> = [];
-export let verifiedSpaces: Array<string> = [];
 
-export async function loadModerationData(url = moderationURL) {
+export async function loadModerationData(url = moderationURL): Promise<boolean> {
   try {
     const res = await fetchWithKeepAlive(url, { timeout: 5e3 });
     const body = await res.json();
 
     if (body.error) {
-      capture(body.error);
-      return;
+      capture(body);
+      return false;
     }
 
-    flaggedSpaces = body.flaggedSpaces;
     flaggedIps = body.flaggedIps;
     flaggedAddresses = body.flaggedAddresses;
     flaggedProposalTitleKeywords = body.flaggedProposalTitleKeywords;
     flaggedProposalBodyKeywords = body.flaggedProposalBodyKeywords;
-    verifiedSpaces = body.verifiedSpaces;
+
+    return true;
   } catch (e: any) {
     capture(e);
+    return false;
   }
 }
 
 export default async function run() {
-  try {
-    await loadModerationData();
-  } catch (e) {
-    capture(e);
-    log.warn(`[moderation] failed to load ${JSON.stringify(e)}`);
-  }
+  await loadModerationData();
   await snapshot.utils.sleep(20e3);
   run();
 }

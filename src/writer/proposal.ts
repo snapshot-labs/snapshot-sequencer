@@ -46,6 +46,11 @@ export async function verify(body): Promise<any> {
     return Promise.reject('wrong proposal format');
   }
 
+  const tsInt = (Date.now() / 1e3).toFixed();
+  if (msg.payload.end <= tsInt) {
+    return Promise.reject('proposal end date must be in the future');
+  }
+
   const isChoicesValid = validateChoices({
     type: msg.payload.type,
     choices: msg.payload.choices
@@ -53,6 +58,10 @@ export async function verify(body): Promise<any> {
   if (!isChoicesValid) return Promise.reject('wrong choices for basic type voting');
 
   const space = await getSpace(msg.space);
+
+  if (!space) {
+    return Promise.reject('unknown space');
+  }
 
   space.id = msg.space;
   const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
@@ -151,7 +160,7 @@ export async function verify(body): Promise<any> {
       space.id,
       body.address
     );
-    const [dayLimit, monthLimit] = getSpaceLimits(space.id);
+    const [dayLimit, monthLimit] = getSpaceLimits(space);
 
     if (dayCount >= dayLimit || monthCount >= monthLimit)
       return Promise.reject('proposal limit reached');
