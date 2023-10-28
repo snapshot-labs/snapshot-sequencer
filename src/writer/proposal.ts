@@ -1,4 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
+import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import kebabCase from 'lodash/kebabCase';
 import { jsonParse, validateChoices } from '../helpers/utils';
 import db from '../helpers/mysql';
@@ -154,6 +155,9 @@ export async function verify(body): Promise<any> {
 
   if (msg.payload.snapshot > currentBlockNum)
     return Promise.reject('proposal snapshot must be in past');
+
+  if (msg.payload.snapshot < networks[space.network].start)
+    return Promise.reject('proposal snapshot must be after network start');
 
   try {
     const [{ dayCount, monthCount, activeProposalsByAuthor }] = await getProposalsCount(
