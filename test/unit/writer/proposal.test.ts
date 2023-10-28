@@ -67,7 +67,22 @@ jest.mock('../../../src/helpers/moderation', () => {
   };
 });
 
+const mockGetProposalsCount = jest.spyOn(writer, 'getProposalsCount');
+mockGetProposalsCount.mockResolvedValue([
+  {
+    dayCount: 0,
+    monthCount: 0,
+    activeProposalsByAuthor: 0
+  }
+]);
+
 describe('writer/proposal', () => {
+  afterEach(jest.clearAllMocks);
+
+  const msg = JSON.parse(input.msg);
+  msg.payload.end = Math.floor(Date.now() / 1000) + 60;
+  input.msg = JSON.stringify(msg);
+
   describe('verify()', () => {
     describe('when the schema is invalid', () => {
       const msg = JSON.parse(input.msg);
@@ -98,7 +113,7 @@ describe('writer/proposal', () => {
     });
 
     it('does not reject if the basic vote choices are valid', async () => {
-      expect.assertions(2);
+      expect.assertions(3);
       mockGetSpace.mockResolvedValueOnce({
         ...DEFAULT_SPACE,
         voting: { ...DEFAULT_SPACE.voting, type: 'basic' }
@@ -110,6 +125,7 @@ describe('writer/proposal', () => {
 
       await expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).resolves.toBeUndefined();
       expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
     });
 
     describe('when the space has enabled the ticket validation strategy', () => {
@@ -138,7 +154,7 @@ describe('writer/proposal', () => {
       });
 
       it('does not reject if the space voting validation is anything else valid than <any>', async () => {
-        expect.assertions(2);
+        expect.assertions(3);
         mockGetSpace.mockResolvedValueOnce({
           ...DEFAULT_SPACE,
           strategies: [{ name: 'ticket' }],
@@ -147,37 +163,37 @@ describe('writer/proposal', () => {
 
         await expect(writer.verify(input)).resolves.toBeUndefined();
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
+        expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
       });
     });
 
     describe('when the space has set a voting period', () => {
-      const VOTING_PERIOD = 1e6;
+      const VOTING_PERIOD = 120;
+      const msg = JSON.parse(input.msg);
+      msg.payload.start = Math.floor(Date.now() / 1000) - 60;
+      const inputWithVotingPeriod = { ...input, msg: JSON.stringify(msg) };
 
       it('rejects if the proposal voting period is not matching the space', async () => {
         expect.assertions(2);
         mockGetSpace.mockResolvedValueOnce({
           ...DEFAULT_SPACE,
-          voting: { ...DEFAULT_SPACE.voting, period: VOTING_PERIOD }
+          voting: { ...DEFAULT_SPACE.voting, period: VOTING_PERIOD + 1000 }
         });
 
-        await expect(writer.verify(input)).rejects.toMatch('period');
+        await expect(writer.verify(inputWithVotingPeriod)).rejects.toMatch('period');
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
       });
 
       it('does not reject if the proposal voting period is matching the space', async () => {
-        expect.assertions(2);
+        expect.assertions(3);
         mockGetSpace.mockResolvedValueOnce({
           ...DEFAULT_SPACE,
           voting: { ...DEFAULT_SPACE.voting, period: VOTING_PERIOD }
         });
 
-        const msg = JSON.parse(input.msg);
-        msg.payload.end = msg.payload.start + VOTING_PERIOD;
-
-        await expect(
-          writer.verify({ ...input, msg: JSON.stringify(msg) })
-        ).resolves.toBeUndefined();
+        await expect(writer.verify(inputWithVotingPeriod)).resolves.toBeUndefined();
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
+        expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -196,7 +212,7 @@ describe('writer/proposal', () => {
       });
 
       it('does not reject if the proposal voting delay is matching the space', async () => {
-        expect.assertions(2);
+        expect.assertions(3);
         mockGetSpace.mockResolvedValueOnce({
           ...DEFAULT_SPACE,
           voting: { ...DEFAULT_SPACE.voting, delay: VOTING_DELAY }
@@ -209,6 +225,7 @@ describe('writer/proposal', () => {
           writer.verify({ ...input, msg: JSON.stringify(msg) })
         ).resolves.toBeUndefined();
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
+        expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -269,18 +286,18 @@ describe('writer/proposal', () => {
 
       describe('when using the basic validation with no minimum score', () => {
         it('does not validate the space validation', async () => {
-          expect.assertions(1);
-          await writer.verify(input);
+          expect.assertions(2);
 
+          await expect(writer.verify(input)).resolves.toBeUndefined();
           expect(mockSnapshotUtilsValidate).toHaveBeenCalledTimes(0);
         });
       });
 
       describe('when using the any validation', () => {
         it('does not validate the space validation', async () => {
-          expect.assertions(1);
-          await writer.verify(input);
+          expect.assertions(2);
 
+          await expect(writer.verify(input)).resolves.toBeUndefined();
           expect(mockSnapshotUtilsValidate).toHaveBeenCalledTimes(0);
         });
       });
@@ -296,6 +313,16 @@ describe('writer/proposal', () => {
       );
     });
 
+    it('rejects if the end period is in the past', async () => {
+      expect.assertions(1);
+      const msg = JSON.parse(input.msg);
+      msg.payload.end = Math.floor(Date.now() / 1000) - 60 * 5;
+
+      await expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).rejects.toMatch(
+        'proposal end date must be in the future'
+      );
+    });
+
     it.each([
       ['flagged', FLAGGED_SPACE_PROPOSAL_DAY_LIMIT, 'flagged', true],
       ['verified', VERIFIED_SPACE_PROPOSAL_DAY_LIMIT, 'verified', true],
@@ -305,11 +332,9 @@ describe('writer/proposal', () => {
       'rejects if the %s space has exceeded the proposal daily post limit',
       async (category, limit, key, value) => {
         expect.assertions(3);
-        const mockGetProposalsCount = jest
-          .spyOn(writer, 'getProposalsCount')
-          .mockResolvedValueOnce([
-            { dayCount: limit + 1, monthCount: 0, activeProposalsByAuthor: 1 }
-          ]);
+        mockGetProposalsCount.mockResolvedValueOnce([
+          { dayCount: limit + 1, monthCount: 0, activeProposalsByAuthor: 1 }
+        ]);
         const mockedSpace = { ...DEFAULT_SPACE };
         if (key && value) {
           mockedSpace[key] = value;
@@ -331,11 +356,9 @@ describe('writer/proposal', () => {
       'rejects if the space has exceeded the proposal monthly post limit',
       async (category, limit, key, value) => {
         expect.assertions(3);
-        const mockGetProposalsCount = jest
-          .spyOn(writer, 'getProposalsCount')
-          .mockResolvedValueOnce([
-            { dayCount: 0, monthCount: limit + 1, activeProposalsByAuthor: 1 }
-          ]);
+        mockGetProposalsCount.mockResolvedValueOnce([
+          { dayCount: 0, monthCount: limit + 1, activeProposalsByAuthor: 1 }
+        ]);
         const mockedSpace = { ...DEFAULT_SPACE };
         if (key && value) {
           mockedSpace[key] = value;
@@ -350,7 +373,7 @@ describe('writer/proposal', () => {
 
     it('rejects if the user has exceed the number of proposals per space', async () => {
       expect.assertions(2);
-      const mockGetProposalsCount = jest.spyOn(writer, 'getProposalsCount').mockResolvedValueOnce([
+      mockGetProposalsCount.mockResolvedValueOnce([
         {
           dayCount: 0,
           monthCount: 0,

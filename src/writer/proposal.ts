@@ -46,6 +46,11 @@ export async function verify(body): Promise<any> {
     return Promise.reject('wrong proposal format');
   }
 
+  const tsInt = (Date.now() / 1e3).toFixed();
+  if (msg.payload.end <= tsInt) {
+    return Promise.reject('proposal end date must be in the future');
+  }
+
   const isChoicesValid = validateChoices({
     type: msg.payload.type,
     choices: msg.payload.choices
