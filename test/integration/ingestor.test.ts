@@ -89,11 +89,13 @@ function cloneWithNewMessage(data: Record<string, any>) {
 describe('ingestor', () => {
   beforeAll(() => {
     proposalInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
+    proposalInput.data.message.end = Math.floor(Date.now() / 1e3) + 60;
     voteInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
   });
 
   afterEach(async () => {
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages');
+    jest.clearAllMocks();
   });
 
   afterAll(async () => {
@@ -171,10 +173,10 @@ describe('ingestor', () => {
     it.todo('rejects when the submitted is not an allowed alias');
   });
 
-  it('rejects when the signature is not valid', () => {
+  it('rejects when the signature is not valid', async () => {
     mockSnapshotUtilsVerify.mockReturnValueOnce(false);
 
-    expect(ingestor(proposalRequest)).rejects.toMatch('signature');
+    await expect(ingestor(proposalRequest)).rejects.toMatch('signature');
   });
 
   it('rejects when the metadata is too large', async () => {
