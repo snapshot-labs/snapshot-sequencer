@@ -21,9 +21,7 @@ let client;
 
 const hashedIp = (req): string => sha256(getIp(req)).slice(0, 7);
 
-export default rateLimit({
-  windowMs: 60 * 1e3,
-  max: 100,
+const rateLimitConfig = {
   keyGenerator: req => hashedIp(req),
   standardHeaders: true,
   legacyHeaders: false,
@@ -40,4 +38,19 @@ export default rateLimit({
         prefix: 'snapshot-sequencer:'
       })
     : undefined
+};
+
+const regularRateLimit = rateLimit({
+  windowMs: 60 * 1e3,
+  max: 100,
+  ...rateLimitConfig
 });
+
+const spamRateLimit = rateLimit({
+  windowMs: 15 * 1e3,
+  max: 10,
+  skipSuccessfulRequests: true,
+  ...rateLimitConfig
+});
+
+export { regularRateLimit, spamRateLimit };
