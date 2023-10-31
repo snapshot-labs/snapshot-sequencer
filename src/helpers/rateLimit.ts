@@ -22,7 +22,6 @@ let client;
 const hashedIp = (req): string => sha256(getIp(req)).slice(0, 7);
 
 const rateLimitConfig = {
-  keyGenerator: req => hashedIp(req),
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
@@ -41,14 +40,16 @@ const rateLimitConfig = {
 };
 
 const regularRateLimit = rateLimit({
+  keyGenerator: req => `rl:${hashedIp(req)}`,
   windowMs: 60 * 1e3,
   max: 100,
   ...rateLimitConfig
 });
 
 const spamRateLimit = rateLimit({
+  keyGenerator: req => `rl-spam:${hashedIp(req)}`,
   windowMs: 15 * 1e3,
-  max: 10,
+  max: 15,
   skipSuccessfulRequests: true,
   ...rateLimitConfig
 });
