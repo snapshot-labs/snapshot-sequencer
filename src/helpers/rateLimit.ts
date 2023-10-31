@@ -30,12 +30,12 @@ const regularRateLimit = rateLimit({
   ...rateLimitConfig
 });
 
-const spamRateLimit = rateLimit({
-  keyGenerator: req => `rl-spam:${hashedIp(req)}`,
+const highErroredRateLimit = rateLimit({
+  keyGenerator: req => `rl-s:${hashedIp(req)}`,
   windowMs: 15 * 1e3,
   max: 15,
   skipSuccessfulRequests: true,
   ...rateLimitConfig
 });
 
-export { regularRateLimit, spamRateLimit };
+export { regularRateLimit, highErroredRateLimit };

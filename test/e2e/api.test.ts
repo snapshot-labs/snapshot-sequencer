@@ -18,8 +18,9 @@ function failRequest() {
 
 describe('POST /', () => {
   beforeEach(async () => {
-    await redis.del('snapshot-sequencer-test:rl:3e48ef9');
-    await redis.del('snapshot-sequencer-test:rl-spam:3e48ef9');
+    const keyPrefix = process.env.RATE_LIMIT_KEYS_PREFIX || 'snapshot-sequencer:';
+    await redis.del(`${keyPrefix}rl:3e48ef9`);
+    await redis.del(`${keyPrefix}rl-s:3e48ef9`);
   });
 
   afterAll(async () => {
