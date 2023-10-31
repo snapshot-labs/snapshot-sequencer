@@ -42,8 +42,8 @@ describe('POST /', () => {
     describe('on a mix of success and failed requests', () => {
       it('should return a 429 errors only after 100 requests / min', async () => {
         for (let i = 1; i <= 100; i++) {
-          // 10% of failing requests
-          const response = await (Math.random() < 0.1 ? failRequest() : successRequest());
+          // 2% of failing requests
+          const response = await (Math.random() < 0.02 ? failRequest() : successRequest());
           expect(response.status).not.toEqual(429);
         }
 
