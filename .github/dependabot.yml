@@ -5,5 +5,4 @@ updates:
     schedule:
       interval: "daily"
     allow:
-      # Allow updates for snapshot.js only
       - dependency-name: "@snapshot-labs/*"
