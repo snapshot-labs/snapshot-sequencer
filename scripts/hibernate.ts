@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import db from '../src/helpers/mysql';
+import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 
 async function main() {
   if (process.argv.length < 2) {
@@ -18,6 +19,10 @@ async function main() {
     console.error(`First argument should be either "run" or "preview"`);
     return process.exit(1);
   }
+
+  const liveNetworks = Object.values(networks)
+    .filter((network: any) => !network.testnet)
+    .map((network: any) => network.key);
 
   const query = `
     WITH toHibernate AS (
@@ -46,7 +51,7 @@ async function main() {
           lastProposalEndDate < (UNIX_TIMESTAMP() - 60 * 60 * 24 * 60)
           AND (
             # Filtering out spaces using unknown networks
-            network NOT IN ( '1','7','8','10','14','19','20','25','30','36','44','46','50','51','56','58','61','66','70','74','80','82','87','99','100','106','108','119','122','128','137','144','148','188','246','250','269','288','321','324','336','361','369','416','499','534','592','813','841','888','940','941','1001','1002','1088','1116','1234','1284','1285','1319','1559','1663','1701','1818','2000','2020','2109','2152','2400','2611','4689','5000','5551','5555','5851','7332','7341','7363','7700','8217','8453','9001','9052','10000','16718','29548','32659','42161','42170','42220','42262','43114','43288','47805','53935','60001','70001','70002','70103','71402','333999','666666','888888','900000','278611351','1313161554','1666600000','11297108109' )
+            network NOT IN ( ? )
             # Without proposal validation
             OR ((validationName IS NULL OR validationName = 'any') AND !(filtersMinScore > 0 OR filtersOnlyMembers IS TRUE))
             # With ticket strategy and without vote validation
@@ -70,7 +75,7 @@ async function main() {
     ${commands[action]};
   `;
 
-  const results = await db.queryAsync(query);
+  const results = await db.queryAsync(query, liveNetworks);
 
   if (action === 'preview') {
     console.log(`Spaces eligible for hibernation: ${results[0].count}`);
