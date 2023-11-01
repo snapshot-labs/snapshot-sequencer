@@ -47,8 +47,8 @@ async function main() {
         WHERE
         # Filtering out misconfigured spaces
         (
-          # Filtering only spaces without activities in the past 2 months
-          lastProposalEndDate < (UNIX_TIMESTAMP() - 60 * 60 * 24 * 60)
+          # Filtering only spaces without activities in the past 6 months
+          lastProposalEndDate < (UNIX_TIMESTAMP() - 180 * 24 * 60 * 60)
           AND (
             # Filtering out spaces using unknown networks
             network NOT IN ( ? )
@@ -58,17 +58,17 @@ async function main() {
             OR (JSON_OVERLAPS(strategiesName, JSON_ARRAY('ticket')) && (voteValidation IS NULL OR voteValidation = 'any'))
           )
         )
-        # Filtering out spaces that never had any activities, and are older than 2 months
+        # Filtering out spaces that never had any activities, and are older than 6 months
         OR (
           # Older than 2 months
-          created_at < (UNIX_TIMESTAMP() - 60 * 60 * 24 * 60)
+          created_at < (UNIX_TIMESTAMP() - 180 * 24 * 60 * 60)
           # Without activities
           AND lastProposalEndDate IS NULL
         )
         # Filtering out spaces that have not been active in the last 6 months
         OR (
           # Last activity older than 6 months
-          lastProposalEndDate < (UNIX_TIMESTAMP() - 150 * 60 * 24 * 60)
+          lastProposalEndDate < (UNIX_TIMESTAMP() - 180 * 24 * 60 * 60)
         )
     )
 
