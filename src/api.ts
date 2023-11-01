@@ -80,7 +80,7 @@ router.post('/flag', verifyAuth, async (req, res) => {
   }
 });
 
-router.post('/hibernation', verifyAuth, async (req, res) => {
+router.post('/hibernate', verifyAuth, async (req, res) => {
   const { value, action } = req.body;
 
   try {
