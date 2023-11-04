@@ -100,14 +100,14 @@ describe('POST /flag', () => {
       expect(await getFlaggedSpacesCount()).toBe(beforeFlaggedSpacesCount);
     });
 
-    it('does nothing when the space is already flagged', async () => {
+    it('return true when the space is already flagged', async () => {
       await db.queryAsync('UPDATE spaces SET flagged = 1 WHERE id = ?', `${SPACE_PREFIX}test.eth`);
 
       const response = await flagSpace('test.eth');
       const body = await response.json();
 
       expect(response.status).toBe(200);
-      expect(body.success).toBe(false);
+      expect(body.success).toBe(true);
       expect(await getFlaggedSpacesCount()).toBe(1);
     });
 
@@ -134,13 +134,13 @@ describe('POST /flag', () => {
       expect(await getFlaggedSpacesCount()).toBe(beforeFlaggedSpacesCount);
     });
 
-    it('does nothing when the space is not flagged', async () => {
+    it('returns true when the space is not flagged', async () => {
       const beforeFlaggedSpacesCount = await getFlaggedSpacesCount();
       const response = await flagSpace('test.eth', 'unflag');
       const body = await response.json();
 
       expect(response.status).toBe(200);
-      expect(body.success).toBe(false);
+      expect(body.success).toBe(true);
       expect(await getFlaggedSpacesCount()).toBe(beforeFlaggedSpacesCount);
     });
 
