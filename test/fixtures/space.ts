@@ -3,7 +3,7 @@ const SpacesSqlFixtures: Record<string, any>[] = [
   {
     id: 'test.eth',
     name: 'Test Space',
-    verified: 0,
+    verified: 1,
     flagged: 0,
     deleted: 0,
     created_at: 1649844547,
