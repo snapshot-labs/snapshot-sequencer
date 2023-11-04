@@ -7,7 +7,7 @@ const SpacesSqlFixtures: Record<string, any>[] = [
     flagged: 0,
     deleted: 0,
     created: 1649844547,
-    updated_at: 1649844547,
+    updated: 1649844547,
     settings: {
       name: 'Test Space',
       admins: ['0xFC01614d28595d9ea5963daD9f44C0E0F0fE10f0'],
@@ -23,7 +23,7 @@ const SpacesSqlFixtures: Record<string, any>[] = [
     flagged: 0,
     deleted: 0,
     created: 1649844547,
-    updated_at: 1649844547,
+    updated: 1649844547,
     settings: {
       name: 'Test Space 2',
       admins: ['0x87D68ecFBcF53c857ABf494728Cf3DE1016b27B0'],
