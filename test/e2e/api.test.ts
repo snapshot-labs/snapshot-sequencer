@@ -5,6 +5,7 @@ import proposalsFixtures from '../fixtures/proposal';
 import db from '../../src/helpers/mysql';
 
 const HOST = `http://localhost:${process.env.PORT || 3003}`;
+const SPACE_PREFIX = 'e2e-';
 
 async function getFlaggedSpacesCount() {
   return (await db.queryAsync('SELECT COUNT(id) as count FROM spaces WHERE flagged = 1'))[0].count;
@@ -14,7 +15,7 @@ async function flagSpace(space: string, action = 'flag') {
   return await fetch(`${HOST}/flag`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', secret: '0' },
-    body: JSON.stringify({ type: 'space', value: space, action })
+    body: JSON.stringify({ type: 'space', value: `${SPACE_PREFIX}${space}`, action })
   });
 }
 
@@ -41,15 +42,19 @@ describe('POST /flag', () => {
   });
 
   beforeEach(async () => {
-    await db.queryAsync(`
-      TRUNCATE TABLE snapshot_sequencer_test.spaces;
+    await db.queryAsync(
+      `
+      DELETE FROM snapshot_sequencer_test.spaces WHERE id LIKE ?;
       TRUNCATE TABLE snapshot_sequencer_test.proposals
-    `);
+    `,
+      [`${SPACE_PREFIX}%`]
+    );
 
     await Promise.all(
       spacesFixtures
         .map(space => ({
           ...space,
+          id: `${SPACE_PREFIX}${space.id}`,
           settings: JSON.stringify(space.settings)
         }))
         .map(async space => {
@@ -96,7 +101,7 @@ describe('POST /flag', () => {
     });
 
     it('does nothing when the space is already flagged', async () => {
-      await db.queryAsync('UPDATE spaces SET flagged = 1 WHERE id = ?', 'test.eth');
+      await db.queryAsync('UPDATE spaces SET flagged = 1 WHERE id = ?', `${SPACE_PREFIX}test.eth`);
 
       const response = await flagSpace('test.eth');
       const body = await response.json();
@@ -113,7 +118,7 @@ describe('POST /flag', () => {
       expect(body).toEqual({ success: true });
       expect(
         (await db.queryAsync('SELECT id FROM spaces WHERE flagged = 1')).map(r => r.id)
-      ).toEqual(['test.eth']);
+      ).toEqual([`${SPACE_PREFIX}test.eth`]);
     });
   });
 
@@ -140,7 +145,7 @@ describe('POST /flag', () => {
     });
 
     it('un-flags the space when it is flagged', async () => {
-      await db.queryAsync('UPDATE spaces SET flagged = 1 WHERE id = ?', 'test.eth');
+      await db.queryAsync('UPDATE spaces SET flagged = 1 WHERE id = ?', `${SPACE_PREFIX}test.eth`);
 
       const response = await flagSpace('test.eth', 'unflag');
       const body = await response.json();
