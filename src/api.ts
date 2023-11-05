@@ -73,8 +73,7 @@ router.post('/flag', verifyAuth, async (req, res) => {
 
   try {
     const resp = await flagEntity({ type, value, action });
-    if (!resp.affectedRows) throw new Error('no rows affected');
-    return res.json({ success: true });
+    return res.json({ success: !!resp.affectedRows });
   } catch (e: any) {
     console.log(e);
     return sendError(res, e.message || 'failed');
