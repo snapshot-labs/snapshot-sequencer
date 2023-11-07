@@ -29,7 +29,7 @@ async function main() {
       WITH data AS (
         SELECT
         id,
-        created_at,
+        created,
         COALESCE(JSON_UNQUOTE(JSON_EXTRACT(settings, '$.network')), '') AS network,
         settings->>'$.validation.name' as validationName,
         settings->>'$.strategies[*].name' as strategiesName,
@@ -61,7 +61,7 @@ async function main() {
         # Filtering out spaces that never had any activities, and are older than 6 months
         OR (
           # Older than 2 months
-          created_at < (UNIX_TIMESTAMP() - 180 * 24 * 60 * 60)
+          created < (UNIX_TIMESTAMP() - 180 * 24 * 60 * 60)
           # Without activities
           AND lastProposalEndDate IS NULL
         )
