@@ -7,7 +7,6 @@ CREATE TABLE spaces (
   flagged INT NOT NULL DEFAULT '0',
   hibernated INT NOT NULL DEFAULT '0',
   created BIGINT NOT NULL,
-  created BIGINT NOT NULL,
   updated BIGINT NOT NULL,
   PRIMARY KEY (id),
   INDEX name (name),
