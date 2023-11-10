@@ -21,6 +21,10 @@ export async function verify(body): Promise<any> {
   });
   const isController = controller === body.address;
   const space = await getSpace(msg.space, true);
+  if (!space) {
+    return Promise.reject('unknown space');
+  }
+
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());
   const isAdmin = admins.includes(body.address.toLowerCase());
