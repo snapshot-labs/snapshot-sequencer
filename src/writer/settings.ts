@@ -5,6 +5,7 @@ import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import log from '../helpers/log';
 
+const network = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export async function verify(body): Promise<any> {
@@ -23,6 +24,25 @@ export async function verify(body): Promise<any> {
   const space = await getSpace(msg.space, true);
   if (!space) {
     return Promise.reject('unknown space');
+  }
+
+  if (network !== 'testnet') {
+    const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
+    const hasVotingValidation =
+      space.voteValidation?.name && !['any'].includes(space.voteValidation.name);
+
+    if (hasTicket && !hasVotingValidation) {
+      return Promise.reject('space with ticket requires voting validation');
+    }
+
+    const hasProposalValidation =
+      (space.validation?.name && space.validation.name !== 'any') ||
+      space.filters?.minScore ||
+      space.filters?.onlyMembers;
+
+    if (!hasProposalValidation) {
+      return Promise.reject('space missing proposal validation');
+    }
   }
 
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
