@@ -24,18 +24,18 @@ export async function verify(body): Promise<any> {
   const space = await getSpace(msg.space, true);
 
   if (network !== 'testnet') {
-    const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
+    const hasTicket = msg.payload.strategies.some(strategy => strategy.name === 'ticket');
     const hasVotingValidation =
-      space.voteValidation?.name && !['any'].includes(space.voteValidation.name);
+      msg.payload.voteValidation?.name && !['any'].includes(msg.payload.voteValidation.name);
 
     if (hasTicket && !hasVotingValidation) {
       return Promise.reject('space with ticket requires voting validation');
     }
 
     const hasProposalValidation =
-      (space.validation?.name && space.validation.name !== 'any') ||
-      space.filters?.minScore ||
-      space.filters?.onlyMembers;
+      (msg.payload.validation?.name && msg.payload.validation.name !== 'any') ||
+      msg.payload.filters?.minScore ||
+      msg.payload.filters?.onlyMembers;
 
     if (!hasProposalValidation) {
       return Promise.reject('space missing proposal validation');
