@@ -1,5 +1,6 @@
 import isEqual from 'lodash/isEqual';
 import snapshot from '@snapshot-labs/snapshot.js';
+import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import { addOrUpdateSpace, getSpace } from '../helpers/actions';
 import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 import { capture } from '@snapshot-labs/snapshot-sentry';
@@ -7,6 +8,9 @@ import log from '../helpers/log';
 
 const network = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
+const supporterNetworks = Object.values(networks)
+  .filter((network: any) => network === 'testnet' && network.testnet)
+  .map((network: any) => network.key);
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
@@ -40,6 +44,14 @@ export async function verify(body): Promise<any> {
     if (!hasProposalValidation) {
       return Promise.reject('space missing proposal validation');
     }
+  }
+
+  if (!Object.values(networks).includes(msg.payload.network)) {
+    return Promise.reject('invalid network');
+  }
+
+  if (!supporterNetworks.includes(msg.payload.network)) {
+    return Promise.reject('wrong network');
   }
 
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
