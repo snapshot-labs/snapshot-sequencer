@@ -22,9 +22,6 @@ export async function verify(body): Promise<any> {
   });
   const isController = controller === body.address;
   const space = await getSpace(msg.space, true);
-  if (!space) {
-    return Promise.reject('unknown space');
-  }
 
   if (network !== 'testnet') {
     const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
