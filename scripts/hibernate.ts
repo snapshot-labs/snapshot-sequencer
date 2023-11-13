@@ -12,7 +12,7 @@ async function main() {
 
   const commands = {
     preview: `SELECT COUNT(id) as count from toHibernate`,
-    run: `UPDATE spaces SET hibernated = 1 where id IN (id)`
+    run: `UPDATE spaces SET hibernated = 1 where spaces.id IN (SELECT id FROM toHibernate)`
   };
 
   if (!commands[action]) {
