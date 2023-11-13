@@ -40,7 +40,6 @@ async function main() {
         WHERE
         # Filtering out spaces that have not been active in the past year
         FROM_UNIXTIME(lastProposalEndDate) < DATE_SUB(CURRENT_DATE, INTERVAL 1 YEAR)
-
     )
 
     ${commands[action]};
