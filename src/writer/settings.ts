@@ -8,14 +8,21 @@ import log from '../helpers/log';
 
 const network = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
-const supporterNetworks = Object.values(networks)
-  .filter((network: any) => network === 'testnet' && network.testnet)
-  .map((network: any) => network.key);
+
+export function getSupportedNetworks(realm: string) {
+  return Object.values(networks)
+    .filter(
+      (network: any) =>
+        (realm === 'testnet' && network.testnet) || (realm !== 'testnet' && !network.testnet)
+    )
+    .map((network: any) => network.key);
+}
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.space, msg.payload);
+
   if (schemaIsValid !== true) {
     log.warn('[writer] Wrong space format', schemaIsValid);
     return Promise.reject('wrong space format');
@@ -46,11 +53,15 @@ export async function verify(body): Promise<any> {
     }
   }
 
-  if (!Object.values(networks).includes(msg.payload.network)) {
+  if (
+    !Object.values(networks)
+      .map(n => n.key)
+      .includes(msg.payload.network)
+  ) {
     return Promise.reject('invalid network');
   }
 
-  if (!supporterNetworks.includes(msg.payload.network)) {
+  if (!getSupportedNetworks(network).includes(msg.payload.network)) {
     return Promise.reject('wrong network');
   }
 
