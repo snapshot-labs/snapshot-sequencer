@@ -29,7 +29,7 @@ async function main() {
       WITH data AS (
         SELECT
         id,
-        (SELECT MAX(end) FROM proposals WHERE space = spaces.id LIMIT 1) AS lastProposalEndDate
+        (SELECT MAX(created) FROM proposals WHERE space = spaces.id LIMIT 1) AS lastProposalEndDate
         FROM spaces
         WHERE hibernated = 0
       )
