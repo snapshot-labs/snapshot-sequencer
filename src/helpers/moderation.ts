@@ -66,10 +66,10 @@ export function flagEntity({ type, action, value }) {
       query = `UPDATE proposals SET flagged = 0 WHERE id = ? LIMIT 1`;
       break;
     case 'space-hibernate':
-      query = `UPDATE spaces SET hibernate = 1 WHERE id = ? LIMIT 1`;
+      query = `UPDATE spaces SET hibernated = 1 WHERE id = ? LIMIT 1`;
       break;
     case 'space-reactivate':
-      query = `UPDATE spaces SET hibernate = 0 WHERE id = ? LIMIT 1`;
+      query = `UPDATE spaces SET hibernated = 0 WHERE id = ? LIMIT 1`;
       break;
   }
 
