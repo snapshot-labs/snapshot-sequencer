@@ -80,9 +80,10 @@ router.post('/flag', verifyAuth, async (req, res) => {
   const { type, value, action } = req.body;
 
   try {
-    await flagEntity({ type, value, action });
-    return res.json({ success: true });
+    const resp = await flagEntity({ type, value, action });
+    return res.json({ success: !!resp.affectedRows });
   } catch (e: any) {
+    console.log(e);
     return sendError(res, e.message || 'failed');
   }
 });
