@@ -309,7 +309,17 @@ describe('writer/proposal', () => {
       msg.payload.snapshot = Number.MAX_SAFE_INTEGER;
 
       await expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).rejects.toMatch(
-        'snapshot'
+        'proposal snapshot must be in past'
+      );
+    });
+
+    it('rejects if the snapshot is lower than network start block', async () => {
+      expect.assertions(1);
+      const msg = JSON.parse(input.msg);
+      msg.payload.snapshot = 1000;
+
+      await expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).rejects.toMatch(
+        'proposal snapshot must be after network start'
       );
     });
 
