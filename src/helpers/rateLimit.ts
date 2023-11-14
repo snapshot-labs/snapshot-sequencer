@@ -1,7 +1,7 @@
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
-import { getIp, sendError, sha256 } from './utils';
 import redisClient from './redis';
+import { getIp, sendError, sha256 } from './utils';
 
 const hashedIp = (req): string => sha256(getIp(req)).slice(0, 7);
 
