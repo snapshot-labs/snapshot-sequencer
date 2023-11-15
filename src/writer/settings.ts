@@ -6,7 +6,7 @@ import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import log from '../helpers/log';
 
-const network = process.env.NETWORK || 'testnet';
+const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export function getSupportedNetworks(snapshotEnv: string) {
@@ -62,7 +62,7 @@ export async function verify(body): Promise<any> {
     return Promise.reject('invalid network');
   }
 
-  if (!getSupportedNetworks(network).includes(msg.payload.network)) {
+  if (!getSupportedNetworks(SNAPSHOT_ENV).includes(msg.payload.network)) {
     return Promise.reject('wrong network');
   }
 
