@@ -9,11 +9,12 @@ import log from '../helpers/log';
 const network = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
-export function getSupportedNetworks(realm: string) {
+export function getSupportedNetworks(snapshotEnv: string) {
   return Object.values(networks)
     .filter(
       (network: any) =>
-        (realm === 'testnet' && network.testnet) || (realm !== 'testnet' && !network.testnet)
+        (snapshotEnv === 'testnet' && network.testnet) ||
+        (snapshotEnv !== 'testnet' && !network.testnet)
     )
     .map((network: any) => network.key);
 }
