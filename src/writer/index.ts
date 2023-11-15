@@ -2,6 +2,7 @@ import * as proposal from './proposal';
 import * as vote from './vote';
 import * as settings from './settings';
 import * as deleteSpace from './delete-space';
+import * as reactivateSpace from './reactivate-space';
 import * as deleteProposal from './delete-proposal';
 import * as updateProposal from './update-proposal';
 import * as flagProposal from './flag-proposal';
@@ -18,6 +19,7 @@ export default {
   vote,
   settings,
   'delete-space': deleteSpace,
+  'reactivate-space': reactivateSpace,
   'delete-proposal': deleteProposal,
   'update-proposal': updateProposal,
   'flag-proposal': flagProposal,
