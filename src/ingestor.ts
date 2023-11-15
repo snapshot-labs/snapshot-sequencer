@@ -139,6 +139,7 @@ export default async function ingestor(req) {
       };
     }
     if (type === 'flag-proposal') payload = { proposal: message.proposal };
+    if (type === 'reactivate-space') payload = { space: message.space };
 
     if (['vote', 'vote-array', 'vote-string'].includes(type)) {
       if (message.metadata && message.metadata.length > 2000)
