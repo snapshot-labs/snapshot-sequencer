@@ -23,7 +23,7 @@ export async function verify(body): Promise<any> {
   if (!space) return Promise.reject('unknown space');
   if (!space.hibernated) return Promise.resolve(space);
 
-  const isAuthorizedToReactivate = isAuthorized({
+  const isAuthorizedToReactivate = await isAuthorized({
     space,
     address: body.address
   });
