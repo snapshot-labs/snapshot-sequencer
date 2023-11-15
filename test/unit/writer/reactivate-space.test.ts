@@ -1,3 +1,4 @@
+import { DESTRUCTION } from 'dns';
 import { verify } from '../../../src/writer/reactivate-space';
 
 const input = {
@@ -66,6 +67,17 @@ describe('writer/reactivate-space', () => {
       mockGetSpace.mockResolvedValueOnce(activeSpace);
 
       expect(verify(input)).resolves.toBe(activeSpace);
+    });
+
+    it('resolves if the submitter is the space controller', () => {
+      mockGetSpaceController.mockResolvedValueOnce(input.address);
+      mockGetSpace.mockResolvedValueOnce(DEFAULT_SPACE);
+      expect(verify(input)).resolves.toBe(DEFAULT_SPACE);
+    });
+
+    it('resolves if the submitter is a space admin', () => {
+      mockGetSpace.mockResolvedValueOnce(DEFAULT_SPACE);
+      expect(verify({ ...input, address: DEFAULT_SPACE.admins[0] })).resolves.toBe(DEFAULT_SPACE);
     });
   });
 });
