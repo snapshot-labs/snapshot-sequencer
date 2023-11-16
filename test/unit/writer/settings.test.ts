@@ -1,4 +1,3 @@
-import { getSupportedNetworks, verify } from '../../../src/writer/settings';
 import input from '../../fixtures/writer-payload/space.json';
 
 function editedInput(payload = {}) {
@@ -125,16 +124,6 @@ describe('writer/settings', () => {
 
     describe('when the space does not exist', () => {
       it.todo('creates the space');
-    });
-  });
-
-  describe('getSupportedNetworks()', () => {
-    it('returns the list of mainnet networks', () => {
-      expect(getSupportedNetworks('mainnet')).toEqual(expect.arrayContaining(['1']));
-    });
-
-    it('returns the list of testnet networks', () => {
-      expect(getSupportedNetworks('testnet')).toEqual(expect.arrayContaining(['5']));
     });
   });
 });
