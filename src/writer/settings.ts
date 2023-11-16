@@ -9,23 +9,17 @@ import log from '../helpers/log';
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
-export function getSupportedNetworks(snapshotEnv: string) {
-  return Object.values(networks)
-    .filter(
-      (network: any) =>
-        (snapshotEnv === 'testnet' && network.testnet) ||
-        (snapshotEnv !== 'testnet' && !network.testnet)
-    )
-    .map((network: any) => network.key);
-}
-
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
 
-  const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.space, msg.payload);
+  const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, msg.payload);
 
   if (schemaIsValid !== true) {
     log.warn('[writer] Wrong space format', schemaIsValid);
+    const firstErrorObject: any = Object.values(schemaIsValid)[0];
+    if (firstErrorObject.message === 'must be a valid network used by snapshot') {
+      return Promise.reject(firstErrorObject.message);
+    }
     return Promise.reject('wrong space format');
   }
 
@@ -52,18 +46,6 @@ export async function verify(body): Promise<any> {
     if (!hasProposalValidation) {
       return Promise.reject('space missing proposal validation');
     }
-  }
-
-  if (
-    !Object.values(networks)
-      .map(n => n.key)
-      .includes(msg.payload.network)
-  ) {
-    return Promise.reject('invalid network');
-  }
-
-  if (!getSupportedNetworks(SNAPSHOT_ENV).includes(msg.payload.network)) {
-    return Promise.reject('wrong network');
   }
 
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
