@@ -1,6 +1,5 @@
 import isEqual from 'lodash/isEqual';
 import snapshot from '@snapshot-labs/snapshot.js';
-import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import { addOrUpdateSpace, getSpace } from '../helpers/actions';
 import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 import { capture } from '@snapshot-labs/snapshot-sentry';
