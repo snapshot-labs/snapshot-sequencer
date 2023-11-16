@@ -1,3 +1,4 @@
+import { verify } from '../../../src/writer/settings';
 import input from '../../fixtures/writer-payload/space.json';
 
 function editedInput(payload = {}) {
