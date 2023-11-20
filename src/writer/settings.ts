@@ -28,7 +28,7 @@ export async function verify(body): Promise<any> {
   const isController = controller === body.address;
   const space = await getSpace(msg.space, true);
 
-  if (SNAPSHOT_ENV !== 'testnet' && space) {
+  if (SNAPSHOT_ENV !== 'testnet') {
     const hasTicket = msg.payload.strategies.some(strategy => strategy.name === 'ticket');
     const hasVotingValidation =
       msg.payload.voteValidation?.name && !['any'].includes(msg.payload.voteValidation.name);
