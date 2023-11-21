@@ -1,7 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import kebabCase from 'lodash/kebabCase';
-import { jsonParse, validateChoices } from '../helpers/utils';
+import { getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 import db from '../helpers/mysql';
 import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
@@ -187,6 +187,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   /* Store the proposal in dedicated table 'proposals' */
   const spaceSettings = await getSpace(space);
 
+  if (!spaceSettings) return Promise.reject('unknown space');
   const author = body.address;
   const created = parseInt(msg.timestamp);
   const metadata = msg.payload.metadata || {};
@@ -196,6 +197,16 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const spaceNetwork = spaceSettings.network;
   const proposalSnapshot = parseInt(msg.payload.snapshot || '0');
 
+  let quorum = spaceSettings.voting?.quorum || 0;
+  if (!quorum && spaceSettings.plugins?.quorum) {
+    try {
+      quorum = await getQuorum(spaceSettings.plugins.quorum, spaceNetwork, proposalSnapshot);
+    } catch (e: any) {
+      console.log('unable to get quorum', e.message);
+      return Promise.reject('unable to get quorum');
+    }
+  }
+
   const proposal = {
     id,
     ipfs,
@@ -203,7 +214,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     created,
     space,
     network: spaceNetwork,
-    symbol: spaceSettings?.symbol || '',
+    symbol: spaceSettings.symbol || '',
     type: msg.payload.type || 'single-choice',
     strategies,
     plugins,
@@ -213,8 +224,8 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     choices: JSON.stringify(msg.payload.choices),
     start: parseInt(msg.payload.start || '0'),
     end: parseInt(msg.payload.end || '0'),
-    quorum: spaceSettings?.voting?.quorum || 0,
-    privacy: spaceSettings?.voting?.privacy || '',
+    quorum,
+    privacy: spaceSettings.voting?.privacy || '',
     snapshot: proposalSnapshot || 0,
     app: kebabCase(msg.payload.app || ''),
     scores: JSON.stringify([]),
