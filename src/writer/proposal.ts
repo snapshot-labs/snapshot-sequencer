@@ -64,6 +64,10 @@ export async function verify(body): Promise<any> {
     return Promise.reject('unknown space');
   }
 
+  if (space.hibernated) {
+    return Promise.reject('space hibernated');
+  }
+
   space.id = msg.space;
   const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
   const hasVotingValidation =
