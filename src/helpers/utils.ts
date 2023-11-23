@@ -123,13 +123,13 @@ export const fetchWithKeepAlive = (uri: any, options: any = {}) => {
 };
 
 export const getQuorum = async (options: any, network: string, blockTag: number) => {
-  const { strategy = 'static', quorumModifier = 1, total = 0 } = options;
+  const { strategy = 'static', total = 0 } = options;
   switch (strategy) {
     case 'static': {
       return total;
     }
     case 'balance': {
-      const { address, methodABI, decimals } = options;
+      const { address, methodABI, decimals, quorumModifier = 1 } = options;
       const provider = snapshot.utils.getProvider(network, { broviderUrl });
 
       const votingPower = await snapshot.utils.call(
@@ -148,7 +148,7 @@ export const getQuorum = async (options: any, network: string, blockTag: number)
     }
 
     case 'multichainBalance': {
-      const { network, strategies } = options;
+      const { network, strategies, quorumModifier = 1 } = options;
       const provider = snapshot.utils.getProvider(network, { broviderUrl });
       const blocks = await snapshot.utils.getSnapshots(
         network,
