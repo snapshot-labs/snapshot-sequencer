@@ -11,12 +11,14 @@ const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
 
-  const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, msg.payload);
+  const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, msg.payload, {
+    snapshotEnv: SNAPSHOT_ENV
+  });
 
   if (schemaIsValid !== true) {
     log.warn('[writer] Wrong space format', schemaIsValid);
     const firstErrorObject: any = Object.values(schemaIsValid)[0];
-    if (firstErrorObject.message === 'must be a valid network used by snapshot') {
+    if (firstErrorObject.message === 'network not allowed') {
       return Promise.reject(firstErrorObject.message);
     }
     return Promise.reject('wrong space format');

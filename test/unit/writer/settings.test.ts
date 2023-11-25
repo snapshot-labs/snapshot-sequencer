@@ -58,13 +58,15 @@ describe('writer/settings', () => {
 
       it('rejects if the network does not exist', async () => {
         return expect(verify(editedInput({ network: '1919191919' }))).rejects.toContain(
-          'must be a valid network used by snapshot'
+          'network not allowed'
         );
       });
 
-      // it('rejects if the network is on the wrong realm', async () => {
-      //   return expect(verify(editedInput({ network: '5' }))).rejects.toContain('wrong network');
-      // });
+      it('rejects if using testnet on production', async () => {
+        return expect(verify(editedInput({ network: '5' }))).rejects.toContain(
+          'network not allowed'
+        );
+      });
 
       it('rejects if missing proposal validation', () => {
         return expect(verify(editedInput({ validation: { name: 'any' } }))).rejects.toContain(
