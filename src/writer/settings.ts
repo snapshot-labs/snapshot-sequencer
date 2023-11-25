@@ -18,7 +18,7 @@ export async function verify(body): Promise<any> {
   if (schemaIsValid !== true) {
     log.warn('[writer] Wrong space format', schemaIsValid);
     const firstErrorObject: any = Object.values(schemaIsValid)[0];
-    if (firstErrorObject.message === 'must be a valid network used by snapshot') {
+    if (firstErrorObject.message === 'network not allowed') {
       return Promise.reject(firstErrorObject.message);
     }
     return Promise.reject('wrong space format');
