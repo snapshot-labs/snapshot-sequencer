@@ -12,7 +12,7 @@ import { name, version } from '../package.json';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 
 const router = express.Router();
-const network = process.env.NETWORK || 'testnet';
+const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 
 const maintenanceMsg = 'update in progress, try later';
 
@@ -32,7 +32,7 @@ router.get('/', (req, res) => {
   const v = commit ? `${version}#${commit.substr(0, 7)}` : version;
   return res.json({
     name,
-    network,
+    SNAPSHOT_ENV,
     version: v,
     relayer: relayer.address
   });

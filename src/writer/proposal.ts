@@ -9,7 +9,7 @@ import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limi
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedAddresses } from '../helpers/moderation';
 
-const network = process.env.NETWORK || 'testnet';
+const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
@@ -73,7 +73,7 @@ export async function verify(body): Promise<any> {
   const hasVotingValidation =
     space.voteValidation?.name && !['any'].includes(space.voteValidation.name);
 
-  if (hasTicket && !hasVotingValidation && network !== 'testnet') {
+  if (hasTicket && !hasVotingValidation && SNAPSHOT_ENV !== 'testnet') {
     return Promise.reject('space with ticket requires voting validation');
   }
 
@@ -82,7 +82,7 @@ export async function verify(body): Promise<any> {
     space.filters?.minScore ||
     space.filters?.onlyMembers;
 
-  if (!hasProposalValidation && network !== 'testnet') {
+  if (!hasProposalValidation && SNAPSHOT_ENV !== 'testnet') {
     return Promise.reject('space missing proposal validation');
   }
 
