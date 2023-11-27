@@ -415,6 +415,11 @@ describe('writer/proposal', () => {
       expect(mockGetSpace).toHaveBeenCalledTimes(1);
     });
 
+    it.todo('rejects if using testnet on production');
+    it.todo('rejects if the network does not exist');
+    it.todo('rejects if missing proposal validation');
+    it.todo('rejects if missing vote validation with ticket strategy');
+
     describe('when only members can propose', () => {
       it('rejects if the submitter is not a space member', async () => {
         expect.assertions(2);
