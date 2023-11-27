@@ -17,10 +17,11 @@ import {
 const FLAGGED_ADDRESSES = ['0x0'];
 
 const DEFAULT_SPACE: any = {
-  id: 'fabien.eth',
-  network: '5',
+  name: 'fabien.eth',
+  symbol: 'FAB',
+  network: '1',
   voting: { aliased: false, type: 'single-choice' },
-  strategies: [],
+  strategies: [{}],
   members: [],
   admins: [],
   moderators: [],
@@ -415,10 +416,74 @@ describe('writer/proposal', () => {
       expect(mockGetSpace).toHaveBeenCalledTimes(1);
     });
 
-    it.todo('rejects if using testnet on production');
-    it.todo('rejects if the network does not exist');
-    it.todo('rejects if missing proposal validation');
-    it.todo('rejects if missing vote validation with ticket strategy');
+    describe('on invalid space settings', () => {
+      it('rejects if using testnet on production', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...DEFAULT_SPACE,
+          network: '5'
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch(
+          'invalid space settings: network not allowed'
+        );
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if the network does not exist', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...DEFAULT_SPACE,
+          network: '123abc'
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch(
+          'invalid space settings: network not allowed'
+        );
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if missing proposal validation', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...DEFAULT_SPACE,
+          validation: { name: 'any' }
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch(
+          'invalid space settings: space missing proposal validation'
+        );
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if missing vote validation with ticket strategy', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...DEFAULT_SPACE,
+          validation: { name: 'any' },
+          strategies: [{ name: 'ticket' }]
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch(
+          'invalid space settings: space with ticket requires voting validation'
+        );
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if the space was deleted', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...DEFAULT_SPACE,
+          filters: { onlyMembers: true },
+          deleted: true
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch(
+          'invalid space settings: space deleted, contact admin'
+        );
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+    });
 
     describe('when only members can propose', () => {
       it('rejects if the submitter is not a space member', async () => {

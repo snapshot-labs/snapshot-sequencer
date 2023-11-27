@@ -8,6 +8,27 @@ import log from '../helpers/log';
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
+export async function validateSpaceSettings(space: any) {
+  if (SNAPSHOT_ENV !== 'testnet') {
+    const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
+    const hasVotingValidation =
+      space.voteValidation?.name && !['any'].includes(space.voteValidation.name);
+
+    if (hasTicket && !hasVotingValidation) {
+      return Promise.reject('space with ticket requires voting validation');
+    }
+
+    const hasProposalValidation =
+      (space.validation?.name && space.validation.name !== 'any') ||
+      space.filters?.minScore ||
+      space.filters?.onlyMembers;
+
+    if (!hasProposalValidation) {
+      return Promise.reject('space missing proposal validation');
+    }
+  }
+}
+
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
 
@@ -30,23 +51,10 @@ export async function verify(body): Promise<any> {
   const isController = controller === body.address;
   const space = await getSpace(msg.space, true);
 
-  if (SNAPSHOT_ENV !== 'testnet') {
-    const hasTicket = msg.payload.strategies.some(strategy => strategy.name === 'ticket');
-    const hasVotingValidation =
-      msg.payload.voteValidation?.name && !['any'].includes(msg.payload.voteValidation.name);
-
-    if (hasTicket && !hasVotingValidation) {
-      return Promise.reject('space with ticket requires voting validation');
-    }
-
-    const hasProposalValidation =
-      (msg.payload.validation?.name && msg.payload.validation.name !== 'any') ||
-      msg.payload.filters?.minScore ||
-      msg.payload.filters?.onlyMembers;
-
-    if (!hasProposalValidation) {
-      return Promise.reject('space missing proposal validation');
-    }
+  try {
+    await validateSpaceSettings(msg.payload);
+  } catch (e) {
+    return Promise.reject(e);
   }
 
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
