@@ -57,6 +57,7 @@ async function validateSpace(space: any) {
     if (firstErrorObject.message === 'network not allowed') {
       return Promise.reject(firstErrorObject.message);
     }
+    return Promise.reject('wrong space format');
   }
 
   try {
