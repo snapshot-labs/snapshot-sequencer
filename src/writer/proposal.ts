@@ -37,7 +37,9 @@ export const getProposalsCount = async (space, author) => {
   return await db.queryAsync(query, [space, author]);
 };
 
-async function validateSpace(space: any) {
+async function validateSpace(originalSpace: any) {
+  const space = snapshot.utils.clone(originalSpace);
+
   if (!space) {
     return Promise.reject('unknown space');
   }
@@ -48,6 +50,10 @@ async function validateSpace(space: any) {
 
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
 
+  delete space.flagged;
+  delete space.verified;
+  delete space.id;
+
   const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, space, {
     snapshotEnv: SNAPSHOT_ENV
   });
@@ -56,6 +62,12 @@ async function validateSpace(space: any) {
     const firstErrorObject: any = Object.values(schemaIsValid)[0];
     if (firstErrorObject.message === 'network not allowed') {
       return Promise.reject(firstErrorObject.message);
+    }
+    if (
+      firstErrorObject.message === 'must be object' &&
+      firstErrorObject.instancePath === '/voteValidation'
+    ) {
+      return Promise.reject('space with ticket requires voting validation');
     }
     return Promise.reject('wrong space format');
   }
