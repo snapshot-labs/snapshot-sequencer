@@ -46,19 +46,11 @@ export const spacesGetSpaceFixtures: Record<string, any> = {
   avatar: 'ipfs://bafkreiebuwngipaevu4gsdkyk44vnkezzahn7rsbreessbryrgqcf5meim',
   github: 'bonustrack',
   symbol: 'POINT',
-  voting: {
-    quorum: 1,
-    hideAbstain: false
-  },
-  filters: {
-    minScore: 1,
-    onlyMembers: true
-  },
+  voting: {},
+  filters: {},
   members: [],
-  network: '5',
-  plugins: {
-    oSnap: {}
-  },
+  network: '1',
+  plugins: {},
   private: false,
   twitter: 'bonustrack87',
   website: 'https://snapshot.org/#/fabien.eth',
@@ -76,18 +68,12 @@ export const spacesGetSpaceFixtures: Record<string, any> = {
           '0x1B5D05c10bdeE94FAcfB8a5C1711DA8e9313FD2a'
         ]
       },
-      network: '5'
+      network: '1'
     }
   ],
-  treasuries: [
-    {
-      name: 'Safe Goerli',
-      address: '0x1B5D05c10bdeE94FAcfB8a5C1711DA8e9313FD2a',
-      network: '5'
-    }
-  ],
+  treasuries: [],
   validation: {
-    name: 'any',
+    name: 'basic',
     params: {
       minScore: 0,
       strategies: [
@@ -106,6 +92,5 @@ export const spacesGetSpaceFixtures: Record<string, any> = {
     params: {}
   },
   flagged: 0,
-  hibernated: 0,
   verified: 0
 };

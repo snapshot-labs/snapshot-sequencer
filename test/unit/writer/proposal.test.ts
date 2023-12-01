@@ -1,7 +1,7 @@
+import omit from 'lodash/omit';
 import * as writer from '../../../src/writer/proposal';
 import input from '../../fixtures/writer-payload/proposal.json';
-import { spacesGetSpaceFixtures } from '../../fixtures/spaces';
-import omit from 'lodash/omit';
+import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import {
   ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT,
   FLAGGED_SPACE_PROPOSAL_DAY_LIMIT,
