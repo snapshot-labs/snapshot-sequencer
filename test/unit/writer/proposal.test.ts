@@ -125,7 +125,7 @@ describe('writer/proposal', () => {
         mockGetSpace.mockResolvedValueOnce({
           ...spacesGetSpaceFixtures,
           strategies: [{ name: 'ticket' }],
-          voteValidation: null
+          voteValidation: undefined
         });
 
         await expect(writer.verify(input)).rejects.toMatch('ticket');

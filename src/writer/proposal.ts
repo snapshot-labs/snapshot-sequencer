@@ -63,12 +63,6 @@ async function validateSpace(originalSpace: any) {
     if (firstErrorObject.message === 'network not allowed') {
       return Promise.reject(firstErrorObject.message);
     }
-    if (
-      firstErrorObject.message === 'must be object' &&
-      firstErrorObject.instancePath === '/voteValidation'
-    ) {
-      return Promise.reject('space with ticket requires voting validation');
-    }
     return Promise.reject('wrong space format');
   }
 
