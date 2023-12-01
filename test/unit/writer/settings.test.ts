@@ -1,4 +1,5 @@
 import { verify } from '../../../src/writer/settings';
+import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/space.json';
 
 function editedInput(payload = {}) {
@@ -8,19 +9,9 @@ function editedInput(payload = {}) {
   return { ...result, msg: JSON.stringify(result.msg) };
 }
 
-const DEFAULT_SPACE: any = {
-  id: 'fabien.eth',
-  network: '5',
-  voting: { aliased: false, type: 'single-choice' },
-  strategies: [],
-  members: [],
-  admins: ['0xF296178d553C8Ec21A2fBD2c5dDa8CA9ac905A00'],
-  moderators: [],
-  validation: { name: 'basic' }
-};
-
-const mockGetSpace = jest.fn((id: any): any => {
-  return { ...DEFAULT_SPACE, id };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const mockGetSpace = jest.fn((_): any => {
+  return spacesGetSpaceFixtures;
 });
 jest.mock('../../../src/helpers/actions', () => {
   const originalModule = jest.requireActual('../../../src/helpers/actions');
@@ -52,7 +43,7 @@ describe('writer/settings', () => {
     describe('on invalid input', () => {
       it.todo('rejects if the schema is invalid');
       it('rejects if the space was deleted', async () => {
-        mockGetSpace.mockResolvedValueOnce({ ...DEFAULT_SPACE, deleted: true });
+        mockGetSpace.mockResolvedValueOnce({ ...spacesGetSpaceFixtures, deleted: true });
         return expect(verify(input)).rejects.toContain('space deleted');
       });
 

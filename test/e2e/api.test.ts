@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import proposalInput from '../fixtures/ingestor-payload/proposal.json';
-import spacesFixtures from '../fixtures/space';
+import { spacesSqlFixtures } from '../fixtures/space';
 import proposalsFixtures from '../fixtures/proposal';
 import db from '../../src/helpers/mysql';
 
@@ -51,7 +51,7 @@ describe('POST /flag', () => {
     );
 
     await Promise.all(
-      spacesFixtures
+      spacesSqlFixtures
         .map(space => ({
           ...space,
           id: `${SPACE_PREFIX}${space.id}`,

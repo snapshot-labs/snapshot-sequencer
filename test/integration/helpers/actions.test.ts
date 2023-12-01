@@ -1,6 +1,6 @@
 import { getSpace } from '../../../src/helpers/actions';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
-import fixtures from '../../fixtures/space';
+import { spacesSqlFixtures } from '../../fixtures/space';
 
 describe('helpers/actions', () => {
   afterAll(async () => {
@@ -10,7 +10,7 @@ describe('helpers/actions', () => {
 
   describe('getSpace()', () => {
     beforeEach(async () => {
-      const spaces = fixtures.map(space => ({
+      const spaces = spacesSqlFixtures.map(space => ({
         ...space,
         settings: JSON.stringify(space.settings)
       }));
