@@ -22,7 +22,8 @@ export async function loadModerationData(url = moderationURL): Promise<boolean> 
     }
 
     flaggedIps = body.flaggedIps;
-    flaggedAddresses = body.flaggedAddresses;
+    flaggedAddresses = body.flaggedAddresses || [];
+    flaggedAddresses = flaggedAddresses.map((address: string) => address.toLowerCase());
     flaggedProposalTitleKeywords = body.flaggedProposalTitleKeywords;
     flaggedProposalBodyKeywords = body.flaggedProposalBodyKeywords;
 
