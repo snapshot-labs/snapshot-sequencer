@@ -9,6 +9,19 @@ const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export async function validateSpaceSettings(space: any) {
+  const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, space, {
+    snapshotEnv: SNAPSHOT_ENV
+  });
+
+  if (schemaIsValid !== true) {
+    log.warn('[writer] Wrong space format', schemaIsValid);
+    const firstErrorObject: any = Object.values(schemaIsValid)[0];
+    if (firstErrorObject.message === 'network not allowed') {
+      return Promise.reject(firstErrorObject.message);
+    }
+    return Promise.reject('wrong space format');
+  }
+
   if (SNAPSHOT_ENV !== 'testnet') {
     const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
     const hasVotingValidation =
@@ -31,24 +44,6 @@ export async function validateSpaceSettings(space: any) {
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
-
-  const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, msg.payload, {
-    snapshotEnv: SNAPSHOT_ENV
-  });
-
-  if (schemaIsValid !== true) {
-    log.warn('[writer] Wrong space format', schemaIsValid);
-    const firstErrorObject: any = Object.values(schemaIsValid)[0];
-    if (firstErrorObject.message === 'network not allowed') {
-      return Promise.reject(firstErrorObject.message);
-    }
-    return Promise.reject('wrong space format');
-  }
-
-  const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
-    broviderUrl
-  });
-  const isController = controller === body.address;
   const space = await getSpace(msg.space, true);
 
   try {
@@ -56,6 +51,11 @@ export async function verify(body): Promise<any> {
   } catch (e) {
     return Promise.reject(e);
   }
+
+  const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
+    broviderUrl
+  });
+  const isController = controller === body.address;
 
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());

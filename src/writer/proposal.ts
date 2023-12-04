@@ -54,18 +54,6 @@ async function validateSpace(originalSpace: any) {
   delete space.verified;
   delete space.id;
 
-  const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, space, {
-    snapshotEnv: SNAPSHOT_ENV
-  });
-
-  if (schemaIsValid !== true) {
-    const firstErrorObject: any = Object.values(schemaIsValid)[0];
-    if (firstErrorObject.message === 'network not allowed') {
-      return Promise.reject(firstErrorObject.message);
-    }
-    return Promise.reject('wrong space format');
-  }
-
   try {
     await validateSpaceSettings(space);
   } catch (e) {
