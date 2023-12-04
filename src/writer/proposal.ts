@@ -10,7 +10,6 @@ import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedAddresses } from '../helpers/moderation';
 import { validateSpaceSettings } from './settings';
 
-const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
@@ -37,9 +36,7 @@ export const getProposalsCount = async (space, author) => {
   return await db.queryAsync(query, [space, author]);
 };
 
-async function validateSpace(originalSpace: any) {
-  const space = snapshot.utils.clone(originalSpace);
-
+async function validateSpace(space: any) {
   if (!space) {
     return Promise.reject('unknown space');
   }
@@ -47,12 +44,6 @@ async function validateSpace(originalSpace: any) {
   if (space.hibernated) {
     return Promise.reject('space hibernated');
   }
-
-  if (space?.deleted) return Promise.reject('space deleted, contact admin');
-
-  delete space.flagged;
-  delete space.verified;
-  delete space.id;
 
   try {
     await validateSpaceSettings(space);

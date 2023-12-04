@@ -8,7 +8,16 @@ import log from '../helpers/log';
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
-export async function validateSpaceSettings(space: any) {
+export async function validateSpaceSettings(originalSpace: any) {
+  const space = snapshot.utils.clone(originalSpace);
+
+  if (space?.deleted) return Promise.reject('space deleted, contact admin');
+
+  delete space.flagged;
+  delete space.verified;
+  delete space.hibernated;
+  delete space.id;
+
   const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, space, {
     snapshotEnv: SNAPSHOT_ENV
   });
@@ -47,7 +56,10 @@ export async function verify(body): Promise<any> {
   const space = await getSpace(msg.space, true);
 
   try {
-    await validateSpaceSettings(msg.payload);
+    await validateSpaceSettings({
+      ...msg.payload,
+      deleted: space?.deleted
+    });
   } catch (e) {
     return Promise.reject(e);
   }
@@ -57,7 +69,6 @@ export async function verify(body): Promise<any> {
   });
   const isController = controller === body.address;
 
-  if (space?.deleted) return Promise.reject('space deleted, contact admin');
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());
   const isAdmin = admins.includes(body.address.toLowerCase());
   const newAdmins = (msg.payload.admins || []).map(admin => admin.toLowerCase());
