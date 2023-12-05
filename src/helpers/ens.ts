@@ -7,8 +7,8 @@ const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export async function getSpaceENS(id) {
   let space = false;
-  const uri: any = await snapshot.utils.getSpaceUri(id, DEFAULT_NETWORK, { broviderUrl });
-  if (uri) {
+  const uri: string | null = await snapshot.utils.getSpaceUri(id, DEFAULT_NETWORK, { broviderUrl });
+  if (uri && (uri.startsWith('ipfs://') || uri.startsWith('https://'))) {
     try {
       space = await snapshot.utils.getJSON(uri);
     } catch (e) {
