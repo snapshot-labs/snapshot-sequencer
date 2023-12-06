@@ -52,19 +52,25 @@ router.get('/scores/:proposalId', async (req, res) => {
 
 router.get('/spaces/:key/poke', async (req, res) => {
   const { key } = req.params;
+  let space;
+
   try {
-    let space = false;
-    const result = await getSpaceENS(key);
-    if (snapshot.utils.validateSchema(snapshot.schemas.space, result) === true) space = result;
-    if (space) {
-      await addOrUpdateSpace(key, space);
-      // spaces[key] = space;
+    space = await getSpaceENS(key);
+  } catch (e: any) {
+    return res.json({ error: e.message });
+  }
+
+  try {
+    if (snapshot.utils.validateSchema(snapshot.schemas.space, space) !== true) {
+      return Promise.reject(new Error('invalid space format'));
     }
+
+    await addOrUpdateSpace(key, space);
+
     return res.json(space);
-  } catch (e) {
+  } catch (e: any) {
     capture(e);
-    log.warn(`[api] Load space failed ${key}`);
-    return res.json(false);
+    return res.json({ error: 'unable to save the space' });
   }
 });
 
