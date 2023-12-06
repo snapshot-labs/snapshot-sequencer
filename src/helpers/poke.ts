@@ -12,7 +12,7 @@ export default async function poke(id: string): Promise<Space> {
 
   try {
     if (snapshot.utils.validateSchema(snapshot.schemas.space, space) !== true) {
-      return Promise.reject(new Error('invalid space format'));
+      return Promise.reject('invalid space format');
     }
 
     await addOrUpdateSpace(id, space);
@@ -25,21 +25,21 @@ export default async function poke(id: string): Promise<Space> {
 }
 
 async function getSpaceENS(id: string): Promise<Space> {
-  const uri: any = await snapshot.utils.getSpaceUri(id, DEFAULT_NETWORK, { broviderUrl });
+  const uri = await snapshot.utils.getSpaceUri(id, DEFAULT_NETWORK, { broviderUrl });
 
   if (uri) {
     if (!isValidUri(uri)) {
-      return Promise.reject(new Error('TXT record is not a valid uri'));
+      return Promise.reject('TXT record is not a valid uri');
     }
 
     try {
       return await snapshot.utils.getJSON(uri);
     } catch (e) {
-      return Promise.reject(new Error(`${uri} is not a valid JSON file`));
+      return Promise.reject(`${uri} is not a valid JSON file`);
     }
   }
 
-  return Promise.reject(new Error(`missing snapshot TXT record on ENS name ${id}`));
+  return Promise.reject(`missing snapshot TXT record on ENS name ${id}`);
 }
 
 function isValidUri(uri: string): boolean {

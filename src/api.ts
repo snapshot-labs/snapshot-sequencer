@@ -52,7 +52,7 @@ router.get('/spaces/:key/poke', async (req, res) => {
   try {
     return res.json(await poke(req.params.key));
   } catch (e: any) {
-    return res.json({ error: e.message });
+    return res.json({ error: e });
   }
 });
 
