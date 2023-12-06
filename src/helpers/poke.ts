@@ -1,9 +1,30 @@
 import snapshot from '@snapshot-labs/snapshot.js';
+import { capture } from '@snapshot-labs/snapshot-sentry';
+import { addOrUpdateSpace } from './actions';
+
+type Space = Record<string, any>;
 
 const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
-export async function getSpaceENS(id: string): Promise<Record<string, any>> {
+export default async function poke(id: string): Promise<Space> {
+  const space = await getSpaceENS(id);
+
+  try {
+    if (snapshot.utils.validateSchema(snapshot.schemas.space, space) !== true) {
+      return Promise.reject(new Error('invalid space format'));
+    }
+
+    await addOrUpdateSpace(id, space);
+
+    return space;
+  } catch (e: any) {
+    capture(e);
+    return Promise.reject('unable to save the space');
+  }
+}
+
+async function getSpaceENS(id: string): Promise<Space> {
   const uri: any = await snapshot.utils.getSpaceUri(id, DEFAULT_NETWORK, { broviderUrl });
 
   if (uri) {

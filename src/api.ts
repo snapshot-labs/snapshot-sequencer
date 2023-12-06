@@ -1,8 +1,5 @@
 import express from 'express';
-import snapshot from '@snapshot-labs/snapshot.js';
 import relayer from './helpers/relayer';
-import { addOrUpdateSpace } from './helpers/actions';
-import { getSpaceENS } from './helpers/ens';
 import { updateProposalAndVotes } from './scores';
 import typedData from './ingestor';
 import { sendError, verifyAuth } from './helpers/utils';
@@ -10,6 +7,7 @@ import { flagEntity } from './helpers/moderation';
 import log from './helpers/log';
 import { name, version } from '../package.json';
 import { capture } from '@snapshot-labs/snapshot-sentry';
+import poke from './helpers/poke';
 
 const router = express.Router();
 const network = process.env.NETWORK || 'testnet';
@@ -51,26 +49,10 @@ router.get('/scores/:proposalId', async (req, res) => {
 });
 
 router.get('/spaces/:key/poke', async (req, res) => {
-  const { key } = req.params;
-  let space;
-
   try {
-    space = await getSpaceENS(key);
+    return res.json(await poke(req.params.key));
   } catch (e: any) {
     return res.json({ error: e.message });
-  }
-
-  try {
-    if (snapshot.utils.validateSchema(snapshot.schemas.space, space) !== true) {
-      return Promise.reject(new Error('invalid space format'));
-    }
-
-    await addOrUpdateSpace(key, space);
-
-    return res.json(space);
-  } catch (e: any) {
-    capture(e);
-    return res.json({ error: 'unable to save the space' });
   }
 });
 
