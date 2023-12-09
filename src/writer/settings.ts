@@ -13,6 +13,7 @@ export async function validateSpaceSettings(originalSpace: any) {
 
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
 
+  delete space.deleted;
   delete space.flagged;
   delete space.verified;
   delete space.hibernated;
