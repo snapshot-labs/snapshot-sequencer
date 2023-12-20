@@ -1,6 +1,6 @@
 import poke from '../../../src/helpers/poke';
 import db from '../../../src/helpers/mysql';
-import SpacesSqlFixtures from '../../fixtures/space';
+import { spacesSqlFixtures } from '../../fixtures/space';
 
 const mockGetSpaceUri = jest.fn((): any => {
   return 'https://snapshot.org';
@@ -61,15 +61,15 @@ describe('poke', () => {
 
     describe('when the space does not exist', () => {
       it('creates a new space', () => {
-        mockGetJSON.mockResolvedValueOnce(SpacesSqlFixtures[0].settings);
+        mockGetJSON.mockResolvedValueOnce(spacesSqlFixtures[0].settings);
 
-        expect(poke(SpacesSqlFixtures[0].id)).resolves.toEqual(SpacesSqlFixtures[0].settings);
+        expect(poke(spacesSqlFixtures[0].id)).resolves.toEqual(spacesSqlFixtures[0].settings);
       });
     });
 
     describe('when the space exist', () => {
       it('updates a new space', async () => {
-        const space = SpacesSqlFixtures[1];
+        const space = spacesSqlFixtures[1];
         const ts = (Date.now() / 1e3).toFixed();
         const query =
           'INSERT IGNORE INTO spaces SET ? ON DUPLICATE KEY UPDATE updated = ?, settings = ?, name = ?, hibernated = 0';
@@ -86,9 +86,9 @@ describe('poke', () => {
           space.settings.name
         ]);
 
-        mockGetJSON.mockResolvedValueOnce(SpacesSqlFixtures[0].settings);
+        mockGetJSON.mockResolvedValueOnce(spacesSqlFixtures[0].settings);
 
-        expect(poke(SpacesSqlFixtures[1].id)).resolves.toEqual(SpacesSqlFixtures[0].settings);
+        expect(poke(spacesSqlFixtures[1].id)).resolves.toEqual(spacesSqlFixtures[0].settings);
       });
     });
   });
