@@ -63,7 +63,7 @@ export function flagEntity({ type, action, value }) {
     case 'proposal-flag':
       query = `UPDATE proposals SET flagged = 1 WHERE id = ? LIMIT 1`;
       break;
-    case 'proposal-flag':
+    case 'proposal-unflag':
       query = `UPDATE proposals SET flagged = 0 WHERE id = ? LIMIT 1`;
       break;
     case 'space-hibernate':
