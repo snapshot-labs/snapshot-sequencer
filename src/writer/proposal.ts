@@ -75,6 +75,7 @@ export async function verify(body): Promise<any> {
   if (!isChoicesValid) return Promise.reject('wrong choices for basic type voting');
 
   const space = await getSpace(msg.space);
+
   try {
     await validateSpace(space);
   } catch (e) {
