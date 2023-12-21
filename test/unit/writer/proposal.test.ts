@@ -341,7 +341,6 @@ describe('writer/proposal', () => {
         ]);
         const mockedSpace = { ...spacesGetSpaceFixtures };
         if (key && value) {
-          console.log(key, value);
           mockedSpace[key] = value;
         }
         mockGetSpace.mockResolvedValueOnce(mockedSpace);
