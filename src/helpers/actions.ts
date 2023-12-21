@@ -36,7 +36,7 @@ export async function getProposal(space, id) {
 }
 
 export async function getSpace(id: string, includeDeleted = false) {
-  const query = `SELECT settings, deleted, flagged, verified, hibernated FROM spaces WHERE id = ? AND deleted in (?) LIMIT 1`;
+  const query = `SELECT settings, deleted, flagged, verified, turbo, hibernated FROM spaces WHERE id = ? AND deleted in (?) LIMIT 1`;
   const spaces = await db.queryAsync(query, [id, includeDeleted ? [0, 1] : [0]]);
 
   if (!spaces[0]) return false;
@@ -46,7 +46,8 @@ export async function getSpace(id: string, includeDeleted = false) {
     deleted: spaces[0].deleted === 1,
     verified: spaces[0].verified === 1,
     flagged: spaces[0].flagged === 1,
-    hibernated: spaces[0].hibernated === 1
+    hibernated: spaces[0].hibernated === 1,
+    turbo: spaces[0].turbo === 1
   };
 }
 
