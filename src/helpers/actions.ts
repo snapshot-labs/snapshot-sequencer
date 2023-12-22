@@ -5,7 +5,7 @@ export async function addOrUpdateSpace(space: string, settings: any) {
   if (!settings?.name) return false;
   const ts = (Date.now() / 1e3).toFixed();
   const query =
-    'INSERT IGNORE INTO spaces SET ? ON DUPLICATE KEY UPDATE updated = ?, settings = ?, name = ?';
+    'INSERT IGNORE INTO spaces SET ? ON DUPLICATE KEY UPDATE updated = ?, settings = ?, name = ?, hibernated = 0';
   await db.queryAsync(query, [
     {
       id: space,
@@ -36,7 +36,7 @@ export async function getProposal(space, id) {
 }
 
 export async function getSpace(id: string, includeDeleted = false) {
-  const query = `SELECT settings, deleted, flagged, verified FROM spaces WHERE id = ? AND deleted in (?) LIMIT 1`;
+  const query = `SELECT settings, deleted, flagged, verified, hibernated FROM spaces WHERE id = ? AND deleted in (?) LIMIT 1`;
   const spaces = await db.queryAsync(query, [id, includeDeleted ? [0, 1] : [0]]);
 
   if (!spaces[0]) return false;
@@ -45,7 +45,8 @@ export async function getSpace(id: string, includeDeleted = false) {
     ...jsonParse(spaces[0].settings, {}),
     deleted: spaces[0].deleted === 1,
     verified: spaces[0].verified === 1,
-    flagged: spaces[0].flagged === 1
+    flagged: spaces[0].flagged === 1,
+    hibernated: spaces[0].hibernated === 1
   };
 }
 
