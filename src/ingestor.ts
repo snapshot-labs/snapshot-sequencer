@@ -1,5 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import hashTypes from '@snapshot-labs/snapshot.js/src/sign/types.json';
+import hashTypes from '@snapshot-labs/snapshot.js/src/sign/hashedTypes.json';
 import { pin } from '@snapshot-labs/pineapple';
 import kebabCase from 'lodash/kebabCase';
 import relayer, { issueReceipt } from './helpers/relayer';

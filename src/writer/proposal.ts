@@ -1,4 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
+import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import kebabCase from 'lodash/kebabCase';
 import { jsonParse, validateChoices } from '../helpers/utils';
 import db from '../helpers/mysql';
@@ -7,8 +8,8 @@ import log from '../helpers/log';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedAddresses } from '../helpers/moderation';
+import { validateSpaceSettings } from './settings';
 
-const network = process.env.NETWORK || 'testnet';
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
@@ -35,6 +36,22 @@ export const getProposalsCount = async (space, author) => {
   return await db.queryAsync(query, [space, author]);
 };
 
+async function validateSpace(space: any) {
+  if (!space) {
+    return Promise.reject('unknown space');
+  }
+
+  if (space.hibernated) {
+    return Promise.reject('space hibernated');
+  }
+
+  try {
+    await validateSpaceSettings(space);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+}
+
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
   const created = parseInt(msg.timestamp);
@@ -59,27 +76,13 @@ export async function verify(body): Promise<any> {
 
   const space = await getSpace(msg.space);
 
-  if (!space) {
-    return Promise.reject('unknown space');
+  try {
+    await validateSpace(space);
+  } catch (e) {
+    return Promise.reject(`invalid space settings: ${e}`);
   }
 
   space.id = msg.space;
-  const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
-  const hasVotingValidation =
-    space.voteValidation?.name && !['any'].includes(space.voteValidation.name);
-
-  if (hasTicket && !hasVotingValidation && network !== 'testnet') {
-    return Promise.reject('space with ticket requires voting validation');
-  }
-
-  const hasProposalValidation =
-    (space.validation?.name && space.validation.name !== 'any') ||
-    space.filters?.minScore ||
-    space.filters?.onlyMembers;
-
-  if (!hasProposalValidation && network !== 'testnet') {
-    return Promise.reject('space missing proposal validation');
-  }
 
   // if (msg.payload.start < created) return Promise.reject('invalid start date');
 
@@ -154,6 +157,9 @@ export async function verify(body): Promise<any> {
 
   if (msg.payload.snapshot > currentBlockNum)
     return Promise.reject('proposal snapshot must be in past');
+
+  if (msg.payload.snapshot < networks[space.network].start)
+    return Promise.reject('proposal snapshot must be after network start');
 
   try {
     const [{ dayCount, monthCount, activeProposalsByAuthor }] = await getProposalsCount(

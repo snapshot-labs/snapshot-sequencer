@@ -1,8 +1,5 @@
 import express from 'express';
-import snapshot from '@snapshot-labs/snapshot.js';
 import relayer from './helpers/relayer';
-import { addOrUpdateSpace } from './helpers/actions';
-import { getSpaceENS } from './helpers/ens';
 import { updateProposalAndVotes } from './scores';
 import typedData from './ingestor';
 import { sendError, verifyAuth } from './helpers/utils';
@@ -10,9 +7,10 @@ import { flagEntity } from './helpers/moderation';
 import log from './helpers/log';
 import { name, version } from '../package.json';
 import { capture } from '@snapshot-labs/snapshot-sentry';
+import poke from './helpers/poke';
 
 const router = express.Router();
-const network = process.env.NETWORK || 'testnet';
+const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 
 const maintenanceMsg = 'update in progress, try later';
 
@@ -32,7 +30,7 @@ router.get('/', (req, res) => {
   const v = commit ? `${version}#${commit.substr(0, 7)}` : version;
   return res.json({
     name,
-    network,
+    SNAPSHOT_ENV,
     version: v,
     relayer: relayer.address
   });
@@ -51,20 +49,10 @@ router.get('/scores/:proposalId', async (req, res) => {
 });
 
 router.get('/spaces/:key/poke', async (req, res) => {
-  const { key } = req.params;
   try {
-    let space = false;
-    const result = await getSpaceENS(key);
-    if (snapshot.utils.validateSchema(snapshot.schemas.space, result) === true) space = result;
-    if (space) {
-      await addOrUpdateSpace(key, space);
-      // spaces[key] = space;
-    }
-    return res.json(space);
-  } catch (e) {
-    capture(e);
-    log.warn(`[api] Load space failed ${key}`);
-    return res.json(false);
+    return res.json(await poke(req.params.key));
+  } catch (e: any) {
+    return res.json({ error: e });
   }
 });
 
@@ -72,9 +60,10 @@ router.post('/flag', verifyAuth, async (req, res) => {
   const { type, value, action } = req.body;
 
   try {
-    await flagEntity({ type, value, action });
-    return res.json({ success: true });
+    const resp = await flagEntity({ type, value, action });
+    return res.json({ success: !!resp.affectedRows });
   } catch (e: any) {
+    console.log(e);
     return sendError(res, e.message || 'failed');
   }
 });

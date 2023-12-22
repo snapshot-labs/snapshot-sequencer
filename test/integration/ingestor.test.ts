@@ -1,5 +1,6 @@
 import ingestor from '../../src/ingestor';
 import proposalInput from '../fixtures/ingestor-payload/proposal.json';
+import { spacesGetSpaceFixtures } from '../fixtures/space';
 import voteInput from '../fixtures/ingestor-payload/vote.json';
 import cloneDeep from 'lodash/cloneDeep';
 import omit from 'lodash/omit';
@@ -18,20 +19,9 @@ jest.mock('../../src/helpers/moderation', () => {
   };
 });
 
-const DEFAULT_SPACE: any = {
-  id: 'fabien.eth',
-  network: '1',
-  voting: { aliased: false, type: 'single-choice' },
-  strategies: [],
-  members: [],
-  admins: [],
-  moderators: [],
-  validation: { name: 'basic' },
-  voteValidation: { name: 'basic' }
-};
-
-const mockGetSpace = jest.fn((id: any): any => {
-  return { ...DEFAULT_SPACE, id };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const mockGetSpace = jest.fn((_): any => {
+  return spacesGetSpaceFixtures;
 });
 jest.mock('../../src/helpers/actions', () => {
   const originalModule = jest.requireActual('../../src/helpers/actions');
