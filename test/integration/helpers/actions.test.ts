@@ -1,6 +1,6 @@
 import { getSpace } from '../../../src/helpers/actions';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
-import fixtures from '../../fixtures/space';
+import { spacesSqlFixtures } from '../../fixtures/space';
 
 describe('helpers/actions', () => {
   afterAll(async () => {
@@ -10,7 +10,7 @@ describe('helpers/actions', () => {
 
   describe('getSpace()', () => {
     beforeEach(async () => {
-      const spaces = fixtures.map(space => ({
+      const spaces = spacesSqlFixtures.map(space => ({
         ...space,
         settings: JSON.stringify(space.settings)
       }));
@@ -26,11 +26,12 @@ describe('helpers/actions', () => {
         verified: true,
         flagged: false,
         deleted: false,
+        hibernated: false,
         name: 'Test Space',
         admins: ['0xFC01614d28595d9ea5963daD9f44C0E0F0fE10f0'],
         symbol: 'TEST',
         network: '1',
-        strategies: []
+        strategies: [{ name: 'basic' }]
       });
     });
 
@@ -51,11 +52,12 @@ describe('helpers/actions', () => {
         verified: true,
         flagged: false,
         deleted: true,
+        hibernated: false,
         name: 'Test Space',
         admins: ['0xFC01614d28595d9ea5963daD9f44C0E0F0fE10f0'],
         symbol: 'TEST',
         network: '1',
-        strategies: []
+        strategies: [{ name: 'basic' }]
       });
     });
 

@@ -20,7 +20,6 @@ export async function shutterDecrypt(encryptedMsg: string, decryptionKey: string
   try {
     const decryptedMsg = await decrypt(arrayify(encryptedMsg), arrayify(decryptionKey));
     const result = toUtf8String(decryptedMsg);
-    log.info(`[shutter] decrypted ${JSON.stringify(result)}`);
     return result;
   } catch (e) {
     capture(e);

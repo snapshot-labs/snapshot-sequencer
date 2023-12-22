@@ -22,7 +22,8 @@ export async function loadModerationData(url = moderationURL): Promise<boolean> 
     }
 
     flaggedIps = body.flaggedIps;
-    flaggedAddresses = body.flaggedAddresses;
+    flaggedAddresses = body.flaggedAddresses || [];
+    flaggedAddresses = flaggedAddresses.map((address: string) => address.toLowerCase());
     flaggedProposalTitleKeywords = body.flaggedProposalTitleKeywords;
     flaggedProposalBodyKeywords = body.flaggedProposalBodyKeywords;
 
@@ -45,7 +46,7 @@ export function flagEntity({ type, action, value }) {
   if (!['proposal', 'space'].includes(type)) throw new Error('invalid type');
   if (type === 'proposal' && !['flag', 'unflag'].includes(action))
     throw new Error('invalid action');
-  if (type === 'space' && !['flag', 'unflag', 'verify'].includes(action))
+  if (type === 'space' && !['flag', 'unflag', 'verify', 'hibernate', 'reactivate'].includes(action))
     throw new Error('invalid action');
 
   let query;
@@ -62,8 +63,14 @@ export function flagEntity({ type, action, value }) {
     case 'proposal-flag':
       query = `UPDATE proposals SET flagged = 1 WHERE id = ? LIMIT 1`;
       break;
-    case 'proposal-flag':
+    case 'proposal-unflag':
       query = `UPDATE proposals SET flagged = 0 WHERE id = ? LIMIT 1`;
+      break;
+    case 'space-hibernate':
+      query = `UPDATE spaces SET hibernated = 1 WHERE id = ? LIMIT 1`;
+      break;
+    case 'space-reactivate':
+      query = `UPDATE spaces SET hibernated = 0 WHERE id = ? LIMIT 1`;
       break;
   }
 
