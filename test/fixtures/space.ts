@@ -7,6 +7,7 @@ export const spacesSqlFixtures: Record<string, any>[] = [
     flagged: 0,
     deleted: 0,
     hibernated: 0,
+    turbo: 0,
     created: 1649844547,
     updated: 1649844547,
     settings: {
@@ -24,6 +25,7 @@ export const spacesSqlFixtures: Record<string, any>[] = [
     flagged: 0,
     deleted: 0,
     hibernated: 0,
+    turbo: 0,
     created: 1649844547,
     updated: 1649844547,
     settings: {
@@ -95,5 +97,6 @@ export const spacesGetSpaceFixtures: Record<string, any> = {
   },
   flagged: 0,
   verified: 0,
-  hibernated: 0
+  hibernated: 0,
+  turbo: 0
 };

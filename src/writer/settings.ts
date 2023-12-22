@@ -16,6 +16,7 @@ export async function validateSpaceSettings(originalSpace: any) {
   delete space.deleted;
   delete space.flagged;
   delete space.verified;
+  delete space.turbo;
   delete space.hibernated;
   delete space.id;
 
