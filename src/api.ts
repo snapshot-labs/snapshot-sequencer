@@ -8,6 +8,7 @@ import log from './helpers/log';
 import { name, version } from '../package.json';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import poke from './helpers/poke';
+import serve from './helpers/requestDeduplicator';
 
 const router = express.Router();
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
@@ -39,7 +40,7 @@ router.get('/', (req, res) => {
 router.get('/scores/:proposalId', async (req, res) => {
   const { proposalId } = req.params;
   try {
-    const result = await updateProposalAndVotes(proposalId);
+    const result = await serve(proposalId, updateProposalAndVotes, [proposalId]);
     return res.json({ result });
   } catch (e) {
     capture(e);
