@@ -56,8 +56,20 @@ export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
   const created = parseInt(msg.timestamp);
   const addressLC = body.address.toLowerCase();
+  const space = await getSpace(msg.space);
 
-  const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload);
+  try {
+    await validateSpace(space);
+  } catch (e) {
+    return Promise.reject(`invalid space settings: ${e}`);
+  }
+
+  space.id = msg.space;
+
+  const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload, {
+    spaceType: space.turbo ? 'turbo' : 'default'
+  });
+
   if (schemaIsValid !== true) {
     log.warn('[writer] Wrong proposal format', schemaIsValid);
     return Promise.reject('wrong proposal format');
@@ -73,16 +85,6 @@ export async function verify(body): Promise<any> {
     choices: msg.payload.choices
   });
   if (!isChoicesValid) return Promise.reject('wrong choices for basic type voting');
-
-  const space = await getSpace(msg.space);
-
-  try {
-    await validateSpace(space);
-  } catch (e) {
-    return Promise.reject(`invalid space settings: ${e}`);
-  }
-
-  space.id = msg.space;
 
   // if (msg.payload.start < created) return Promise.reject('invalid start date');
 

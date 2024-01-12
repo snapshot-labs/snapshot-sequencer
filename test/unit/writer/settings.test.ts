@@ -1,12 +1,21 @@
 import { verify } from '../../../src/writer/settings';
 import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/space.json';
+import SpaceSchema from '@snapshot-labs/snapshot.js/src/schemas/space.json';
 
 function editedInput(payload = {}) {
   const result = { ...input, msg: JSON.parse(input.msg) };
   result.msg.payload = { ...result.msg.payload, ...payload };
 
   return { ...result, msg: JSON.stringify(result.msg) };
+}
+
+function randomStrategies(count = 1) {
+  return Array(count)
+    .fill(0)
+    .map(() => ({
+      name: `strategy-${Math.floor(Math.random() * 1000)}`
+    }));
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -72,6 +81,30 @@ describe('writer/settings', () => {
       });
       it.todo('rejects if the submitter does not have permission');
       it.todo('rejects if the submitter does not have permission to change admin');
+      const maxStrategiesWithSpaceType =
+        SpaceSchema.definitions.Space.properties.strategies.maxItemsWithSpaceType;
+      const maxStrategiesForNormalSpace = maxStrategiesWithSpaceType['default'];
+      const maxStrategiesForTurboSpace = maxStrategiesWithSpaceType['turbo'];
+      it(`rejects if passing more than ${maxStrategiesForNormalSpace} strategies for normal space`, async () => {
+        return expect(
+          verify(
+            editedInput({
+              strategies: randomStrategies(maxStrategiesForNormalSpace + 2)
+            })
+          )
+        ).rejects.toContain('wrong space format');
+      });
+
+      it(`rejects if passing more than ${maxStrategiesForTurboSpace} strategies for turbo space`, async () => {
+        mockGetSpace.mockResolvedValueOnce({ ...spacesGetSpaceFixtures, turbo: true });
+        return expect(
+          verify(
+            editedInput({
+              strategies: randomStrategies(maxStrategiesForTurboSpace + 2)
+            })
+          )
+        ).rejects.toContain('wrong space format');
+      });
     });
 
     describe('on valid data', () => {
@@ -105,6 +138,31 @@ describe('writer/settings', () => {
         it('returns a Promise resolve', async () => {
           return expect(
             verify(editedInput({ validation: { name: 'any' }, filters: { onlyMembers: true } }))
+          ).resolves.toBe(undefined);
+        });
+      });
+
+      describe('with correct number of strategies for normal spaces', () => {
+        it('returns a Promise resolve', async () => {
+          return expect(
+            verify(
+              editedInput({
+                strategies: randomStrategies(8)
+              })
+            )
+          ).resolves.toBe(undefined);
+        });
+      });
+
+      describe('with correct number of strategies for turbo spaces', () => {
+        it('returns a Promise resolve', async () => {
+          mockGetSpace.mockResolvedValueOnce({ ...spacesGetSpaceFixtures, turbo: true });
+          return expect(
+            verify(
+              editedInput({
+                strategies: randomStrategies(10)
+              })
+            )
           ).resolves.toBe(undefined);
         });
       });

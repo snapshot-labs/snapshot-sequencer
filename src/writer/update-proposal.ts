@@ -17,9 +17,15 @@ export function getSpaceUpdateError({ type, space }): string | undefined {
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
 
+  const space = await getSpace(msg.space);
+  space.id = msg.space;
+
   const schemaIsValid: any = snapshot.utils.validateSchema(
     snapshot.schemas.updateProposal,
-    msg.payload
+    msg.payload,
+    {
+      spaceType: space.turbo ? 'turbo' : 'default'
+    }
   );
   if (schemaIsValid !== true) {
     log.warn('[writer] Wrong proposal format', schemaIsValid);
@@ -41,9 +47,6 @@ export async function verify(body): Promise<any> {
   }
 
   if (proposal.author !== body.address) return Promise.reject('Not the author');
-
-  const space = await getSpace(msg.space);
-  space.id = msg.space;
 
   const spaceUpdateError = getSpaceUpdateError({
     type: msg.payload.type,
