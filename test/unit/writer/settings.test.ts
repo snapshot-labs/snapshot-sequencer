@@ -1,6 +1,7 @@
 import { verify } from '../../../src/writer/settings';
 import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/space.json';
+import SpaceSchema from '@snapshot-labs/snapshot.js/src/schemas/space.json';
 
 function editedInput(payload = {}) {
   const result = { ...input, msg: JSON.parse(input.msg) };
@@ -80,23 +81,26 @@ describe('writer/settings', () => {
       });
       it.todo('rejects if the submitter does not have permission');
       it.todo('rejects if the submitter does not have permission to change admin');
-
-      it('rejects if passing more than 8 strategies for normal space', async () => {
+      const maxStrategiesWithSpaceType =
+        SpaceSchema.definitions.Space.properties.strategies.maxItemsWithSpaceType;
+      const maxStrategiesForNormalSpace = maxStrategiesWithSpaceType['default'];
+      const maxStrategiesForTurboSpace = maxStrategiesWithSpaceType['turbo'];
+      it(`rejects if passing more than ${maxStrategiesForNormalSpace} strategies for normal space`, async () => {
         return expect(
           verify(
             editedInput({
-              strategies: randomStrategies(10)
+              strategies: randomStrategies(maxStrategiesForNormalSpace + 2)
             })
           )
         ).rejects.toContain('wrong space format');
       });
 
-      it('rejects if passing more than 10 strategies for turbo space', async () => {
+      it(`rejects if passing more than ${maxStrategiesForTurboSpace} strategies for turbo space`, async () => {
         mockGetSpace.mockResolvedValueOnce({ ...spacesGetSpaceFixtures, turbo: true });
         return expect(
           verify(
             editedInput({
-              strategies: randomStrategies(12)
+              strategies: randomStrategies(maxStrategiesForTurboSpace + 2)
             })
           )
         ).rejects.toContain('wrong space format');
