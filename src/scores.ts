@@ -96,6 +96,11 @@ async function updateProposalScores(proposalId: string, scores: any, votes: numb
   ]);
 }
 
+async function invalidateProposalScore(proposalId: string) {
+  const query = `UPDATE proposals SET scores_state = ? WHERE id = ? LIMIT 1;`;
+  await db.queryAsync(query, ['invalid', proposalId]);
+}
+
 const pendingRequests = {};
 
 export async function updateProposalAndVotes(proposalId: string, force = false) {
@@ -114,7 +119,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     (proposal.votes > 30000 && proposal.scores_updated > ts - 300) ||
     pendingRequests[proposalId]
   ) {
-    console.log(
+    log.info(
       'ignore score calculation',
       proposal.space,
       proposalId,
@@ -171,10 +176,20 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     if (!isFinal) await updateVotesVp(votes, vpState, proposalId);
 
     // Store scores
-    await updateProposalScores(proposalId, results, votes.length);
-    log.info(
-      `[scores] Proposal updated ${proposal.id}, ${proposal.space}, ${results.scores_state}, ${votes.length}`
-    );
+    try {
+      await updateProposalScores(proposalId, results, votes.length);
+      log.info(
+        `[scores] Proposal updated ${proposal.id}, ${proposal.space}, ${results.scores_state}, ${votes.length}`
+      );
+    } catch (e: any) {
+      if (proposal.state === 'closed' && e.code === 'ER_WARN_DATA_OUT_OF_RANGE') {
+        log.info(`[scores] Invalid final scores_total: ${results.scores_total}`, e);
+        await invalidateProposalScore(proposalId);
+        throw new Error('Invalid out of range score');
+      } else {
+        throw e;
+      }
+    }
 
     delete pendingRequests[proposalId];
     return true;
