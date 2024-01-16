@@ -182,9 +182,11 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
         `[scores] Proposal updated ${proposal.id}, ${proposal.space}, ${results.scores_state}, ${votes.length}`
       );
     } catch (e: any) {
-      if (proposal.state === 'closed' && e.code === 'ER_WARN_DATA_OUT_OF_RANGE') {
+      if (e.code === 'ER_WARN_DATA_OUT_OF_RANGE') {
         log.info(`[scores] Invalid final scores_total: ${results.scores_total}`, e);
-        await invalidateProposalScore(proposalId);
+        if (proposal.state === 'closed') {
+          await invalidateProposalScore(proposalId);
+        }
         throw new Error('Invalid out of range score');
       } else {
         throw e;
