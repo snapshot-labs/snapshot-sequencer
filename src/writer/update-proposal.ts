@@ -67,11 +67,13 @@ export async function action(body, ipfs): Promise<void> {
     ipfs,
     updated,
     type: msg.payload.type,
-    plugins: plugins,
+    plugins,
     title: msg.payload.name,
     body: msg.payload.body,
     discussion: msg.payload.discussion,
-    choices: JSON.stringify(msg.payload.choices)
+    choices: JSON.stringify(msg.payload.choices),
+    scores: JSON.stringify([]),
+    scores_by_strategy: JSON.stringify([])
   };
 
   const query = 'UPDATE proposals SET ? WHERE id = ? LIMIT 1';
