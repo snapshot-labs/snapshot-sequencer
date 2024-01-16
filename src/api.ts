@@ -42,10 +42,10 @@ router.get('/scores/:proposalId', async (req, res) => {
   try {
     const result = await serve(proposalId, updateProposalAndVotes, [proposalId]);
     return res.json({ result });
-  } catch (e) {
+  } catch (e: any) {
     capture(e);
     log.warn(`[api] updateProposalAndVotes() failed ${proposalId}, ${JSON.stringify(e)}`);
-    return res.json({ error: 'failed', message: e });
+    return res.json({ error: 'failed', message: e.message || e });
   }
 });
 
