@@ -187,7 +187,6 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   /* Store the proposal in dedicated table 'proposals' */
   const spaceSettings = await getSpace(space);
 
-  if (!spaceSettings) return Promise.reject('unknown space');
   const author = body.address;
   const created = parseInt(msg.timestamp);
   const metadata = msg.payload.metadata || {};
