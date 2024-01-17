@@ -48,6 +48,11 @@ const timeIngestorErrorProcess = new client.Histogram({
   labelNames: ['error', 'type']
 });
 
+export const requestDeduplicatorSize = new client.Gauge({
+  name: 'request_deduplicator_size',
+  help: 'Total number of items in the deduplicator queue'
+});
+
 const ingestorInstrumentation = (req, res, next) => {
   if (req.method !== 'POST' && req.originalUrl !== '/') {
     return next();

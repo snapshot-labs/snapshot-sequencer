@@ -7,6 +7,9 @@ export const SPACE_PROPOSAL_MONTH_LIMIT = 15;
 export const VERIFIED_SPACE_PROPOSAL_DAY_LIMIT = 20;
 export const VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT = 100;
 
+export const TURBO_SPACE_PROPOSAL_DAY_LIMIT = 40;
+export const TURBO_SPACE_PROPOSAL_MONTH_LIMIT = 200;
+
 export const ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT = 150;
 export const ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT = 750;
 
@@ -30,6 +33,10 @@ export function getSpaceLimits(space): number[] {
 
   if (ECOSYSTEM_SPACES.includes(space.id)) {
     return [ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT, ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT];
+  }
+
+  if (space.turbo) {
+    return [TURBO_SPACE_PROPOSAL_DAY_LIMIT, TURBO_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
   if (space.verified) {

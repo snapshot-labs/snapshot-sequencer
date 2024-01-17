@@ -59,6 +59,7 @@ export function hasStrategyOverride(strategies: any[]) {
     '"cyberkongz"',
     '"cyberkongz-v2"',
     '"delegation"',
+    '"delegation-with-cap"',
     '"delegation-with-overrides"',
     '"erc20-balance-of-delegation"',
     '"erc20-balance-of-fixed-total"',

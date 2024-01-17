@@ -100,7 +100,7 @@ const pendingRequests = {};
 
 export async function updateProposalAndVotes(proposalId: string, force = false) {
   const proposal = await getProposal(proposalId);
-  if (!proposal) return false;
+  if (!proposal || proposal.state === 'pending') return false;
   if (proposal.scores_state === 'final') return true;
 
   if (!force && proposal.privacy === 'shutter' && proposal.state === 'closed') {
