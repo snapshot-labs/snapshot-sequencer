@@ -14,8 +14,7 @@ jest.mock('../../src/helpers/moderation', () => {
     __esModule: true,
     ...originalModule,
     // sha256 of 1.2.3.4
-    flaggedIps: ['6694f83c9f476da31f5df6bcc520034e7e57d421d247b9d34f49edbfc84a764c'],
-    flaggedProposalBodyKeywords: ['claim drop']
+    flaggedIps: ['6694f83c9f476da31f5df6bcc520034e7e57d421d247b9d34f49edbfc84a764c']
   };
 });
 

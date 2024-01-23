@@ -4,12 +4,10 @@ import db from './mysql';
 import { fetchWithKeepAlive } from './utils';
 
 const sidekickURL = process.env.SIDEKICK_URL || 'https://sh5.co';
-const moderationURL = `${sidekickURL}/api/moderation`;
+const moderationURL = `${sidekickURL}/api/moderation?list=flaggedIps,flaggedAddresses`;
 
 export let flaggedIps: Array<string> = [];
 export let flaggedAddresses: Array<string> = [];
-export let flaggedProposalTitleKeywords: Array<string> = [];
-export let flaggedProposalBodyKeywords: Array<string> = [];
 
 export async function loadModerationData(url = moderationURL): Promise<boolean> {
   try {
@@ -22,10 +20,7 @@ export async function loadModerationData(url = moderationURL): Promise<boolean> 
     }
 
     flaggedIps = body.flaggedIps;
-    flaggedAddresses = body.flaggedAddresses || [];
-    flaggedAddresses = flaggedAddresses.map((address: string) => address.toLowerCase());
-    flaggedProposalTitleKeywords = body.flaggedProposalTitleKeywords;
-    flaggedProposalBodyKeywords = body.flaggedProposalBodyKeywords;
+    flaggedAddresses = (body.flaggedAddresses || []).map((a: string) => a.toLowerCase());
 
     return true;
   } catch (e: any) {

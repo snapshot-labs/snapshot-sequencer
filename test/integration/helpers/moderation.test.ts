@@ -1,10 +1,4 @@
-import {
-  loadModerationData,
-  flaggedIps,
-  flaggedAddresses,
-  flaggedProposalTitleKeywords,
-  flaggedProposalBodyKeywords
-} from '../../../src/helpers/moderation';
+import { loadModerationData, flaggedIps, flaggedAddresses } from '../../../src/helpers/moderation';
 
 describe('moderation', () => {
   describe('loadModerationData()', () => {
@@ -14,8 +8,6 @@ describe('moderation', () => {
 
         expect(flaggedIps).not.toHaveLength(0);
         expect(flaggedAddresses).not.toHaveLength(0);
-        expect(flaggedProposalTitleKeywords).not.toHaveLength(0);
-        expect(flaggedProposalBodyKeywords).not.toHaveLength(0);
       });
     });
 
