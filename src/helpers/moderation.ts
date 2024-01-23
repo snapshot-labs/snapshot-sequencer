@@ -4,10 +4,11 @@ import db from './mysql';
 import { fetchWithKeepAlive } from './utils';
 
 const sidekickURL = process.env.SIDEKICK_URL || 'https://sh5.co';
-const moderationURL = `${sidekickURL}/api/moderation?list=flaggedIps,flaggedAddresses`;
+const moderationURL = `${sidekickURL}/api/moderation?list=flaggedIps,flaggedAddresses,flaggedLinks`;
 
 export let flaggedIps: Array<string> = [];
 export let flaggedAddresses: Array<string> = [];
+export let flaggedLinks: Array<string> = [];
 
 export async function loadModerationData(url = moderationURL): Promise<boolean> {
   try {
@@ -20,6 +21,7 @@ export async function loadModerationData(url = moderationURL): Promise<boolean> 
     }
 
     flaggedIps = body.flaggedIps;
+    flaggedLinks = body.flaggedLinks;
     flaggedAddresses = (body.flaggedAddresses || []).map((a: string) => a.toLowerCase());
 
     return true;
@@ -33,6 +35,13 @@ export default async function run() {
   await loadModerationData();
   await snapshot.utils.sleep(20e3);
   run();
+}
+
+export function containsFlaggedLinks(body: string, links = flaggedLinks): boolean {
+  const normalizedLinks = links.filter(a => a?.length > 0);
+  if (normalizedLinks.length === 0) return false;
+
+  return new RegExp(normalizedLinks.join('|'), 'i').test(body);
 }
 
 export function flagEntity({ type, action, value }) {

@@ -1,4 +1,9 @@
-import { loadModerationData, flaggedIps, flaggedAddresses } from '../../../src/helpers/moderation';
+import {
+  loadModerationData,
+  flaggedIps,
+  flaggedAddresses,
+  containsFlaggedLinks
+} from '../../../src/helpers/moderation';
 
 describe('moderation', () => {
   describe('loadModerationData()', () => {
@@ -27,6 +32,24 @@ describe('moderation', () => {
 
       it('returns nothing on not-json response', async () => {
         await expect(loadModerationData('https://snapshot.org')).resolves.toBe(false);
+      });
+    });
+
+    describe('containsFlaggedLinks()', () => {
+      it('returns true if body contains flagged links', () => {
+        expect(containsFlaggedLinks('this is a link https://a.com', ['https://a.com'])).toBe(true);
+      });
+
+      it('returns false if body does not contain flagged links', () => {
+        expect(containsFlaggedLinks('this is a link https://b.com', ['https://a.com'])).toBe(false);
+      });
+
+      it('returns false if flagged links are empty', () => {
+        expect(containsFlaggedLinks('this is a link https://a.com', [])).toBe(false);
+      });
+
+      it('returns false if flagged links contains empty values', () => {
+        expect(containsFlaggedLinks('this is a link https://a.com', [''])).toBe(false);
       });
     });
   });

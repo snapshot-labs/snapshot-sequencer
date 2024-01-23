@@ -3,6 +3,7 @@ import { jsonParse, validateChoices } from '../helpers/utils';
 import db from '../helpers/mysql';
 import { getSpace, getProposal } from '../helpers/actions';
 import log from '../helpers/log';
+import { containsFlaggedLinks } from '../helpers/moderation';
 
 // We don't need most of the checks used https://github.com/snapshot-labs/snapshot-sequencer/blob/89992b49c96fedbbbe33b42041c9cbe5a82449dd/src/writer/proposal.ts#L62
 // because we assume that those checks were already done during the proposal creation
@@ -73,7 +74,8 @@ export async function action(body, ipfs): Promise<void> {
     discussion: msg.payload.discussion,
     choices: JSON.stringify(msg.payload.choices),
     scores: JSON.stringify([]),
-    scores_by_strategy: JSON.stringify([])
+    scores_by_strategy: JSON.stringify([]),
+    flagged: +containsFlaggedLinks(msg.proposal.body)
   };
 
   const query = 'UPDATE proposals SET ? WHERE id = ? LIMIT 1';

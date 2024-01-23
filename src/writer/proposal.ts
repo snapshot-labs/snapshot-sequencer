@@ -7,7 +7,7 @@ import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 import { capture } from '@snapshot-labs/snapshot-sentry';
-import { flaggedAddresses } from '../helpers/moderation';
+import { flaggedAddresses, containsFlaggedLinks } from '../helpers/moderation';
 import { validateSpaceSettings } from './settings';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
@@ -233,8 +233,10 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     scores_total: 0,
     scores_updated: 0,
     votes: 0,
-    validation
+    validation,
+    flagged: containsFlaggedLinks(msg.payload.body) ? 1 : 0
   };
+
   const query = 'INSERT IGNORE INTO proposals SET ?; ';
   const params: any[] = [proposal];
 
