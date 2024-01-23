@@ -19,7 +19,7 @@ jest.mock('../../../src/helpers/moderation', () => {
 describe('writer/proposal', () => {
   describe('action()', () => {
     afterAll(async () => {
-      await db.queryAsync('DELETE FROM proposals');
+      await db.queryAsync('DELETE FROM proposals where id in (?)', [['0x01', '0x02']]);
       await db.endAsync();
       await sequencerDB.endAsync();
     });
