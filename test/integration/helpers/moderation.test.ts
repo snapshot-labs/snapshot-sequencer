@@ -1,18 +1,20 @@
 import {
   loadModerationData,
-  flaggedIps,
-  flaggedAddresses,
-  containsFlaggedLinks
+  containsFlaggedLinks,
+  setData,
+  flaggedLinks,
+  flaggedAddresses
 } from '../../../src/helpers/moderation';
 
 describe('moderation', () => {
   describe('loadModerationData()', () => {
     describe('on success', () => {
       it('loads moderation data from sidekick', async () => {
-        await loadModerationData();
+        const result = await loadModerationData();
 
-        expect(flaggedIps).not.toHaveLength(0);
-        expect(flaggedAddresses).not.toHaveLength(0);
+        expect(result!.flaggedIps).not.toHaveLength(0);
+        expect(result!.flaggedAddresses).not.toHaveLength(0);
+        expect(result!.flaggedLinks).not.toHaveLength(0);
       });
     });
 
@@ -25,31 +27,40 @@ describe('moderation', () => {
       ])(
         'returns nothing on network error (%s)',
         async (title, url) => {
-          await expect(loadModerationData(url)).resolves.toBe(false);
+          await expect(loadModerationData(url)).resolves.toBe(undefined);
         },
         6e3
       );
 
       it('returns nothing on not-json response', async () => {
-        await expect(loadModerationData('https://snapshot.org')).resolves.toBe(false);
+        await expect(loadModerationData('https://snapshot.org')).resolves.toBe(undefined);
       });
     });
 
     describe('containsFlaggedLinks()', () => {
+      beforeAll(() => {
+        setData({ flaggedLinks: ['https://a.com'] });
+      });
+
       it('returns true if body contains flagged links', () => {
-        expect(containsFlaggedLinks('this is a link https://a.com', ['https://a.com'])).toBe(true);
+        expect(containsFlaggedLinks('this is a link https://a.com')).toBe(true);
       });
 
       it('returns false if body does not contain flagged links', () => {
-        expect(containsFlaggedLinks('this is a link https://b.com', ['https://a.com'])).toBe(false);
+        expect(containsFlaggedLinks('this is a link https://b.com')).toBe(false);
+      });
+    });
+
+    describe('setData()', () => {
+      it('removes invalid data from flaggedLink', () => {
+        // @ts-ignore
+        setData({ flaggedLinks: ['https://a.com', null, false, '', 0] });
+        expect(flaggedLinks).toEqual(['https://a.com']);
       });
 
-      it('returns false if flagged links are empty', () => {
-        expect(containsFlaggedLinks('this is a link https://a.com', [])).toBe(false);
-      });
-
-      it('returns false if flagged links contains empty values', () => {
-        expect(containsFlaggedLinks('this is a link https://a.com', [''])).toBe(false);
+      it('lower cases the flaggedAddresses', () => {
+        setData({ flaggedAddresses: ['0xAa'] });
+        expect(flaggedAddresses).toEqual(['0xaa']);
       });
     });
   });

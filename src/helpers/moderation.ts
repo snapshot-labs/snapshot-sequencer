@@ -10,37 +10,48 @@ export let flaggedIps: Array<string> = [];
 export let flaggedAddresses: Array<string> = [];
 export let flaggedLinks: Array<string> = [];
 
-export async function loadModerationData(url = moderationURL): Promise<boolean> {
+export async function loadModerationData(
+  url = moderationURL
+): Promise<Record<string, string[]> | undefined> {
   try {
     const res = await fetchWithKeepAlive(url, { timeout: 5e3 });
     const body = await res.json();
 
     if (body.error) {
       capture(body);
-      return false;
+      return;
     }
 
-    flaggedIps = body.flaggedIps;
-    flaggedLinks = (body.flaggedLinks || []).filter((a: string) => a?.length > 0);
-    flaggedAddresses = (body.flaggedAddresses || []).map((a: string) => a.toLowerCase());
-
-    return true;
+    return {
+      flaggedIps: body.flaggedIps,
+      flaggedLinks: body.flaggedLinks,
+      flaggedAddresses: body.flaggedAddresses
+    };
   } catch (e: any) {
     capture(e);
-    return false;
+    return;
+  }
+}
+
+export function setData(result?: Record<string, string[]>) {
+  if (result) {
+    flaggedIps = result.flaggedIps || [];
+    flaggedAddresses = (result.flaggedAddresses || []).map((a: string) => a.toLowerCase());
+    flaggedLinks = (result.flaggedLinks || []).filter((a: string) => a?.length > 0);
   }
 }
 
 export default async function run() {
-  await loadModerationData();
+  setData(await loadModerationData());
+
   await snapshot.utils.sleep(20e3);
   run();
 }
 
-export function containsFlaggedLinks(body: string, links = flaggedLinks): boolean {
-  if (links.length === 0) return false;
+export function containsFlaggedLinks(body: string): boolean {
+  if (flaggedLinks.length === 0) return false;
 
-  return new RegExp(links.join('|'), 'i').test(body);
+  return new RegExp(flaggedLinks.join('|'), 'i').test(body);
 }
 
 export function flagEntity({ type, action, value }) {
