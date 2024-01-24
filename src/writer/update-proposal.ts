@@ -75,7 +75,7 @@ export async function action(body, ipfs): Promise<void> {
     choices: JSON.stringify(msg.payload.choices),
     scores: JSON.stringify([]),
     scores_by_strategy: JSON.stringify([]),
-    flagged: +containsFlaggedLinks(msg.proposal.body)
+    flagged: +containsFlaggedLinks(msg.payload.body)
   };
 
   const query = 'UPDATE proposals SET ? WHERE id = ? LIMIT 1';
