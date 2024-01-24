@@ -42,6 +42,10 @@ describe('moderation', () => {
         setData({ flaggedLinks: ['https://a.com'] });
       });
 
+      afterAll(() => {
+        setData({ flaggedLinks: [] });
+      });
+
       it('returns true if body contains flagged links', () => {
         expect(containsFlaggedLinks('this is a link https://a.com')).toBe(true);
       });
@@ -52,6 +56,10 @@ describe('moderation', () => {
     });
 
     describe('setData()', () => {
+      afterAll(() => {
+        setData({ flaggedLinks: [] });
+      });
+
       it('removes invalid data from flaggedLink', () => {
         // @ts-ignore
         setData({ flaggedLinks: ['https://a.com', null, false, '', 0] });
