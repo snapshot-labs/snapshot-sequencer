@@ -21,7 +21,7 @@ export async function loadModerationData(url = moderationURL): Promise<boolean> 
     }
 
     flaggedIps = body.flaggedIps;
-    flaggedLinks = body.flaggedLinks;
+    flaggedLinks = (body.flaggedLinks || []).filter((a: string) => a?.length > 0);
     flaggedAddresses = (body.flaggedAddresses || []).map((a: string) => a.toLowerCase());
 
     return true;
@@ -38,10 +38,9 @@ export default async function run() {
 }
 
 export function containsFlaggedLinks(body: string, links = flaggedLinks): boolean {
-  const normalizedLinks = links.filter(a => a?.length > 0);
-  if (normalizedLinks.length === 0) return false;
+  if (links.length === 0) return false;
 
-  return new RegExp(normalizedLinks.join('|'), 'i').test(body);
+  return new RegExp(links.join('|'), 'i').test(body);
 }
 
 export function flagEntity({ type, action, value }) {
