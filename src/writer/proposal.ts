@@ -234,7 +234,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     scores_updated: 0,
     votes: 0,
     validation,
-    flagged: +containsFlaggedLinks(msg.payload.body) ? 1 : 0
+    flagged: +containsFlaggedLinks(msg.payload.body)
   };
 
   const query = 'INSERT IGNORE INTO proposals SET ?; ';
