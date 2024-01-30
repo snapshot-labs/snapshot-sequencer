@@ -153,9 +153,13 @@ export async function verify(body): Promise<any> {
     }
   }
 
-  const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
-
-  const currentBlockNum = parseInt(await provider.getBlockNumber());
+  let currentBlockNum = 0;
+  try {
+    const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
+    currentBlockNum = parseInt(await provider.getBlockNumber());
+  } catch {
+    return Promise.reject('unable to fetch current block number');
+  }
 
   if (msg.payload.snapshot > currentBlockNum)
     return Promise.reject('proposal snapshot must be in past');
