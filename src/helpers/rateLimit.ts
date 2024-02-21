@@ -18,7 +18,7 @@ export default rateLimit({
       429
     );
   },
-  skip: () => redisClient && !redisClient.isReady,
+  skip: () => !redisClient?.isReady,
   store: redisClient
     ? new RedisStore({
         sendCommand: (...args: string[]) => redisClient.sendCommand(args),
