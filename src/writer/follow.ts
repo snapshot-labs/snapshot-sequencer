@@ -10,6 +10,11 @@ export const getFollowsCount = async (follower: string): Promise<number> => {
 };
 
 export async function verify(message): Promise<any> {
+  const query = `SELECT * FROM follows WHERE follower = ? AND space = ? LIMIT 1`;
+  const follows = await db.queryAsync(query, [message.from, message.space]);
+
+  if (follows.length !== 0) return Promise.reject('you are already following this space');
+
   const count = await getFollowsCount(message.from);
 
   if (count >= FOLLOWS_LIMIT_PER_USER) {
@@ -19,7 +24,11 @@ export async function verify(message): Promise<any> {
   return true;
 }
 
-export async function action(message, ipfs, receipt, id): Promise<void> {
+export async function action(message, ipfs, _receipt, id): Promise<void> {
+  const query = `
+    INSERT IGNORE INTO follows SET ?;
+    UPDATE spaces SET follower_count = follower_count + 1 WHERE id = ?;
+  `;
   const params = {
     id,
     ipfs,
@@ -28,5 +37,5 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
     created: message.timestamp
   };
 
-  await db.queryAsync('INSERT IGNORE INTO follows SET ?', params);
+  await db.queryAsync(query, [params, message.space]);
 }

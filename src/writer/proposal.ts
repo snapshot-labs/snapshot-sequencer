@@ -235,8 +235,12 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     votes: 0,
     validation
   };
-  const query = 'INSERT IGNORE INTO proposals SET ?; ';
-  const params: any[] = [proposal];
+
+  const query = `
+    INSERT IGNORE INTO proposals SET ?;
+    UPDATE spaces SET proposal_count = proposal_count + 1 WHERE id = ?;
+  `;
+  const params: any[] = [proposal, space];
 
   await db.queryAsync(query, params);
 }
