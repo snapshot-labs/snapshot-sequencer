@@ -4,40 +4,54 @@ import db from './mysql';
 import { fetchWithKeepAlive } from './utils';
 
 const sidekickURL = process.env.SIDEKICK_URL || 'https://sh5.co';
-const moderationURL = `${sidekickURL}/api/moderation`;
+const moderationURL = `${sidekickURL}/api/moderation?list=flaggedIps,flaggedAddresses,flaggedLinks`;
 
 export let flaggedIps: Array<string> = [];
 export let flaggedAddresses: Array<string> = [];
-export let flaggedProposalTitleKeywords: Array<string> = [];
-export let flaggedProposalBodyKeywords: Array<string> = [];
+export let flaggedLinks: Array<string> = [];
 
-export async function loadModerationData(url = moderationURL): Promise<boolean> {
+export async function loadModerationData(
+  url = moderationURL
+): Promise<Record<string, string[]> | undefined> {
   try {
     const res = await fetchWithKeepAlive(url, { timeout: 5e3 });
     const body = await res.json();
 
     if (body.error) {
       capture(body);
-      return false;
+      return;
     }
 
-    flaggedIps = body.flaggedIps;
-    flaggedAddresses = body.flaggedAddresses || [];
-    flaggedAddresses = flaggedAddresses.map((address: string) => address.toLowerCase());
-    flaggedProposalTitleKeywords = body.flaggedProposalTitleKeywords;
-    flaggedProposalBodyKeywords = body.flaggedProposalBodyKeywords;
-
-    return true;
+    return {
+      flaggedIps: body.flaggedIps,
+      flaggedLinks: body.flaggedLinks,
+      flaggedAddresses: body.flaggedAddresses
+    };
   } catch (e: any) {
     capture(e);
-    return false;
+    return;
+  }
+}
+
+export function setData(result?: Record<string, string[]>) {
+  if (result) {
+    flaggedIps = result.flaggedIps || [];
+    flaggedAddresses = (result.flaggedAddresses || []).map((a: string) => a.toLowerCase());
+    flaggedLinks = (result.flaggedLinks || []).filter((a: string) => a?.length > 0);
   }
 }
 
 export default async function run() {
-  await loadModerationData();
+  setData(await loadModerationData());
+
   await snapshot.utils.sleep(20e3);
   run();
+}
+
+export function containsFlaggedLinks(body: string): boolean {
+  if (flaggedLinks.length === 0) return false;
+
+  return new RegExp(flaggedLinks.join('|'), 'i').test(body);
 }
 
 export function flagEntity({ type, action, value }) {

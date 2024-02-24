@@ -1292,17 +1292,17 @@
     node-fetch "^2.7.0"
     prom-client "^14.2.0"
 
-"@snapshot-labs/snapshot-sentry@^1.5.4":
-  version "1.5.4"
-  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot-sentry/-/snapshot-sentry-1.5.4.tgz#3727b982a7610e20b43c2ac3974a593923c11601"
-  integrity sha512-2EN9AkpfTIMIr6ul/6QI3Ks6UcX6tcQr7dE0+sEdmbDcd4L3XtpxN8RsJ/94/EDlo90JMW7DMZpI3y4Z4K+DmA==
+"@snapshot-labs/snapshot-sentry@^1.5.5":
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot-sentry/-/snapshot-sentry-1.5.5.tgz#915d4578e42e71807db49632dbb11c1b1ce40301"
+  integrity sha512-+NRZp21FbgIGf9syyT6mBZp3llrqbk2acSzDO6lBJ//CGYTAOerjSIMJbxM/xEV2E0NGSIpxhZLO0DVIlC1E2g==
   dependencies:
     "@sentry/node" "^7.81.1"
 
-"@snapshot-labs/snapshot.js@^0.10.1":
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot.js/-/snapshot.js-0.10.1.tgz#d783ee394d6e3ad3d3a6e91fea67411752d15180"
-  integrity sha512-PacD8HdsYZhb1Yifp6n+11Og+nZUvGhTosu+ejnEwhP6zQOFMg6gaIEsWGjoAMnjos0sgA/oIbWdPIzqJRTECw==
+"@snapshot-labs/snapshot.js@^0.11.1":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot.js/-/snapshot.js-0.11.1.tgz#dfbbb3daafa225212f19bb3c94bdfc4c13519ba7"
+  integrity sha512-Z6TWJpSi6Q22Jfb2/z5QWbPAElSXQyieWr/N/miL3KOTpfDCAt5oOWbXUHk8sUa1C4ik8hIXeLmvTxTWxp1h7Q==
   dependencies:
     "@ensdomains/eth-ens-namehash" "^2.0.15"
     "@ethersproject/abi" "^5.6.4"
@@ -1314,6 +1314,7 @@
     "@ethersproject/units" "^5.7.0"
     "@ethersproject/wallet" "^5.6.2"
     ajv "^8.11.0"
+    ajv-errors "^3.0.0"
     ajv-formats "^2.1.1"
     cross-fetch "^3.1.6"
     json-to-graphql-query "^2.2.4"
@@ -1582,6 +1583,11 @@ agent-base@6:
   integrity sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==
   dependencies:
     debug "4"
+
+ajv-errors@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ajv-errors/-/ajv-errors-3.0.0.tgz#e54f299f3a3d30fe144161e5f0d8d51196c527bc"
+  integrity sha512-V3wD15YHfHz6y0KdhYFjyy9vWtEVALT9UrxfN3zqlI6dMioHnJrqOYfyPKol3oqrnCM9uwkcdCwkJ0WUcbLMTQ==
 
 ajv-formats@^2.1.1:
   version "2.1.1"
@@ -4699,10 +4705,10 @@ range-parser@~1.2.1:
   resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.1.tgz#3cf37023d199e1c24d1a55b84800c2f3e6468031"
   integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
 
-rate-limit-redis@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/rate-limit-redis/-/rate-limit-redis-3.0.2.tgz#0c923db4ab77960ef1c5c495f14c08e6fad602de"
-  integrity sha512-4SBK6AzIr9PKkCF4HmSDcJH2O2KKMF3fZEcsbNMXyaL5I9d6X71uOreUldFRiyrRyP+qkQrTxzJ38ZKKN+sScw==
+rate-limit-redis@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/rate-limit-redis/-/rate-limit-redis-3.1.0.tgz#1af407dbe43e8d04b0234ca0b5d0318df8db4e55"
+  integrity sha512-guCQGRQhsOlTR4VNHRnksMeet/3ImfdxIQgWP6In4FphJjUbORe0F4XeFshLnbc9xcuFUv9jZL44TgUMSz4XPQ==
 
 raw-body@2.5.1:
   version "2.5.1"

@@ -7,7 +7,7 @@ import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 import { capture } from '@snapshot-labs/snapshot-sentry';
-import { flaggedAddresses } from '../helpers/moderation';
+import { flaggedAddresses, containsFlaggedLinks } from '../helpers/moderation';
 import { validateSpaceSettings } from './settings';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
@@ -153,9 +153,13 @@ export async function verify(body): Promise<any> {
     }
   }
 
-  const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
-
-  const currentBlockNum = parseInt(await provider.getBlockNumber());
+  let currentBlockNum = 0;
+  try {
+    const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
+    currentBlockNum = parseInt(await provider.getBlockNumber());
+  } catch {
+    return Promise.reject('unable to fetch current block number');
+  }
 
   if (msg.payload.snapshot > currentBlockNum)
     return Promise.reject('proposal snapshot must be in past');
@@ -233,7 +237,8 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     scores_total: 0,
     scores_updated: 0,
     votes: 0,
-    validation
+    validation,
+    flagged: +containsFlaggedLinks(msg.payload.body)
   };
 
   const query = `
