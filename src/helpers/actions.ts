@@ -12,7 +12,10 @@ export async function addOrUpdateSpace(space: string, settings: any) {
       name: settings.name,
       created: ts,
       updated: ts,
-      settings: JSON.stringify(settings)
+      settings: JSON.stringify(settings),
+      proposal_count: 0,
+      vote_count: 0,
+      follower_count: 0
     },
     ts,
     JSON.stringify(settings),
