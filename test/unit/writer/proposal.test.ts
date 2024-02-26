@@ -12,7 +12,9 @@ import {
   SPACE_PROPOSAL_MONTH_LIMIT,
   VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT,
   ECOSYSTEM_SPACES,
-  ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT
+  ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT,
+  TURBO_SPACE_PROPOSAL_DAY_LIMIT,
+  TURBO_SPACE_PROPOSAL_MONTH_LIMIT
 } from '../../../src/helpers/limits';
 
 const FLAGGED_ADDRESSES = ['0x0'];
@@ -328,6 +330,7 @@ describe('writer/proposal', () => {
       ['flagged', FLAGGED_SPACE_PROPOSAL_DAY_LIMIT, 'flagged', true],
       ['verified', VERIFIED_SPACE_PROPOSAL_DAY_LIMIT, 'verified', true],
       ['ecosystem', ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT, 'id', ECOSYSTEM_SPACES[0]],
+      ['turbo', TURBO_SPACE_PROPOSAL_DAY_LIMIT, 'turbo', true],
       ['normal', SPACE_PROPOSAL_DAY_LIMIT, null, null]
     ])(
       'rejects if the %s space has exceeded the proposal daily post limit',
@@ -352,6 +355,7 @@ describe('writer/proposal', () => {
       ['flagged', FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT, 'flagged', true],
       ['verified', VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT, 'verified', true],
       ['ecosystem', ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT, 'id', ECOSYSTEM_SPACES[0]],
+      ['turbo', TURBO_SPACE_PROPOSAL_MONTH_LIMIT, 'turbo', true],
       ['normal', SPACE_PROPOSAL_MONTH_LIMIT, null, null]
     ])(
       'rejects if the %s space has exceeded the proposal monthly post limit',

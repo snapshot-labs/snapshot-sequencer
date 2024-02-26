@@ -1,13 +1,13 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import kebabCase from 'lodash/kebabCase';
-import { jsonParse, validateChoices } from '../helpers/utils';
+import { getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 import db from '../helpers/mysql';
 import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 import { capture } from '@snapshot-labs/snapshot-sentry';
-import { flaggedAddresses } from '../helpers/moderation';
+import { flaggedAddresses, containsFlaggedLinks } from '../helpers/moderation';
 import { validateSpaceSettings } from './settings';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
@@ -56,8 +56,20 @@ export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
   const created = parseInt(msg.timestamp);
   const addressLC = body.address.toLowerCase();
+  const space = await getSpace(msg.space);
 
-  const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload);
+  try {
+    await validateSpace(space);
+  } catch (e) {
+    return Promise.reject(`invalid space settings: ${e}`);
+  }
+
+  space.id = msg.space;
+
+  const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload, {
+    spaceType: space.turbo ? 'turbo' : 'default'
+  });
+
   if (schemaIsValid !== true) {
     log.warn('[writer] Wrong proposal format', schemaIsValid);
     return Promise.reject('wrong proposal format');
@@ -73,16 +85,6 @@ export async function verify(body): Promise<any> {
     choices: msg.payload.choices
   });
   if (!isChoicesValid) return Promise.reject('wrong choices for basic type voting');
-
-  const space = await getSpace(msg.space);
-
-  try {
-    await validateSpace(space);
-  } catch (e) {
-    return Promise.reject(`invalid space settings: ${e}`);
-  }
-
-  space.id = msg.space;
 
   // if (msg.payload.start < created) return Promise.reject('invalid start date');
 
@@ -151,9 +153,13 @@ export async function verify(body): Promise<any> {
     }
   }
 
-  const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
-
-  const currentBlockNum = parseInt(await provider.getBlockNumber());
+  let currentBlockNum = 0;
+  try {
+    const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
+    currentBlockNum = parseInt(await provider.getBlockNumber());
+  } catch {
+    return Promise.reject('unable to fetch current block number');
+  }
 
   if (msg.payload.snapshot > currentBlockNum)
     return Promise.reject('proposal snapshot must be in past');
@@ -194,6 +200,16 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const spaceNetwork = spaceSettings.network;
   const proposalSnapshot = parseInt(msg.payload.snapshot || '0');
 
+  let quorum = spaceSettings.voting?.quorum || 0;
+  if (!quorum && spaceSettings.plugins?.quorum) {
+    try {
+      quorum = await getQuorum(spaceSettings.plugins.quorum, spaceNetwork, proposalSnapshot);
+    } catch (e: any) {
+      console.log('unable to get quorum', e.message);
+      return Promise.reject('unable to get quorum');
+    }
+  }
+
   const proposal = {
     id,
     ipfs,
@@ -201,7 +217,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     created,
     space,
     network: spaceNetwork,
-    symbol: spaceSettings?.symbol || '',
+    symbol: spaceSettings.symbol || '',
     type: msg.payload.type || 'single-choice',
     strategies,
     plugins,
@@ -211,8 +227,8 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     choices: JSON.stringify(msg.payload.choices),
     start: parseInt(msg.payload.start || '0'),
     end: parseInt(msg.payload.end || '0'),
-    quorum: spaceSettings?.voting?.quorum || 0,
-    privacy: spaceSettings?.voting?.privacy || '',
+    quorum,
+    privacy: spaceSettings.voting?.privacy || '',
     snapshot: proposalSnapshot || 0,
     app: kebabCase(msg.payload.app || ''),
     scores: JSON.stringify([]),
@@ -221,9 +237,10 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     scores_total: 0,
     scores_updated: 0,
     votes: 0,
-    validation
+    validation,
+    flagged: +containsFlaggedLinks(msg.payload.body)
   };
-  const query = 'INSERT INTO proposals SET ?; ';
 
+  const query = 'INSERT INTO proposals SET ?; ';
   await db.queryAsync(query, proposal);
 }
