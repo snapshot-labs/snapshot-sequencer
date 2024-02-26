@@ -3,16 +3,21 @@ import { jsonParse } from './utils';
 
 export async function addOrUpdateSpace(space: string, settings: any) {
   if (!settings?.name) return false;
+
   const ts = (Date.now() / 1e3).toFixed();
   const query =
     'INSERT IGNORE INTO spaces SET ? ON DUPLICATE KEY UPDATE updated = ?, settings = ?, name = ?, hibernated = 0';
+
   await db.queryAsync(query, [
     {
       id: space,
       name: settings.name,
       created: ts,
       updated: ts,
-      settings: JSON.stringify(settings)
+      settings: JSON.stringify(settings),
+      proposal_count: 0,
+      vote_count: 0,
+      follower_count: 0
     },
     ts,
     JSON.stringify(settings),
