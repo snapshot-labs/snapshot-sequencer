@@ -65,20 +65,6 @@ export async function verify(body): Promise<any> {
     return Promise.reject(`invalid space settings: ${e}`);
   }
 
-  try {
-    const content = `
-      ${msg.payload.name || ''}
-      ${msg.payload.body || ''}
-      ${msg.payload.discussion || ''}
-    `;
-
-    if (await isMalicious(content)) {
-      return Promise.reject(`invalid proposal content`);
-    }
-  } catch (e) {
-    log.warning('[writer] Failed to query Blockaid');
-  }
-
   space.id = msg.space;
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload, {
@@ -115,6 +101,20 @@ export async function verify(body): Promise<any> {
 
   if (space.voting?.type) {
     if (msg.payload.type !== space.voting.type) return Promise.reject('invalid voting type');
+  }
+
+  try {
+    const content = `
+      ${msg.payload.name || ''}
+      ${msg.payload.body || ''}
+      ${msg.payload.discussion || ''}
+    `;
+
+    if (await isMalicious(content)) {
+      return Promise.reject(`invalid proposal content`);
+    }
+  } catch (e) {
+    log.warning('[writer] Failed to query Blockaid');
   }
 
   if (flaggedAddresses.includes(addressLC))
