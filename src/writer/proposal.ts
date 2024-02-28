@@ -9,6 +9,7 @@ import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limi
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedAddresses, containsFlaggedLinks } from '../helpers/moderation';
 import { validateSpaceSettings } from './settings';
+import { isMalicious } from '../helpers/blockaid';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
@@ -62,6 +63,20 @@ export async function verify(body): Promise<any> {
     await validateSpace(space);
   } catch (e) {
     return Promise.reject(`invalid space settings: ${e}`);
+  }
+
+  try {
+    const content = `
+      ${msg.payload.name || ''}
+      ${msg.payload.body || ''}
+      ${msg.payload.discussion || ''}
+    `;
+
+    if (await isMalicious(content)) {
+      return Promise.reject(`invalid proposal content`);
+    }
+  } catch (e) {
+    log.warning('[writer] Failed to query Blockaid');
   }
 
   space.id = msg.space;
