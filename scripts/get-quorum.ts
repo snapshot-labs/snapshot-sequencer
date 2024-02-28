@@ -1,4 +1,4 @@
-import { getQuorum } from '../helpers/utils';
+import { getQuorum } from '../src/helpers/utils';
 
 getQuorum(
   {
