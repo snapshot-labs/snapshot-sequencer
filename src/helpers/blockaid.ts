@@ -7,10 +7,6 @@ function extractUrls(text: string): string[] {
   return text.match(/https?:\/\/[^\s<>)]+(?<![.,)<>!\[\]])/g) || [];
 }
 
-async function scanMultiple(urls: string[]) {
-  return await Promise.all(urls.map(url => scan(url)));
-}
-
 async function scan(url: string) {
   const res = await fetch(BLOCKAIDS_API_URL, {
     method: 'POST',
@@ -22,6 +18,10 @@ async function scan(url: string) {
   });
 
   return await res.json();
+}
+
+async function scanMultiple(urls: string[]) {
+  return await Promise.all(urls.map(url => scan(url)));
 }
 
 export async function isMalicious(content: string): Promise<boolean> {
