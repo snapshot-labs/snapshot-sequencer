@@ -113,7 +113,7 @@ export async function verify(body): Promise<any> {
 
     if (await isMalicious(content)) {
       blockaidBlockedRequestsCount.inc({ space: space.id });
-      return Promise.reject(`invalid proposal content`);
+      return Promise.reject('invalid proposal content');
     }
   } catch (e) {
     log.warning('[writer] Failed to query Blockaid');
