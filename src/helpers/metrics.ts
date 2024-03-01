@@ -75,3 +75,9 @@ const ingestorInstrumentation = (req, res, next) => {
 
   next();
 };
+
+export const blockaidBlockedRequestsCount = new client.Counter({
+  name: 'blockaid_blocked_requests_count',
+  help: 'Total number of requests rejected by blockaid, by space',
+  labelNames: ['space']
+});

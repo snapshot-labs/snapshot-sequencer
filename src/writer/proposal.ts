@@ -10,6 +10,7 @@ import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedAddresses, containsFlaggedLinks } from '../helpers/moderation';
 import { validateSpaceSettings } from './settings';
 import { isMalicious } from '../helpers/blockaid';
+import { blockaidBlockedRequestsCount } from '../helpers/metrics';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
@@ -111,6 +112,7 @@ export async function verify(body): Promise<any> {
     `;
 
     if (await isMalicious(content)) {
+      blockaidBlockedRequestsCount.inc({ space: space.id });
       return Promise.reject(`invalid proposal content`);
     }
   } catch (e) {
