@@ -9,6 +9,7 @@ const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export async function validateSpaceSettings(originalSpace: any) {
+  const spaceType = originalSpace.turbo ? 'turbo' : 'default';
   const space = snapshot.utils.clone(originalSpace);
 
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
@@ -16,10 +17,12 @@ export async function validateSpaceSettings(originalSpace: any) {
   delete space.deleted;
   delete space.flagged;
   delete space.verified;
+  delete space.turbo;
   delete space.hibernated;
   delete space.id;
 
   const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, space, {
+    spaceType,
     snapshotEnv: SNAPSHOT_ENV
   });
 
@@ -59,7 +62,8 @@ export async function verify(body): Promise<any> {
   try {
     await validateSpaceSettings({
       ...msg.payload,
-      deleted: space?.deleted
+      deleted: space?.deleted,
+      turbo: space?.turbo
     });
   } catch (e) {
     return Promise.reject(e);
@@ -87,7 +91,7 @@ export async function action(body): Promise<void> {
     await addOrUpdateSpace(space, msg.payload);
   } catch (e) {
     capture(e, { space });
-    log.warn('[writer] Failed to store settings', msg.space, e);
+    log.warn('[writer] Failed to store settings', msg.space, JSON.stringify(e));
     return Promise.reject('failed store settings');
   }
 }

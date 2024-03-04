@@ -50,6 +50,11 @@ const timeIngestorErrorProcess = new client.Histogram({
   labelNames: ['error', 'type']
 });
 
+export const requestDeduplicatorSize = new client.Gauge({
+  name: 'request_deduplicator_size',
+  help: 'Total number of items in the deduplicator queue'
+});
+
 const ingestorInstrumentation = (req, res, next) => {
   if (req.method !== 'POST' && req.originalUrl !== '/') {
     return next();
@@ -73,10 +78,8 @@ const ingestorInstrumentation = (req, res, next) => {
   next();
 };
 
-new client.Gauge({
-  name: 'duplicate_request_queue_size',
-  help: 'Number of items in the duplicate requests prevention queue',
-  async collect() {
-    this.set((await redisClient.sCard(DUPLICATOR_SET_KEY)) || 0);
-  }
+export const blockaidBlockedRequestsCount = new client.Counter({
+  name: 'blockaid_blocked_requests_count',
+  help: 'Total number of requests rejected by blockaid, by space',
+  labelNames: ['space']
 });
