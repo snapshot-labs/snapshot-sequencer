@@ -4,7 +4,7 @@ const BLOCKAIDS_API_URL = 'https://api.blockaid.io/dapp/v1/scan';
 const BLOCKAIDS_API_KEY = 'knUtyWFpcba5LlMUsky1jUkMM7kKPTug';
 
 function extractUrls(text: string): string[] {
-  return text.match(/https?:\/\/[^\s<>)]+(?<![.,)<>!\[\]])/g) || [];
+  return text.match(/(?:https?:\/\/)?[^\s<>()]+?\.[a-zA-Z]{2,}(?:\/[^\s<>()]*)?/g) || [];
 }
 
 async function scan(url: string) {
