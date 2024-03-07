@@ -1,7 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import kebabCase from 'lodash/kebabCase';
 import { hasStrategyOverride, jsonParse } from '../helpers/utils';
-import { getProposal } from '../helpers/actions';
+import { getProposal, incrementVotesCount } from '../helpers/actions';
 import db from '../helpers/mysql';
 import { updateProposalAndVotes } from '../scores';
 import log from '../helpers/log';
@@ -175,7 +175,11 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     );
   } else {
     // Store vote in dedicated table
-    await db.queryAsync('INSERT IGNORE INTO votes SET ?', params);
+    const result = await db.queryAsync('INSERT IGNORE INTO votes SET ?', params);
+
+    if (result.affectedRows > 0) {
+      await incrementVotesCount(msg.space, voter);
+    }
   }
 
   // Update proposal scores and voters vp

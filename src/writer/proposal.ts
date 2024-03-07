@@ -3,7 +3,7 @@ import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import kebabCase from 'lodash/kebabCase';
 import { getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 import db from '../helpers/mysql';
-import { getSpace } from '../helpers/actions';
+import { getSpace, incrementProposalsCount } from '../helpers/actions';
 import log from '../helpers/log';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 import { capture } from '@snapshot-labs/snapshot-sentry';
@@ -261,5 +261,9 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const query = 'INSERT IGNORE INTO proposals SET ?; ';
   const params: any[] = [proposal];
 
-  await db.queryAsync(query, params);
+  const result = await db.queryAsync(query, params);
+
+  if (result.affectedRows > 0) {
+    await incrementProposalsCount(space, author);
+  }
 }

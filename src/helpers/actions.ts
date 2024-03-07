@@ -58,3 +58,72 @@ export async function markSpaceAsDeleted(space: string) {
 
   await db.queryAsync(query, [1, space]);
 }
+
+export function refreshProposalsCount(spaces?: string[]) {
+  return db.queryAsync(
+    `
+      INSERT INTO user_space_activities (proposals_count, user, space)
+        (SELECT * FROM (
+          SELECT COUNT(proposals.id) AS proposals_count, author, space
+          FROM proposals
+          JOIN spaces ON spaces.id = proposals.space
+          WHERE spaces.deleted = 0
+          ${spaces ? ' AND space IN (?)' : ''}
+          GROUP BY author, space
+        ) AS t)
+      ON DUPLICATE KEY UPDATE proposals_count = t.proposals_count
+    `,
+    spaces
+  );
+}
+
+export function refreshVotesCount(spaces: string[]) {
+  return db.queryAsync(
+    `
+      INSERT INTO user_space_activities (votes_count, user, space)
+        (SELECT * FROM (
+          SELECT COUNT(votes.id) AS votes_count, voter, space
+          FROM votes
+          JOIN spaces ON spaces.id = votes.space
+          WHERE spaces.deleted = 0 AND space IN (?)
+          GROUP BY voter, space
+        ) AS t)
+      ON DUPLICATE KEY UPDATE votes_count = t.votes_count
+    `,
+    spaces
+  );
+}
+
+export function incrementVotesCount(space: string, user: string) {
+  return db.queryAsync(
+    `
+      INSERT INTO user_space_activities (space, user, votes_count)
+      VALUES(?, ?, 1)
+      ON DUPLICATE KEY UPDATE votes_count = votes_count + 1
+    `,
+    [space, user]
+  );
+}
+
+export function incrementProposalsCount(space: string, user: string) {
+  return db.queryAsync(
+    `
+      INSERT INTO user_space_activities (space, user, proposals_count)
+      VALUES(?, ?, 1)
+      ON DUPLICATE KEY UPDATE proposals_count = proposals_count + 1
+    `,
+    [space, user]
+  );
+}
+
+export function decrementProposalsCount(space: string, user: string) {
+  return db.queryAsync(
+    `
+      UPDATE user_space
+      SET proposals_count = proposals_count - 1
+      WHERE user = ? AND space = ?
+      LIMIT 1
+    `,
+    [user, space]
+  );
+}
