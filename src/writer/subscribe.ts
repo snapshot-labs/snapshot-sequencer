@@ -1,10 +1,16 @@
 import db from '../helpers/mysql';
+import { SubscribeMessage } from '../schemas';
 
 export async function verify(): Promise<any> {
   return true;
 }
 
-export async function action(message, ipfs, receipt, id): Promise<void> {
+export async function action(
+  message: SubscribeMessage,
+  ipfs: string,
+  receipt: string,
+  id: string
+): Promise<void> {
   const params = {
     id,
     ipfs,
