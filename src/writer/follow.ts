@@ -1,5 +1,6 @@
 import { FOLLOWS_LIMIT_PER_USER } from '../helpers/limits';
 import db from '../helpers/mysql';
+import { FollowMessage } from '../schemas';
 
 export const getFollowsCount = async (follower: string): Promise<number> => {
   const query = `SELECT COUNT(*) AS count FROM follows WHERE follower = ?`;
@@ -9,7 +10,7 @@ export const getFollowsCount = async (follower: string): Promise<number> => {
   return count;
 };
 
-export async function verify(message): Promise<any> {
+export async function verify(message: FollowMessage): Promise<any> {
   const count = await getFollowsCount(message.from);
 
   if (count >= FOLLOWS_LIMIT_PER_USER) {
@@ -19,7 +20,12 @@ export async function verify(message): Promise<any> {
   return true;
 }
 
-export async function action(message, ipfs, receipt, id): Promise<void> {
+export async function action(
+  message: FollowMessage,
+  ipfs: string,
+  receipt: string,
+  id: string
+): Promise<void> {
   const params = {
     id,
     ipfs,

@@ -2,9 +2,10 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import db from '../helpers/mysql';
 import { jsonParse } from '../helpers/utils';
 import log from '../helpers/log';
+import { ProfileMessage } from '../schemas';
 
-export async function verify(body): Promise<any> {
-  const profile = jsonParse(body.profile, {});
+export async function verify(message: ProfileMessage): Promise<any> {
+  const profile = jsonParse(message.profile, {});
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.profile, profile);
   if (schemaIsValid !== true) {
     log.warn(`[writer] Wrong profile format ${JSON.stringify(schemaIsValid)}`);
@@ -14,7 +15,7 @@ export async function verify(body): Promise<any> {
   return true;
 }
 
-export async function action(message, ipfs): Promise<void> {
+export async function action(message: ProfileMessage, ipfs: string): Promise<void> {
   const profile = jsonParse(message.profile, {});
 
   const params = {
