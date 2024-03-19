@@ -245,6 +245,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     start: parseInt(msg.payload.start || '0'),
     end: parseInt(msg.payload.end || '0'),
     quorum,
+    quorum_type: (quorum && spaceSettings.voting.quorumType) || '',
     privacy: spaceSettings.voting?.privacy || '',
     snapshot: proposalSnapshot || 0,
     app: kebabCase(msg.payload.app || ''),
