@@ -9,7 +9,7 @@ import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limi
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedAddresses, containsFlaggedLinks } from '../helpers/moderation';
 import { validateSpaceSettings } from './settings';
-import { isMalicious } from '../helpers/blockaid';
+// import { isMalicious } from '../helpers/blockaid';
 import { blockaidBlockedRequestsCount } from '../helpers/metrics';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
@@ -111,10 +111,10 @@ export async function verify(body): Promise<any> {
       ${msg.payload.discussion || ''}
     `;
 
-    if (await isMalicious(content)) {
-      blockaidBlockedRequestsCount.inc({ space: space.id });
-      return Promise.reject('invalid proposal content');
-    }
+    // if (await isMalicious(content)) {
+    //   blockaidBlockedRequestsCount.inc({ space: space.id });
+    //   return Promise.reject('invalid proposal content');
+    // }
   } catch (e) {
     log.warning('[writer] Failed to query Blockaid');
   }
