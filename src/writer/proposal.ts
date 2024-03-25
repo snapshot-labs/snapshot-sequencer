@@ -172,19 +172,18 @@ export async function verify(body): Promise<any> {
     }
   }
 
-  let currentBlockNum = 0;
-  try {
-    const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
-    currentBlockNum = parseInt(await provider.getBlockNumber());
-  } catch {
-    return Promise.reject('unable to fetch current block number');
-  }
-
-  if (msg.payload.snapshot > currentBlockNum)
-    return Promise.reject('proposal snapshot must be in past');
-
   if (msg.payload.snapshot < networks[space.network].start)
     return Promise.reject('proposal snapshot must be after network start');
+
+  try {
+    const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
+    const block = await provider.getBlock(msg.payload.snapshot);
+    if (!block) return Promise.reject('invalid snapshot block');
+  } catch (error: any) {
+    if (error.message?.includes('invalid block hash or block tag'))
+      return Promise.reject('invalid snapshot block');
+    return Promise.reject('unable to fetch block');
+  }
 
   try {
     const [{ dayCount, monthCount, activeProposalsByAuthor }] = await getProposalsCount(
