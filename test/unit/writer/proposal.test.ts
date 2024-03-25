@@ -302,7 +302,7 @@ describe('writer/proposal', () => {
       msg.payload.snapshot = Number.MAX_SAFE_INTEGER;
 
       await expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).rejects.toMatch(
-        'proposal snapshot must be in past'
+        'invalid snapshot block'
       );
     });
 

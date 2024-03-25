@@ -179,8 +179,10 @@ export async function verify(body): Promise<any> {
     const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
     const block = await provider.getBlock(msg.payload.snapshot);
     if (!block) return Promise.reject('invalid snapshot block');
-  } catch (error) {
-    return Promise.reject('unable to fetch block number');
+  } catch (error: any) {
+    if (error.message?.includes('invalid block hash or block tag'))
+      return Promise.reject('invalid snapshot block');
+    return Promise.reject('unable to fetch block');
   }
 
   try {
