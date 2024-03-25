@@ -20,11 +20,14 @@ export async function verify(body): Promise<any> {
 
 export async function action(body): Promise<void> {
   const msg = jsonParse(body.msg);
-  const id = msg.payload.proposal;
+  const proposal = await getProposal(msg.space, msg.payload.proposal);
 
+  const id = msg.payload.proposal;
   const query = `
-  DELETE FROM proposals WHERE id = ? LIMIT 1;
-  DELETE FROM votes WHERE proposal = ?;
+    DELETE FROM proposals WHERE id = ? LIMIT 1;
+    DELETE FROM votes WHERE proposal = ?;
+    UPDATE spaces SET proposal_count = proposal_count - 1, vote_count = vote_count - ? WHERE id = ?;
   `;
-  await db.queryAsync(query, [id, id]);
+
+  await db.queryAsync(query, [id, id, proposal.votes, msg.space]);
 }
