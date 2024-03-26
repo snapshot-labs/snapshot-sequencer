@@ -28,5 +28,5 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
     created: message.timestamp
   };
 
-  await db.queryAsync('INSERT IGNORE INTO follows SET ?', params);
+  await db.queryAsync('INSERT INTO follows SET ?', params);
 }
