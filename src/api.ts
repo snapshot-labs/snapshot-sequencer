@@ -1,10 +1,11 @@
-import express from 'express';
+import express, { type Request, type Response, type NextFunction } from 'express';
 import relayer from './helpers/relayer';
 import { updateProposalAndVotes } from './scores';
 import typedData from './ingestor';
 import { sendError, verifyAuth } from './helpers/utils';
 import { flagEntity } from './helpers/moderation';
 import log from './helpers/log';
+import duplicateRequestPreventor, { cleanup } from './helpers/duplicateRequestPreventor';
 import { name, version } from '../package.json';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import poke from './helpers/poke';
@@ -15,16 +16,23 @@ const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 
 const maintenanceMsg = 'update in progress, try later';
 
-router.post('/', async (req, res) => {
-  if (process.env.MAINTENANCE) return sendError(res, maintenanceMsg, 503);
-  try {
-    const result = await typedData(req);
-    return res.json(result);
-  } catch (e) {
-    log.warn(`[ingestor] msg validation failed (typed data): ${JSON.stringify(e)}`);
-    return sendError(res, e);
-  }
-});
+router.post(
+  '/',
+  duplicateRequestPreventor,
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (process.env.MAINTENANCE) return sendError(res, maintenanceMsg, 503);
+    try {
+      const result = await typedData(req);
+      res.json(result);
+    } catch (e) {
+      log.warn(`[ingestor] msg validation failed (typed data): ${JSON.stringify(e)}`);
+      sendError(res, e);
+    }
+
+    next();
+  },
+  cleanup
+);
 
 router.get('/', (req, res) => {
   const commit = process.env.COMMIT_HASH || '';
