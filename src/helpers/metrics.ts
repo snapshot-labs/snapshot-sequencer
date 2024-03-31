@@ -1,8 +1,7 @@
 import init, { client } from '@snapshot-labs/snapshot-metrics';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { Express } from 'express';
-import redisClient from './redis';
-import { DUPLICATOR_SET_KEY } from './duplicateRequestPreventor';
+import { queue } from './duplicateRequestPreventor';
 import db from './mysql';
 
 const whitelistedPath = [/^\/$/, /^\/scores\/.+$/, /^\/spaces\/.+\/poke$/];
@@ -88,6 +87,6 @@ new client.Gauge({
   name: 'duplicate_request_queue_size',
   help: 'Number of items in the duplicate requests prevention queue',
   async collect() {
-    this.set((await redisClient.sCard(DUPLICATOR_SET_KEY)) || 0);
+    this.set(queue.size);
   }
 });
