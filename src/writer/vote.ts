@@ -1,5 +1,4 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import { getAddress } from '@ethersproject/address';
 import kebabCase from 'lodash/kebabCase';
 import { hasStrategyOverride, jsonParse } from '../helpers/utils';
 import { getProposal, incrementVotesCount } from '../helpers/actions';
@@ -67,7 +66,7 @@ export async function verify(body): Promise<any> {
       );
       if (!validate) return Promise.reject('failed vote validation');
     } catch (e) {
-      capture(e, { context: { space: msg.space, address: body.address } });
+      capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
       log.warn(
         `[writer] Failed to check vote validation, ${msg.space}, ${body.address}, ${JSON.stringify(
           e
@@ -85,12 +84,12 @@ export async function verify(body): Promise<any> {
       proposal.strategies,
       proposal.snapshot,
       msg.space,
-      proposal.delegation === 1,
+      false,
       { url: scoreAPIUrl }
     );
     if (vp.vp === 0) return Promise.reject('no voting power');
   } catch (e) {
-    capture(e, { context: { space: msg.space, address: body.address } });
+    capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
     log.warn(
       `[writer] Failed to check voting power (vote), ${msg.space}, ${body.address}, ${
         proposal.snapshot
@@ -106,7 +105,7 @@ export async function verify(body): Promise<any> {
 
 export async function action(body, ipfs, receipt, id, context): Promise<void> {
   const msg = jsonParse(body.msg);
-  const voter = getAddress(body.address);
+  const voter = body.address;
   const created = parseInt(msg.timestamp);
   const choice = JSON.stringify(msg.payload.choice);
   const metadata = JSON.stringify(msg.payload.metadata || {});
@@ -188,8 +187,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     const result = await updateProposalAndVotes(proposalId);
     if (!result) log.warn(`[writer] updateProposalAndVotes() false, ${proposalId}`);
   } catch (e) {
-    capture(e, { context: { space: msg.space, id: proposalId } });
-    log.error(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
-    console.log('[writer] updateProposalAndVotes() failed', e);
+    capture(e, { contexts: { input: { space: msg.space, id: proposalId } } });
+    log.warn(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
   }
 }

@@ -1,4 +1,3 @@
-import { getAddress } from '@ethersproject/address';
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from '../helpers/mysql';
 import { jsonParse } from '../helpers/utils';
@@ -19,7 +18,7 @@ export async function action(message, ipfs): Promise<void> {
   const profile = jsonParse(message.profile, {});
 
   const params = {
-    id: getAddress(message.from),
+    id: message.from,
     ipfs,
     created: message.timestamp,
     profile: JSON.stringify(profile)

@@ -1,6 +1,6 @@
 import express from 'express';
 import { randomBytes } from 'crypto';
-import fetch from 'cross-fetch';
+import fetch from 'node-fetch';
 import { init, decrypt } from '@shutter-network/shutter-crypto';
 import { arrayify } from '@ethersproject/bytes';
 import { toUtf8String } from '@ethersproject/strings';
@@ -20,7 +20,6 @@ export async function shutterDecrypt(encryptedMsg: string, decryptionKey: string
   try {
     const decryptedMsg = await decrypt(arrayify(encryptedMsg), arrayify(decryptionKey));
     const result = toUtf8String(decryptedMsg);
-    log.info(`[shutter] decrypted ${JSON.stringify(result)}`);
     return result;
   } catch (e) {
     capture(e);
@@ -93,7 +92,7 @@ export async function setProposalKey(params) {
     for (const vote of votes) {
       const choice = await shutterDecrypt(jsonParse(vote.choice), `0x${key}`);
       log.info(`[shutter] decrypted choice ${JSON.stringify(choice)}`);
-      if (choice !== false) {
+      if (choice !== false && choice !== '') {
         sqlQuery += `UPDATE votes SET choice = ? WHERE id = ? LIMIT 1; `;
         sqlParams.push(choice);
         sqlParams.push(vote.id);
@@ -107,7 +106,7 @@ export async function setProposalKey(params) {
     log.info(`[shutter] proposal scores updated for ${proposalId}`);
   } catch (e) {
     capture(e);
-    log.error(`[shutter] setProposalKey failed ${JSON.stringify(e)}`);
+    log.warn(`[shutter] setProposalKey failed ${JSON.stringify(e)}`);
     return false;
   }
   return true;

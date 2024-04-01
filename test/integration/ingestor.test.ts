@@ -1,9 +1,10 @@
 import ingestor from '../../src/ingestor';
 import proposalInput from '../fixtures/ingestor-payload/proposal.json';
+import { spacesGetSpaceFixtures } from '../fixtures/space';
 import voteInput from '../fixtures/ingestor-payload/vote.json';
 import cloneDeep from 'lodash/cloneDeep';
 import omit from 'lodash/omit';
-import db from '../../src/helpers/mysql';
+import db, { sequencerDB } from '../../src/helpers/mysql';
 import relayer from '../../src/helpers/relayer';
 
 jest.mock('../../src/helpers/moderation', () => {
@@ -13,24 +14,13 @@ jest.mock('../../src/helpers/moderation', () => {
     __esModule: true,
     ...originalModule,
     // sha256 of 1.2.3.4
-    flaggedIps: ['6694f83c9f476da31f5df6bcc520034e7e57d421d247b9d34f49edbfc84a764c'],
-    flaggedProposalBodyKeywords: ['claim drop']
+    flaggedIps: ['6694f83c9f476da31f5df6bcc520034e7e57d421d247b9d34f49edbfc84a764c']
   };
 });
 
-const DEFAULT_SPACE: any = {
-  id: 'fabien.eth',
-  network: '1',
-  voting: { aliased: false, type: 'single-choice' },
-  strategies: [],
-  members: [],
-  admins: [],
-  moderators: [],
-  validation: { name: 'basic' }
-};
-
-const mockGetSpace = jest.fn((id: any): any => {
-  return { ...DEFAULT_SPACE, id };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const mockGetSpace = jest.fn((_): any => {
+  return spacesGetSpaceFixtures;
 });
 jest.mock('../../src/helpers/actions', () => {
   const originalModule = jest.requireActual('../../src/helpers/actions');
@@ -87,14 +77,22 @@ function cloneWithNewMessage(data: Record<string, any>) {
 }
 
 describe('ingestor', () => {
-  afterAll(async () => {
-    await db.queryAsync('DELETE FROM snapshot_sequencer_test.proposals;');
-    await db.endAsync();
-  });
-
   beforeAll(() => {
     proposalInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
+    proposalInput.data.message.end = Math.floor(Date.now() / 1e3) + 60;
     voteInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
+  });
+
+  afterEach(async () => {
+    await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages');
+    jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    await db.queryAsync('DELETE FROM snapshot_sequencer_test.proposals;');
+    await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages;');
+    await db.endAsync();
+    await sequencerDB.endAsync();
   });
 
   it('rejects when the submitter IP is banned', async () => {
@@ -165,10 +163,10 @@ describe('ingestor', () => {
     it.todo('rejects when the submitted is not an allowed alias');
   });
 
-  it('rejects when the signature is not valid', () => {
+  it('rejects when the signature is not valid', async () => {
     mockSnapshotUtilsVerify.mockReturnValueOnce(false);
 
-    expect(ingestor(proposalRequest)).rejects.toMatch('signature');
+    await expect(ingestor(proposalRequest)).rejects.toMatch('signature');
   });
 
   it('rejects when the metadata is too large', async () => {
@@ -178,15 +176,9 @@ describe('ingestor', () => {
     await expect(ingestor(invalidRequest)).rejects.toMatch('large');
   });
 
-  it('rejects when it fails the writer verification', async () => {
-    const invalidRequest = cloneWithNewMessage({ body: 'claim drop' });
-
-    await expect(ingestor(invalidRequest)).rejects.toMatch('scam proposal detected');
-  });
-
   it('rejects when IPFS pinning fail', async () => {
     mockPin.mockImplementationOnce(() => {
-      throw new Error();
+      return Promise.reject('');
     });
 
     await expect(ingestor(proposalRequest)).rejects.toMatch('pin');
@@ -204,14 +196,14 @@ describe('ingestor', () => {
       expect(result.relayer).toHaveProperty('receipt');
     });
 
-    it.each([['proposals', proposalRequest]])('saves the %s in the DB', async (title, request) => {
-      const typeResult = await ingestor(request);
+    it('saves the proposal in the DB', async () => {
+      const typeResult = await ingestor(proposalRequest);
       const dbResult = await db.queryAsync(
-        `SELECT * from ${title} WHERE id = ? LIMIT 1`,
+        `SELECT * from proposals WHERE id = ? LIMIT 1`,
         typeResult.id
       );
 
-      await expect(dbResult.length).toBe(1);
+      expect(dbResult.length).toBe(1);
     });
 
     ['vote', 'follow', 'unfollow', 'subscribe', 'unsubscribe'].forEach(type => {
