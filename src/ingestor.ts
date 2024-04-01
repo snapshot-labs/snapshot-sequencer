@@ -235,10 +235,11 @@ export default async function ingestor(req) {
     }
 
     const shortId = `${id.slice(0, 7)}...`;
+    const spaceText = message.space ? ` on "${message.space}"` : '';
     log.info(
-      `[ingestor] New "${type}" on "${message.space}",  for "${
-        body.address
-      }", id: ${shortId}, IP: ${sha256(getIp(req))}`
+      `[ingestor] New "${type}"${spaceText} for "${body.address}", id: ${shortId}, IP: ${sha256(
+        getIp(req)
+      )}`
     );
 
     success = 1;
