@@ -29,10 +29,10 @@ describe('POST /', () => {
       queue.delete(hash);
     });
 
-    it('returns a 429 error', async () => {
+    it('returns a 425 error', async () => {
       const response = await send(payload);
 
-      expect(response.status).toBe(429);
+      expect(response.status).toBe(425);
       expect(response.body.error).toBe('client_error');
       expect(response.body.error_description).toBe(ERROR_MESSAGE);
     });

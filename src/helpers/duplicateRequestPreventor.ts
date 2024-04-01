@@ -12,7 +12,7 @@ export default async function duplicateRequestPreventor(
 ) {
   const value = hashedBody(req);
 
-  if (queue.has(value)) return sendError(res, ERROR_MESSAGE, 429);
+  if (queue.has(value)) return sendError(res, ERROR_MESSAGE, 425);
 
   queue.add(value);
   next();
