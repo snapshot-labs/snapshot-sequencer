@@ -60,6 +60,7 @@
     "nodemon": "^2.0.19",
     "prettier": "^3.0.3",
     "start-server-and-test": "^2.0.0",
+    "supertest": "^6.3.4",
     "ts-jest": "^29.1.1"
   }
 }
