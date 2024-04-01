@@ -227,10 +227,6 @@ export default async function ingestor(req) {
         capture(e);
       }
 
-      if (e.errno === 1062) {
-        return Promise.reject('duplicate message');
-      }
-
       return Promise.reject(e);
     }
 
