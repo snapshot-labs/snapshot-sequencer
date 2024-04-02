@@ -60,6 +60,9 @@ export default async function ingestor(req) {
 
     network = '1';
     let aliased = false;
+    if (['settings'].includes(type) && message.space?.length > 64) {
+      return Promise.reject('id too long');
+    }
     if (!['settings', 'alias', 'profile'].includes(type)) {
       if (!message.space) return Promise.reject('unknown space');
       const space = await getSpace(message.space);
