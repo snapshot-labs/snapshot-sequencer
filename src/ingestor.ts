@@ -60,7 +60,6 @@ export default async function ingestor(req) {
 
     network = '1';
     let aliased = false;
-
     if (!['settings', 'alias', 'profile'].includes(type)) {
       if (!message.space) return Promise.reject('unknown space');
       const space = await getSpace(message.space);
