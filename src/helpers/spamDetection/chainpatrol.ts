@@ -8,7 +8,7 @@ function extractUrls(text: string): string[] {
 }
 
 async function scan(url: string) {
-  if (!CHAINPATROL_API_KEY) return { is_malicious: false };
+  if (!CHAINPATROL_API_KEY) return { status: 'ALLOWED' };
   const res = await fetch(CHAINPATROL_API_URL, {
     method: 'POST',
     headers: {
@@ -28,5 +28,5 @@ async function scanMultiple(urls: string[]) {
 export async function isMalicious(content: string): Promise<boolean> {
   const urls = extractUrls(content);
   const results = await scanMultiple(urls);
-  return results.some(result => result.is_malicious);
+  return results.some(result => result.status === 'BLOCKED');
 }

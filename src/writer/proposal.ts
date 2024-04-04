@@ -110,7 +110,6 @@ export async function verify(body): Promise<any> {
       ${msg.payload.body || ''}
       ${msg.payload.discussion || ''}
     `;
-
     if (await isMalicious(content)) {
       chainpatrolBlockedRequestsCount.inc({ space: space.id });
       return Promise.reject('invalid proposal content');
