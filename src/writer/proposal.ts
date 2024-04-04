@@ -257,8 +257,6 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     flagged: +containsFlaggedLinks(msg.payload.body)
   };
 
-  const query = 'INSERT IGNORE INTO proposals SET ?; ';
-  const params: any[] = [proposal];
-
-  await db.queryAsync(query, params);
+  const query = 'INSERT INTO proposals SET ?; ';
+  await db.queryAsync(query, proposal);
 }
