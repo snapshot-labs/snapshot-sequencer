@@ -12,6 +12,9 @@ export async function validateSpaceSettings(originalSpace: any) {
   const spaceType = originalSpace.turbo ? 'turbo' : 'default';
   const space = snapshot.utils.clone(originalSpace);
 
+  if (space.id.length > 64) {
+    return Promise.reject('id too long');
+  }
   if (space?.deleted) return Promise.reject('space deleted, contact admin');
 
   delete space.deleted;
@@ -62,6 +65,7 @@ export async function verify(body): Promise<any> {
   try {
     await validateSpaceSettings({
       ...msg.payload,
+      id: msg.space,
       deleted: space?.deleted,
       turbo: space?.turbo
     });
