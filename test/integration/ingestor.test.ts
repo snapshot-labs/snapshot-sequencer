@@ -85,6 +85,7 @@ describe('ingestor', () => {
 
   afterEach(async () => {
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages');
+    await db.queryAsync('DELETE FROM snapshot_sequencer_test.proposals');
     jest.clearAllMocks();
   });
 
@@ -185,7 +186,24 @@ describe('ingestor', () => {
     expect(mockPin).toHaveBeenCalledTimes(1);
   });
 
+  it('rejects on action replay', async () => {
+    expect.assertions(2);
+    await expect(ingestor(proposalRequest)).resolves.toHaveProperty('id');
+    await expect(ingestor(proposalRequest)).rejects.toEqual('duplicate message');
+  });
+
+  it('rejects on duplicate entry', async () => {
+    expect.assertions(2);
+    await expect(ingestor(proposalRequest)).resolves.toHaveProperty('id');
+    await db.queryAsync('DELETE from snapshot_sequencer_test.messages');
+    await expect(ingestor(proposalRequest)).rejects.toEqual('duplicate message');
+  });
+
   describe('on a valid transaction', () => {
+    beforeEach(async () => {
+      await db.queryAsync('DELETE from snapshot_sequencer_test.proposals');
+    });
+
     it('returns a payload', async () => {
       const result = await ingestor(proposalRequest);
 

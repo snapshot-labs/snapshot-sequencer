@@ -1,7 +1,9 @@
 import { action } from '../../../src/writer/proposal';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
 import input from '../../fixtures/writer-payload/proposal.json';
+import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import { setData } from '../../../src/helpers/moderation';
+import * as actionHelper from '../../../src/helpers/actions';
 
 const mockContainsFlaggedLinks = jest.fn((): any => {
   return false;
@@ -16,6 +18,9 @@ jest.mock('../../../src/helpers/moderation', () => {
     containsFlaggedLinks: () => mockContainsFlaggedLinks()
   };
 });
+
+const getSpaceMock = jest.spyOn(actionHelper, 'getSpace');
+getSpaceMock.mockResolvedValue(spacesGetSpaceFixtures);
 
 describe('writer/proposal', () => {
   describe('action()', () => {
