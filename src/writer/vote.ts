@@ -175,7 +175,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     );
   } else {
     // Store vote in dedicated table
-    await db.queryAsync('INSERT IGNORE INTO votes SET ?', params);
+    await db.queryAsync('INSERT INTO votes SET ?', params);
   }
 
   // Update proposal scores and voters vp
