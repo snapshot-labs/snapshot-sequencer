@@ -83,6 +83,12 @@ export const blockaidBlockedRequestsCount = new client.Counter({
   labelNames: ['space']
 });
 
+export const chainpatrolBlockedRequestsCount = new client.Counter({
+  name: 'chainpatrol_blocked_requests_count',
+  help: 'Total number of requests rejected by chainpatrol, by space',
+  labelNames: ['space']
+});
+
 new client.Gauge({
   name: 'duplicate_request_queue_size',
   help: 'Number of items in the duplicate requests prevention queue',

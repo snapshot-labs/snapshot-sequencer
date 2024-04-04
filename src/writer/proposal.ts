@@ -9,8 +9,8 @@ import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limi
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedAddresses, containsFlaggedLinks } from '../helpers/moderation';
 import { validateSpaceSettings } from './settings';
-// import { isMalicious } from '../helpers/blockaid';
-// import { blockaidBlockedRequestsCount } from '../helpers/metrics';
+import { isMalicious } from '../helpers/spamDetection/chainpatrol';
+import { chainpatrolBlockedRequestsCount } from '../helpers/metrics';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
@@ -104,7 +104,6 @@ export async function verify(body): Promise<any> {
     if (msg.payload.type !== space.voting.type) return Promise.reject('invalid voting type');
   }
 
-  /**
   try {
     const content = `
       ${msg.payload.name || ''}
@@ -113,13 +112,12 @@ export async function verify(body): Promise<any> {
     `;
 
     if (await isMalicious(content)) {
-      blockaidBlockedRequestsCount.inc({ space: space.id });
+      chainpatrolBlockedRequestsCount.inc({ space: space.id });
       return Promise.reject('invalid proposal content');
     }
   } catch (e) {
-    log.warning('[writer] Failed to query Blockaid');
+    log.warning('[writer] Failed to check spam prevention', e);
   }
-  */
 
   if (flaggedAddresses.includes(addressLC))
     return Promise.reject('invalid proposal, please contact support');
