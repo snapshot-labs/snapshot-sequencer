@@ -57,6 +57,9 @@ export async function validateSpaceSettings(originalSpace: any) {
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
+  if (msg.space.length > 64) {
+    return Promise.reject('id too long');
+  }
   const space = await getSpace(msg.space, true);
 
   try {
