@@ -72,7 +72,7 @@ describe('poke', () => {
         const space = spacesSqlFixtures[1];
         const ts = (Date.now() / 1e3).toFixed();
         const query =
-          'INSERT IGNORE INTO spaces SET ? ON DUPLICATE KEY UPDATE updated = ?, settings = ?, name = ?, hibernated = 0';
+          'INSERT INTO spaces SET ? ON DUPLICATE KEY UPDATE updated = ?, settings = ?, name = ?, hibernated = 0';
         await db.queryAsync(query, [
           {
             id: space,

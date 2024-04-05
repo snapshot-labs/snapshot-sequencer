@@ -26,7 +26,7 @@ export async function verify(message): Promise<any> {
 
 export async function action(message, ipfs, _receipt, id): Promise<void> {
   const query = `
-    INSERT IGNORE INTO follows SET ?;
+    INSERT INTO follows SET ?;
     UPDATE spaces SET follower_count = follower_count + 1 WHERE id = ?;
   `;
   const params = {

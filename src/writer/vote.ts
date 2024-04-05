@@ -177,7 +177,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     // Store vote in dedicated table
     await db.queryAsync(
       `
-      INSERT IGNORE INTO votes SET ?;
+      INSERT INTO votes SET ?;
       UPDATE spaces SET vote_count = vote_count + 1 WHERE id = ?;
     `,
       [params, msg.space]

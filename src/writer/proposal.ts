@@ -9,8 +9,8 @@ import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limi
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedAddresses, containsFlaggedLinks } from '../helpers/moderation';
 import { validateSpaceSettings } from './settings';
-import { isMalicious } from '../helpers/blockaid';
-import { blockaidBlockedRequestsCount } from '../helpers/metrics';
+// import { isMalicious } from '../helpers/blockaid';
+// import { blockaidBlockedRequestsCount } from '../helpers/metrics';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
@@ -104,6 +104,7 @@ export async function verify(body): Promise<any> {
     if (msg.payload.type !== space.voting.type) return Promise.reject('invalid voting type');
   }
 
+  /**
   try {
     const content = `
       ${msg.payload.name || ''}
@@ -118,6 +119,7 @@ export async function verify(body): Promise<any> {
   } catch (e) {
     log.warning('[writer] Failed to query Blockaid');
   }
+  */
 
   if (flaggedAddresses.includes(addressLC))
     return Promise.reject('invalid proposal, please contact support');
@@ -170,19 +172,18 @@ export async function verify(body): Promise<any> {
     }
   }
 
-  let currentBlockNum = 0;
-  try {
-    const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
-    currentBlockNum = parseInt(await provider.getBlockNumber());
-  } catch {
-    return Promise.reject('unable to fetch current block number');
-  }
-
-  if (msg.payload.snapshot > currentBlockNum)
-    return Promise.reject('proposal snapshot must be in past');
-
   if (msg.payload.snapshot < networks[space.network].start)
     return Promise.reject('proposal snapshot must be after network start');
+
+  try {
+    const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
+    const block = await provider.getBlock(msg.payload.snapshot);
+    if (!block) return Promise.reject('invalid snapshot block');
+  } catch (error: any) {
+    if (error.message?.includes('invalid block hash or block tag'))
+      return Promise.reject('invalid snapshot block');
+    return Promise.reject('unable to fetch block');
+  }
 
   try {
     const [{ dayCount, monthCount, activeProposalsByAuthor }] = await getProposalsCount(
@@ -212,7 +213,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const created = parseInt(msg.timestamp);
   const metadata = msg.payload.metadata || {};
   const strategies = JSON.stringify(spaceSettings.strategies);
-  const validation = JSON.stringify(spaceSettings.voteValidation);
+  const validation = JSON.stringify(spaceSettings.voteValidation || {});
   const plugins = JSON.stringify(metadata.plugins || {});
   const spaceNetwork = spaceSettings.network;
   const proposalSnapshot = parseInt(msg.payload.snapshot || '0');
@@ -245,6 +246,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     start: parseInt(msg.payload.start || '0'),
     end: parseInt(msg.payload.end || '0'),
     quorum,
+    quorum_type: (quorum && spaceSettings.voting?.quorumType) || '',
     privacy: spaceSettings.voting?.privacy || '',
     snapshot: proposalSnapshot || 0,
     app: kebabCase(msg.payload.app || ''),
@@ -259,7 +261,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   };
 
   const query = `
-    INSERT IGNORE INTO proposals SET ?;
+    INSERT INTO proposals SET ?;
     UPDATE spaces SET proposal_count = proposal_count + 1 WHERE id = ?;
   `;
   const params: any[] = [proposal, space];
