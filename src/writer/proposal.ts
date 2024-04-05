@@ -210,7 +210,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const created = parseInt(msg.timestamp);
   const metadata = msg.payload.metadata || {};
   const strategies = JSON.stringify(spaceSettings.strategies);
-  const validation = JSON.stringify(spaceSettings.voteValidation);
+  const validation = JSON.stringify(spaceSettings.voteValidation || {});
   const plugins = JSON.stringify(metadata.plugins || {});
   const spaceNetwork = spaceSettings.network;
   const proposalSnapshot = parseInt(msg.payload.snapshot || '0');
