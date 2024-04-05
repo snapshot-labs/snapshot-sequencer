@@ -1,9 +1,10 @@
 import ingestor from '../../src/ingestor';
 import proposalInput from '../fixtures/ingestor-payload/proposal.json';
+import { spacesGetSpaceFixtures } from '../fixtures/space';
 import voteInput from '../fixtures/ingestor-payload/vote.json';
 import cloneDeep from 'lodash/cloneDeep';
 import omit from 'lodash/omit';
-import db from '../../src/helpers/mysql';
+import db, { sequencerDB } from '../../src/helpers/mysql';
 import relayer from '../../src/helpers/relayer';
 
 jest.mock('../../src/helpers/moderation', () => {
@@ -13,24 +14,13 @@ jest.mock('../../src/helpers/moderation', () => {
     __esModule: true,
     ...originalModule,
     // sha256 of 1.2.3.4
-    flaggedIps: ['6694f83c9f476da31f5df6bcc520034e7e57d421d247b9d34f49edbfc84a764c'],
-    flaggedProposalBodyKeywords: ['claim drop']
+    flaggedIps: ['6694f83c9f476da31f5df6bcc520034e7e57d421d247b9d34f49edbfc84a764c']
   };
 });
 
-const DEFAULT_SPACE: any = {
-  id: 'fabien.eth',
-  network: '1',
-  voting: { aliased: false, type: 'single-choice' },
-  strategies: [],
-  members: [],
-  admins: [],
-  moderators: [],
-  validation: { name: 'basic' }
-};
-
-const mockGetSpace = jest.fn((id: any): any => {
-  return { ...DEFAULT_SPACE, id };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const mockGetSpace = jest.fn((_): any => {
+  return spacesGetSpaceFixtures;
 });
 jest.mock('../../src/helpers/actions', () => {
   const originalModule = jest.requireActual('../../src/helpers/actions');
@@ -89,17 +79,21 @@ function cloneWithNewMessage(data: Record<string, any>) {
 describe('ingestor', () => {
   beforeAll(() => {
     proposalInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
+    proposalInput.data.message.end = Math.floor(Date.now() / 1e3) + 60;
     voteInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
   });
 
   afterEach(async () => {
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages');
+    await db.queryAsync('DELETE FROM snapshot_sequencer_test.proposals');
+    jest.clearAllMocks();
   });
 
   afterAll(async () => {
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.proposals;');
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages;');
-    return db.endAsync();
+    await db.endAsync();
+    await sequencerDB.endAsync();
   });
 
   it('rejects when the submitter IP is banned', async () => {
@@ -170,10 +164,10 @@ describe('ingestor', () => {
     it.todo('rejects when the submitted is not an allowed alias');
   });
 
-  it('rejects when the signature is not valid', () => {
+  it('rejects when the signature is not valid', async () => {
     mockSnapshotUtilsVerify.mockReturnValueOnce(false);
 
-    expect(ingestor(proposalRequest)).rejects.toMatch('signature');
+    await expect(ingestor(proposalRequest)).rejects.toMatch('signature');
   });
 
   it('rejects when the metadata is too large', async () => {
@@ -192,7 +186,24 @@ describe('ingestor', () => {
     expect(mockPin).toHaveBeenCalledTimes(1);
   });
 
+  it('rejects on action replay', async () => {
+    expect.assertions(2);
+    await expect(ingestor(proposalRequest)).resolves.toHaveProperty('id');
+    await expect(ingestor(proposalRequest)).rejects.toEqual('duplicate message');
+  });
+
+  it('rejects on duplicate entry', async () => {
+    expect.assertions(2);
+    await expect(ingestor(proposalRequest)).resolves.toHaveProperty('id');
+    await db.queryAsync('DELETE from snapshot_sequencer_test.messages');
+    await expect(ingestor(proposalRequest)).rejects.toEqual('duplicate message');
+  });
+
   describe('on a valid transaction', () => {
+    beforeEach(async () => {
+      await db.queryAsync('DELETE from snapshot_sequencer_test.proposals');
+    });
+
     it('returns a payload', async () => {
       const result = await ingestor(proposalRequest);
 

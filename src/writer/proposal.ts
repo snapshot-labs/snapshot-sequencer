@@ -1,15 +1,17 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import { getAddress } from '@ethersproject/address';
+import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import kebabCase from 'lodash/kebabCase';
-import { jsonParse, validateChoices } from '../helpers/utils';
+import { getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 import db from '../helpers/mysql';
 import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 import { capture } from '@snapshot-labs/snapshot-sentry';
-import { flaggedAddresses } from '../helpers/moderation';
+import { flaggedAddresses, containsFlaggedLinks } from '../helpers/moderation';
+import { validateSpaceSettings } from './settings';
+// import { isMalicious } from '../helpers/blockaid';
+// import { blockaidBlockedRequestsCount } from '../helpers/metrics';
 
-const network = process.env.NETWORK || 'testnet';
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
@@ -36,15 +38,48 @@ export const getProposalsCount = async (space, author) => {
   return await db.queryAsync(query, [space, author]);
 };
 
+async function validateSpace(space: any) {
+  if (!space) {
+    return Promise.reject('unknown space');
+  }
+
+  if (space.hibernated) {
+    return Promise.reject('space hibernated');
+  }
+
+  try {
+    await validateSpaceSettings(space);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+}
+
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
   const created = parseInt(msg.timestamp);
   const addressLC = body.address.toLowerCase();
+  const space = await getSpace(msg.space);
 
-  const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload);
+  try {
+    await validateSpace(space);
+  } catch (e) {
+    return Promise.reject(`invalid space settings: ${e}`);
+  }
+
+  space.id = msg.space;
+
+  const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload, {
+    spaceType: space.turbo ? 'turbo' : 'default'
+  });
+
   if (schemaIsValid !== true) {
     log.warn('[writer] Wrong proposal format', schemaIsValid);
     return Promise.reject('wrong proposal format');
+  }
+
+  const tsInt = (Date.now() / 1e3).toFixed();
+  if (msg.payload.end <= tsInt) {
+    return Promise.reject('proposal end date must be in the future');
   }
 
   const isChoicesValid = validateChoices({
@@ -52,26 +87,6 @@ export async function verify(body): Promise<any> {
     choices: msg.payload.choices
   });
   if (!isChoicesValid) return Promise.reject('wrong choices for basic type voting');
-
-  const space = await getSpace(msg.space);
-
-  space.id = msg.space;
-  const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
-  const hasVotingValidation =
-    space.voteValidation?.name && !['any'].includes(space.voteValidation.name);
-
-  if (hasTicket && !hasVotingValidation && network !== 'testnet') {
-    return Promise.reject('space with ticket requires voting validation');
-  }
-
-  const hasProposalValidation =
-    (space.validation?.name && space.validation.name !== 'any') ||
-    space.filters?.minScore ||
-    space.filters?.onlyMembers;
-
-  if (!hasProposalValidation && network !== 'testnet') {
-    return Promise.reject('space missing proposal validation');
-  }
 
   // if (msg.payload.start < created) return Promise.reject('invalid start date');
 
@@ -88,6 +103,23 @@ export async function verify(body): Promise<any> {
   if (space.voting?.type) {
     if (msg.payload.type !== space.voting.type) return Promise.reject('invalid voting type');
   }
+
+  /**
+  try {
+    const content = `
+      ${msg.payload.name || ''}
+      ${msg.payload.body || ''}
+      ${msg.payload.discussion || ''}
+    `;
+
+    if (await isMalicious(content)) {
+      blockaidBlockedRequestsCount.inc({ space: space.id });
+      return Promise.reject('invalid proposal content');
+    }
+  } catch (e) {
+    log.warning('[writer] Failed to query Blockaid');
+  }
+  */
 
   if (flaggedAddresses.includes(addressLC))
     return Promise.reject('invalid proposal, please contact support');
@@ -140,19 +172,25 @@ export async function verify(body): Promise<any> {
     }
   }
 
-  const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
+  if (msg.payload.snapshot < networks[space.network].start)
+    return Promise.reject('proposal snapshot must be after network start');
 
-  const currentBlockNum = parseInt(await provider.getBlockNumber());
-
-  if (msg.payload.snapshot > currentBlockNum)
-    return Promise.reject('proposal snapshot must be in past');
+  try {
+    const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
+    const block = await provider.getBlock(msg.payload.snapshot);
+    if (!block) return Promise.reject('invalid snapshot block');
+  } catch (error: any) {
+    if (error.message?.includes('invalid block hash or block tag'))
+      return Promise.reject('invalid snapshot block');
+    return Promise.reject('unable to fetch block');
+  }
 
   try {
     const [{ dayCount, monthCount, activeProposalsByAuthor }] = await getProposalsCount(
       space.id,
       body.address
     );
-    const [dayLimit, monthLimit] = getSpaceLimits(space.id);
+    const [dayLimit, monthLimit] = getSpaceLimits(space);
 
     if (dayCount >= dayLimit || monthCount >= monthLimit)
       return Promise.reject('proposal limit reached');
@@ -171,14 +209,24 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   /* Store the proposal in dedicated table 'proposals' */
   const spaceSettings = await getSpace(space);
 
-  const author = getAddress(body.address);
+  const author = body.address;
   const created = parseInt(msg.timestamp);
   const metadata = msg.payload.metadata || {};
   const strategies = JSON.stringify(spaceSettings.strategies);
-  const validation = JSON.stringify(spaceSettings.voteValidation);
+  const validation = JSON.stringify(spaceSettings.voteValidation || {});
   const plugins = JSON.stringify(metadata.plugins || {});
   const spaceNetwork = spaceSettings.network;
   const proposalSnapshot = parseInt(msg.payload.snapshot || '0');
+
+  let quorum = spaceSettings.voting?.quorum || 0;
+  if (!quorum && spaceSettings.plugins?.quorum) {
+    try {
+      quorum = await getQuorum(spaceSettings.plugins.quorum, spaceNetwork, proposalSnapshot);
+    } catch (e: any) {
+      console.log('unable to get quorum', e.message);
+      return Promise.reject('unable to get quorum');
+    }
+  }
 
   const proposal = {
     id,
@@ -187,7 +235,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     created,
     space,
     network: spaceNetwork,
-    symbol: spaceSettings?.symbol || '',
+    symbol: spaceSettings.symbol || '',
     type: msg.payload.type || 'single-choice',
     strategies,
     plugins,
@@ -197,8 +245,9 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     choices: JSON.stringify(msg.payload.choices),
     start: parseInt(msg.payload.start || '0'),
     end: parseInt(msg.payload.end || '0'),
-    quorum: spaceSettings?.voting?.quorum || 0,
-    privacy: spaceSettings?.voting?.privacy || '',
+    quorum,
+    quorum_type: (quorum && spaceSettings.voting?.quorumType) || '',
+    privacy: spaceSettings.voting?.privacy || '',
     snapshot: proposalSnapshot || 0,
     app: kebabCase(msg.payload.app || ''),
     scores: JSON.stringify([]),
@@ -207,10 +256,10 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     scores_total: 0,
     scores_updated: 0,
     votes: 0,
-    validation
+    validation,
+    flagged: +containsFlaggedLinks(msg.payload.body)
   };
-  const query = 'INSERT IGNORE INTO proposals SET ?; ';
-  const params: any[] = [proposal];
 
-  await db.queryAsync(query, params);
+  const query = 'INSERT INTO proposals SET ?; ';
+  await db.queryAsync(query, proposal);
 }

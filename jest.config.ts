@@ -11,11 +11,12 @@ export default {
   coverageProvider: 'v8',
 
   // An array of regexp pattern strings used to skip coverage collection
-  coveragePathIgnorePatterns: ['/node_modules/', '<rootDir>/dist/', '<rootDir>/test/fixtures/'],
+  coveragePathIgnorePatterns: ['/node_modules/', '<rootDir>/build/', '<rootDir>/test/fixtures/'],
 
   preset: 'ts-jest',
   testEnvironment: 'jest-environment-node-single-context',
   setupFiles: ['dotenv/config'],
+  globalSetup: '<rootDir>/test/setup.ts',
   moduleFileExtensions: ['js', 'ts'],
   fakeTimers: {
     enableGlobally: true

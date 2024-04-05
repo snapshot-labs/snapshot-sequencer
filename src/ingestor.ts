@@ -1,5 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import hashTypes from '@snapshot-labs/snapshot.js/src/sign/types.json';
+import hashTypes from '@snapshot-labs/snapshot.js/src/sign/hashedTypes.json';
 import { pin } from '@snapshot-labs/pineapple';
 import kebabCase from 'lodash/kebabCase';
 import relayer, { issueReceipt } from './helpers/relayer';
@@ -122,7 +122,7 @@ export default async function ingestor(req) {
         type: message.type,
         app: kebabCase(message.app || '')
       };
-
+    if (type === 'alias') payload = { alias: message.alias };
     if (type === 'statement') payload = { about: message.about, statement: message.statement };
     if (type === 'delete-proposal') payload = { proposal: message.proposal };
     if (type === 'update-proposal') {
@@ -174,7 +174,7 @@ export default async function ingestor(req) {
     };
     const msg = jsonParse(legacyBody.msg);
 
-    if (['follow', 'unfollow', 'alias', 'subscribe', 'unsubscribe', 'profile'].includes(type)) {
+    if (['follow', 'unfollow', 'subscribe', 'unsubscribe', 'profile'].includes(type)) {
       legacyBody = message;
     }
 
@@ -222,18 +222,27 @@ export default async function ingestor(req) {
         body.sig,
         receipt
       );
-    } catch (e) {
+    } catch (e: any) {
+      // Last check to avoid duplicate entries, in the unlikely event
+      // that the writer's action was successful, but storeMsg failed or is not
+      // completed yet
+      if (e.errno === 1062) {
+        return Promise.reject('duplicate message');
+      }
+
       if (typeof e !== 'string') {
         capture(e);
       }
+
       return Promise.reject(e);
     }
 
     const shortId = `${id.slice(0, 7)}...`;
+    const spaceText = message.space ? ` on "${message.space}"` : '';
     log.info(
-      `[ingestor] New "${type}" on "${message.space}",  for "${
-        body.address
-      }", id: ${shortId}, IP: ${sha256(getIp(req))}`
+      `[ingestor] New "${type}"${spaceText} for "${body.address}", id: ${shortId}, IP: ${sha256(
+        getIp(req)
+      )}`
     );
 
     success = 1;

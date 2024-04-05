@@ -100,7 +100,7 @@ const pendingRequests = {};
 
 export async function updateProposalAndVotes(proposalId: string, force = false) {
   const proposal = await getProposal(proposalId);
-  if (!proposal) return false;
+  if (!proposal || proposal.state === 'pending') return false;
   if (proposal.scores_state === 'final') return true;
 
   if (!force && proposal.privacy === 'shutter' && proposal.state === 'closed') {
@@ -111,7 +111,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
   // Ignore score calculation if proposal have more than 100k votes and scores_updated greater than 5 minute
   const ts = Number((Date.now() / 1e3).toFixed());
   if (
-    (proposal.votes > 30000 && proposal.scores_updated > ts - 300) ||
+    (proposal.votes > 20000 && proposal.scores_updated > ts - 300) ||
     pendingRequests[proposalId]
   ) {
     console.log(
@@ -123,7 +123,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     );
     return false;
   }
-  if (proposal.votes > 30000) pendingRequests[proposalId] = true;
+  if (proposal.votes > 20000) pendingRequests[proposalId] = true;
 
   try {
     // Get votes

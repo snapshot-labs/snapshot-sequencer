@@ -1,6 +1,7 @@
 import init, { client } from '@snapshot-labs/snapshot-metrics';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { Express } from 'express';
+import { queue } from './duplicateRequestPreventor';
 import db from './mysql';
 
 const whitelistedPath = [/^\/$/, /^\/scores\/.+$/, /^\/spaces\/.+\/poke$/];
@@ -48,6 +49,11 @@ const timeIngestorErrorProcess = new client.Histogram({
   labelNames: ['error', 'type']
 });
 
+export const requestDeduplicatorSize = new client.Gauge({
+  name: 'request_deduplicator_size',
+  help: 'Total number of items in the deduplicator queue'
+});
+
 const ingestorInstrumentation = (req, res, next) => {
   if (req.method !== 'POST' && req.originalUrl !== '/') {
     return next();
@@ -70,3 +76,17 @@ const ingestorInstrumentation = (req, res, next) => {
 
   next();
 };
+
+export const blockaidBlockedRequestsCount = new client.Counter({
+  name: 'blockaid_blocked_requests_count',
+  help: 'Total number of requests rejected by blockaid, by space',
+  labelNames: ['space']
+});
+
+new client.Gauge({
+  name: 'duplicate_request_queue_size',
+  help: 'Number of items in the duplicate requests prevention queue',
+  async collect() {
+    this.set(queue.size);
+  }
+});
