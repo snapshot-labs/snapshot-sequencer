@@ -9,8 +9,7 @@ import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limi
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedAddresses, containsFlaggedLinks } from '../helpers/moderation';
 import { validateSpaceSettings } from './settings';
-import { isMalicious } from '../helpers/monitoring/chainpatrol';
-import { chainpatrolBlockedRequestsCount } from '../helpers/metrics';
+import { isMalicious } from '../helpers/monitoring';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
@@ -105,13 +104,7 @@ export async function verify(body): Promise<any> {
   }
 
   try {
-    const content = `
-      ${msg.payload.name || ''}
-      ${msg.payload.body || ''}
-      ${msg.payload.discussion || ''}
-    `;
-    if (await isMalicious(content)) {
-      chainpatrolBlockedRequestsCount.inc({ space: space.id });
+    if (await isMalicious(msg.payload, space.id)) {
       return Promise.reject('invalid proposal content');
     }
   } catch (e) {

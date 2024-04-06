@@ -77,16 +77,10 @@ const ingestorInstrumentation = (req, res, next) => {
   next();
 };
 
-export const blockaidBlockedRequestsCount = new client.Counter({
-  name: 'blockaid_blocked_requests_count',
-  help: 'Total number of requests rejected by blockaid, by space',
-  labelNames: ['space']
-});
-
-export const chainpatrolBlockedRequestsCount = new client.Counter({
-  name: 'chainpatrol_blocked_requests_count',
-  help: 'Total number of requests rejected by chainpatrol, by space',
-  labelNames: ['space']
+export const monitoringBlockedRequestsCount = new client.Counter({
+  name: 'monitoring_blocked_requests_count',
+  help: 'Total number of requests rejected by monitoring service, by space and service',
+  labelNames: ['space', 'service']
 });
 
 new client.Gauge({
