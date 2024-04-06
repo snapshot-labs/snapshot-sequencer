@@ -9,7 +9,7 @@ import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limi
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedAddresses, containsFlaggedLinks } from '../helpers/moderation';
 import { validateSpaceSettings } from './settings';
-import { isMalicious } from '../helpers/spamDetection/chainpatrol';
+import { isMalicious } from '../helpers/monitoring/chainpatrol';
 import { chainpatrolBlockedRequestsCount } from '../helpers/metrics';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
