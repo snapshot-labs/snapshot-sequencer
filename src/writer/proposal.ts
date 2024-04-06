@@ -108,7 +108,7 @@ export async function verify(body): Promise<any> {
       return Promise.reject('invalid proposal content');
     }
   } catch (e) {
-    log.warning('[writer] Failed to check spam prevention', e);
+    log.warning('[writer] Failed to check proposal content', e);
   }
 
   if (flaggedAddresses.includes(addressLC))
