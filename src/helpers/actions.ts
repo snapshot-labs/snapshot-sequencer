@@ -53,12 +53,6 @@ export async function getSpace(id: string, includeDeleted = false) {
   };
 }
 
-export async function markSpaceAsDeleted(space: string) {
-  const query = 'UPDATE spaces SET deleted = ? WHERE id = ?';
-
-  await db.queryAsync(query, [1, space]);
-}
-
 export function refreshProposalsCount(spaces?: string[]) {
   return db.queryAsync(
     `
@@ -91,39 +85,5 @@ export function refreshVotesCount(spaces: string[]) {
       ON DUPLICATE KEY UPDATE votes_count = t.votes_count
     `,
     spaces
-  );
-}
-
-export function incrementVotesCount(space: string, user: string) {
-  return db.queryAsync(
-    `
-      INSERT INTO user_space_activities (space, user, votes_count)
-      VALUES(?, ?, 1)
-      ON DUPLICATE KEY UPDATE votes_count = votes_count + 1
-    `,
-    [space, user]
-  );
-}
-
-export function incrementProposalsCount(space: string, user: string) {
-  return db.queryAsync(
-    `
-      INSERT INTO user_space_activities (space, user, proposals_count)
-      VALUES(?, ?, 1)
-      ON DUPLICATE KEY UPDATE proposals_count = proposals_count + 1
-    `,
-    [space, user]
-  );
-}
-
-export function decrementProposalsCount(space: string, user: string) {
-  return db.queryAsync(
-    `
-      UPDATE user_space
-      SET proposals_count = proposals_count - 1
-      WHERE user = ? AND space = ?
-      LIMIT 1
-    `,
-    [user, space]
   );
 }

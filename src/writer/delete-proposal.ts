@@ -1,9 +1,4 @@
-import {
-  decrementProposalsCount,
-  getProposal,
-  getSpace,
-  refreshVotesCount
-} from '../helpers/actions';
+import { getProposal, getSpace, refreshVotesCount } from '../helpers/actions';
 import { jsonParse } from '../helpers/utils';
 import db from '../helpers/mysql';
 
@@ -28,16 +23,17 @@ export async function action(body): Promise<void> {
   const proposal = await getProposal(msg.space, msg.payload.proposal);
   const id = msg.payload.proposal;
 
-  const proposalDeleteResult = await db.queryAsync('DELETE FROM proposals WHERE id = ? LIMIT 1', [
-    id
-  ]);
+  await db.queryAsync(
+    `
+    DELETE FROM proposals WHERE id = ? LIMIT 1;
+    DELETE FROM votes WHERE proposal = ?;
+    UPDATE user_space_activities
+      SET proposals_count = proposals_count - 1
+      WHERE user = ? AND space = ?
+      LIMIT 1;
+  `,
+    [id, id, proposal.author, msg.space]
+  );
 
-  if (proposalDeleteResult.affectedRows > 0) {
-    const voteDeleteResult = await db.queryAsync('DELETE FROM votes WHERE proposal = ?', [id]);
-    await decrementProposalsCount(msg.space, proposal.author);
-
-    if (voteDeleteResult.affectedRows > 0) {
-      await refreshVotesCount([msg.space]);
-    }
-  }
+  await refreshVotesCount([msg.space]);
 }
