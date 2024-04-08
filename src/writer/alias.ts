@@ -23,7 +23,7 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
     ipfs,
     address: message.address,
     alias: msg.payload.alias,
-    created: message.timestamp
+    created: msg.timestamp
   };
-  await db.queryAsync('INSERT IGNORE INTO aliases SET ?', params);
+  await db.queryAsync('INSERT INTO aliases SET ?', params);
 }

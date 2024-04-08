@@ -222,10 +222,18 @@ export default async function ingestor(req) {
         body.sig,
         receipt
       );
-    } catch (e) {
+    } catch (e: any) {
+      // Last check to avoid duplicate entries, in the unlikely event
+      // that the writer's action was successful, but storeMsg failed or is not
+      // completed yet
+      if (e.errno === 1062) {
+        return Promise.reject('duplicate message');
+      }
+
       if (typeof e !== 'string') {
         capture(e);
       }
+
       return Promise.reject(e);
     }
 
