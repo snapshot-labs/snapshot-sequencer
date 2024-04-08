@@ -11,13 +11,19 @@ async function main() {
       `Processing space #${spaces[index].id} (${spaces[index].name}) - ${index}/${spaces.length}`
     );
 
-    console.log('Inserting/Updating votes_count');
     const votesCountRes = await refreshVotesCount(spaces[index].id);
-    console.log(votesCountRes);
+    console.log(
+      'Inserting/Updating votes_count - ',
+      `Affected: ${votesCountRes.affectedRows}`,
+      `Changed: ${votesCountRes.changedRows}`
+    );
 
-    console.log('Inserting/Updating proposals_count');
     const proposalsCountRes = await refreshProposalsCount(spaces[index].id);
-    console.log(proposalsCountRes);
+    console.log(
+      'Inserting/Updating proposals_count',
+      `Affected: ${proposalsCountRes.affectedRows}`,
+      `Changed: ${proposalsCountRes.changedRows}`
+    );
   }
 }
 
