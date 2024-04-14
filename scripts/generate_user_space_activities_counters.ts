@@ -2,13 +2,19 @@ import 'dotenv/config';
 import { refreshProposalsCount, refreshVotesCount } from '../src/helpers/actions';
 import db from '../src/helpers/mysql';
 
-// Usage: yarn ts-node scripts/generate_user_space_activities_counters.ts
+// Usage: yarn ts-node scripts/generate_user_space_activities_counters.ts [OPTIONAL-SPACE-ID]
 async function main() {
-  const spaces: { id: string; name: string }[] = await db.queryAsync('SELECT id, name FROM spaces');
+  const query = `SELECT id, name FROM spaces ${
+    process.argv[2] ? `WHERE id = '${process.argv[2]}'` : ''
+  }`;
+
+  const spaces: { id: string; name: string }[] = await db.queryAsync(query);
 
   for (const index in spaces) {
     console.log(
-      `Processing space #${spaces[index].id} (${spaces[index].name}) - ${index + 1}/${spaces.length}`
+      `Processing space #${spaces[index].id} (${spaces[index].name}) - ${+index + 1}/${
+        spaces.length
+      }`
     );
 
     const votesCountRes = await refreshVotesCount([spaces[index].id]);
