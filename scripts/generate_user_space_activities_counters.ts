@@ -8,7 +8,7 @@ async function main() {
 
   for (const index in spaces) {
     console.log(
-      `Processing space #${spaces[index].id} (${spaces[index].name}) - ${index}/${spaces.length}`
+      `Processing space #${spaces[index].id} (${spaces[index].name}) - ${index + 1}/${spaces.length}`
     );
 
     const votesCountRes = await refreshVotesCount(spaces[index].id);
