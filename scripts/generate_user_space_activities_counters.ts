@@ -4,21 +4,21 @@ import db from '../src/helpers/mysql';
 
 // Usage: yarn ts-node scripts/generate_user_space_activities_counters.ts
 async function main() {
-  const spaces = await db.queryAsync('SELECT id, name FROM spaces');
+  const spaces: { id: string; name: string }[] = await db.queryAsync('SELECT id, name FROM spaces');
 
   for (const index in spaces) {
     console.log(
       `Processing space #${spaces[index].id} (${spaces[index].name}) - ${index}/${spaces.length}`
     );
 
-    const votesCountRes = await refreshVotesCount(spaces[index].id);
+    const votesCountRes = await refreshVotesCount([spaces[index].id]);
     console.log(
       'Inserting/Updating votes_count - ',
       `Affected: ${votesCountRes.affectedRows}`,
       `Changed: ${votesCountRes.changedRows}`
     );
 
-    const proposalsCountRes = await refreshProposalsCount(spaces[index].id);
+    const proposalsCountRes = await refreshProposalsCount([spaces[index].id]);
     console.log(
       'Inserting/Updating proposals_count',
       `Affected: ${proposalsCountRes.affectedRows}`,
