@@ -56,7 +56,7 @@ export async function getSpace(id: string, includeDeleted = false) {
 export function refreshProposalsCount(spaces?: string[]) {
   return db.queryAsync(
     `
-      INSERT INTO user_space_activities (proposals_count, user, space)
+      INSERT INTO leaderboard (proposals_count, user, space)
         (SELECT * FROM (
           SELECT COUNT(proposals.id) AS proposals_count, author, space
           FROM proposals
@@ -74,7 +74,7 @@ export function refreshProposalsCount(spaces?: string[]) {
 export function refreshVotesCount(spaces: string[]) {
   return db.queryAsync(
     `
-      INSERT INTO user_space_activities (votes_count, user, space)
+      INSERT INTO leaderboard (votes_count, user, space)
         (SELECT * FROM (
           SELECT COUNT(votes.id) AS votes_count, voter, space
           FROM votes

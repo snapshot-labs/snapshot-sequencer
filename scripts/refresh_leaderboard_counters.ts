@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { refreshProposalsCount, refreshVotesCount } from '../src/helpers/actions';
 import db from '../src/helpers/mysql';
 
-// Usage: yarn ts-node scripts/generate_user_space_activities_counters.ts [OPTIONAL-SPACE-ID]
+// Usage: yarn ts-node scripts/refresh_leaderboard_counters.ts [OPTIONAL-SPACE-ID]
 async function main() {
   const query = `SELECT id, name FROM spaces ${
     process.argv[2] ? `WHERE id = '${process.argv[2]}'` : ''

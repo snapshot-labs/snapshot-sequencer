@@ -180,7 +180,7 @@ CREATE TABLE messages (
   INDEX receipt (receipt)
 );
 
-CREATE TABLE user_space_activities (
+CREATE TABLE leaderboard (
   user VARCHAR(64) NOT NULL,
   space VARCHAR(64) NOT NULL,
   votes_count SMALLINT UNSIGNED NOT NULL DEFAULT '0',
