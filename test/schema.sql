@@ -179,3 +179,14 @@ CREATE TABLE messages (
   INDEX type (type),
   INDEX receipt (receipt)
 );
+
+CREATE TABLE leaderboard (
+  user VARCHAR(64) NOT NULL,
+  space VARCHAR(64) NOT NULL,
+  vote_count SMALLINT UNSIGNED NOT NULL DEFAULT '0',
+  proposal_count SMALLINT UNSIGNED NOT NULL DEFAULT '0',
+  PRIMARY KEY user_space (user,space),
+  INDEX space (space),
+  INDEX vote_count (vote_count),
+  INDEX proposal_count (proposal_count)
+);

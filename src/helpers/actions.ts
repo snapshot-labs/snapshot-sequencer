@@ -53,8 +53,37 @@ export async function getSpace(id: string, includeDeleted = false) {
   };
 }
 
-export async function markSpaceAsDeleted(space: string) {
-  const query = 'UPDATE spaces SET deleted = ? WHERE id = ?';
+export function refreshProposalsCount(spaces?: string[]) {
+  return db.queryAsync(
+    `
+      INSERT INTO leaderboard (proposal_count, user, space)
+        (SELECT * FROM (
+          SELECT COUNT(proposals.id) AS proposal_count, author, space
+          FROM proposals
+          JOIN spaces ON spaces.id = proposals.space
+          WHERE spaces.deleted = 0
+          ${spaces ? ' AND space IN (?)' : ''}
+          GROUP BY author, space
+        ) AS t)
+      ON DUPLICATE KEY UPDATE proposal_count = t.proposal_count
+    `,
+    spaces
+  );
+}
 
-  await db.queryAsync(query, [1, space]);
+export function refreshVotesCount(spaces: string[]) {
+  return db.queryAsync(
+    `
+      INSERT INTO leaderboard (vote_count, user, space)
+        (SELECT * FROM (
+          SELECT COUNT(votes.id) AS vote_count, voter, space
+          FROM votes
+          JOIN spaces ON spaces.id = votes.space
+          WHERE spaces.deleted = 0 AND space IN (?)
+          GROUP BY voter, space
+        ) AS t)
+      ON DUPLICATE KEY UPDATE vote_count = t.vote_count
+    `,
+    spaces
+  );
 }
