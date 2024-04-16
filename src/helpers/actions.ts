@@ -56,16 +56,16 @@ export async function getSpace(id: string, includeDeleted = false) {
 export function refreshProposalsCount(spaces?: string[]) {
   return db.queryAsync(
     `
-      INSERT INTO leaderboard (proposals_count, user, space)
+      INSERT INTO leaderboard (proposal_count, user, space)
         (SELECT * FROM (
-          SELECT COUNT(proposals.id) AS proposals_count, author, space
+          SELECT COUNT(proposals.id) AS proposal_count, author, space
           FROM proposals
           JOIN spaces ON spaces.id = proposals.space
           WHERE spaces.deleted = 0
           ${spaces ? ' AND space IN (?)' : ''}
           GROUP BY author, space
         ) AS t)
-      ON DUPLICATE KEY UPDATE proposals_count = t.proposals_count
+      ON DUPLICATE KEY UPDATE proposal_count = t.proposal_count
     `,
     spaces
   );
@@ -74,15 +74,15 @@ export function refreshProposalsCount(spaces?: string[]) {
 export function refreshVotesCount(spaces: string[]) {
   return db.queryAsync(
     `
-      INSERT INTO leaderboard (votes_count, user, space)
+      INSERT INTO leaderboard (vote_count, user, space)
         (SELECT * FROM (
-          SELECT COUNT(votes.id) AS votes_count, voter, space
+          SELECT COUNT(votes.id) AS vote_count, voter, space
           FROM votes
           JOIN spaces ON spaces.id = votes.space
           WHERE spaces.deleted = 0 AND space IN (?)
           GROUP BY voter, space
         ) AS t)
-      ON DUPLICATE KEY UPDATE votes_count = t.votes_count
+      ON DUPLICATE KEY UPDATE vote_count = t.vote_count
     `,
     spaces
   );

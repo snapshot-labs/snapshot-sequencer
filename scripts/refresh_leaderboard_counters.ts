@@ -19,14 +19,14 @@ async function main() {
 
     const votesCountRes = await refreshVotesCount([spaces[index].id]);
     console.log(
-      'Inserting/Updating votes_count - ',
+      'Inserting/Updating vote_count - ',
       `Affected: ${votesCountRes.affectedRows}`,
       `Changed: ${votesCountRes.changedRows}`
     );
 
     const proposalsCountRes = await refreshProposalsCount([spaces[index].id]);
     console.log(
-      'Inserting/Updating proposals_count',
+      'Inserting/Updating proposal_count',
       `Affected: ${proposalsCountRes.affectedRows}`,
       `Changed: ${proposalsCountRes.changedRows}`
     );
