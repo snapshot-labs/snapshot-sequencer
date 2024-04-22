@@ -26,7 +26,7 @@ export async function action(body): Promise<void> {
 
   try {
     const query = `
-      UPDATE spaces SET deleted = 1 WHERE id = ? LIMIT 1;
+      UPDATE spaces SET deleted = 1, verified = 0 WHERE id = ? LIMIT 1;
       DELETE FROM leaderboard WHERE space = ?;
     `;
 
