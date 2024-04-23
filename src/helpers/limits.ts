@@ -1,3 +1,5 @@
+const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
+
 export const FLAGGED_SPACE_PROPOSAL_DAY_LIMIT = 1;
 export const FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT = 5;
 
@@ -39,7 +41,7 @@ export function getSpaceLimits(space): number[] {
     return [TURBO_SPACE_PROPOSAL_DAY_LIMIT, TURBO_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
-  if (space.verified) {
+  if (space.verified || SNAPSHOT_ENV === 'testnet') {
     return [VERIFIED_SPACE_PROPOSAL_DAY_LIMIT, VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
