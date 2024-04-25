@@ -60,7 +60,7 @@ export function refreshProposalsCount(spaces?: string[]) {
         (SELECT * FROM (
           SELECT COUNT(proposals.id) AS proposal_count, author, space
           FROM proposals
-          JOIN spaces ON spaces.id = proposals.space
+          JOIN spaces ON BINARY spaces.id = BINARY proposals.space
           WHERE spaces.deleted = 0
           ${spaces ? ' AND space IN (?)' : ''}
           GROUP BY author, space
@@ -78,7 +78,7 @@ export function refreshVotesCount(spaces: string[]) {
         (SELECT * FROM (
           SELECT COUNT(votes.id) AS vote_count, voter, space
           FROM votes
-          JOIN spaces ON spaces.id = votes.space
+          JOIN spaces ON BINARY spaces.id = BINARY votes.space
           WHERE spaces.deleted = 0 AND space IN (?)
           GROUP BY voter, space
         ) AS t)
