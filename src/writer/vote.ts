@@ -175,15 +175,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     );
   } else {
     // Store vote in dedicated table
-    await db.queryAsync(
-      `
-        INSERT INTO votes SET ?;
-        INSERT INTO leaderboard (space, user, vote_count)
-          VALUES(?, ?, 1)
-          ON DUPLICATE KEY UPDATE vote_count = vote_count + 1
-      `,
-      [params, msg.space, voter]
-    );
+    await db.queryAsync('INSERT INTO votes SET ?;', [params]);
   }
 
   // Update proposal scores and voters vp
