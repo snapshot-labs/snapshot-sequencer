@@ -148,7 +148,13 @@ export default async function ingestor(req) {
       if (type === 'vote-string') {
         const proposal = await getProposal(message.space, message.proposal);
         if (!proposal) return Promise.reject('unknown proposal');
-        if (proposal.privacy !== 'shutter') choice = JSON.parse(message.choice);
+        if (proposal.privacy !== 'shutter') {
+          try {
+            choice = JSON.parse(message.choice);
+          } catch (e) {
+            return Promise.reject('invalid choice');
+          }
+        }
       }
 
       payload = {
