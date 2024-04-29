@@ -28,7 +28,7 @@ export async function action(body): Promise<void> {
     DELETE FROM proposals WHERE id = ? LIMIT 1;
     DELETE FROM votes WHERE proposal = ?;
     UPDATE leaderboard
-      SET proposal_count = proposal_count - 1
+      SET proposal_count = GREATEST(proposal_count - 1, 0)
       WHERE user = ? AND space = ?
       LIMIT 1;
   `,
