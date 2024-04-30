@@ -17,7 +17,7 @@ export const ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT = 750;
 
 export const FOLLOWS_LIMIT_PER_USER = 25;
 
-export const ECOSYSTEM_SPACES = [
+export const MAINNET_ECOSYSTEM_SPACES = [
   'orbapp.eth',
   'cakevote.eth',
   'outcome.eth',
@@ -35,9 +35,10 @@ export function getSpaceLimits(space): number[] {
     return [FLAGGED_SPACE_PROPOSAL_DAY_LIMIT, FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
-  const isTestnetEcosystemSpace =
-    SNAPSHOT_ENV === 'testnet' && TESTNET_ECOSYSTEM_SPACES.includes(space.id);
-  if (ECOSYSTEM_SPACES.includes(space.id) || isTestnetEcosystemSpace) {
+  const ecosystemSpaces =
+    SNAPSHOT_ENV === 'testnet' ? TESTNET_ECOSYSTEM_SPACES : MAINNET_ECOSYSTEM_SPACES;
+
+  if (ecosystemSpaces.includes(space.id)) {
     return [ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT, ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
