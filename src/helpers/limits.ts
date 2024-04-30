@@ -26,6 +26,10 @@ export const ECOSYSTEM_SPACES = [
   'arbitrumfoundation.eth'
 ];
 
+export const TESTNET_ECOSYSTEM_SPACES = [
+  'citiesdao.eth'
+]
+
 export const ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT = 20;
 
 export function getSpaceLimits(space): number[] {
@@ -33,7 +37,8 @@ export function getSpaceLimits(space): number[] {
     return [FLAGGED_SPACE_PROPOSAL_DAY_LIMIT, FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
-  if (ECOSYSTEM_SPACES.includes(space.id)) {
+  const isTestnetEcosystemSpace = SNAPSHOT_ENV === 'testnet' && TESTNET_ECOSYSTEM_SPACES.includes(space.id);
+  if (ECOSYSTEM_SPACES.includes(space.id) || isTestnetEcosystemSpace) {
     return [ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT, ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
