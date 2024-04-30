@@ -11,7 +11,7 @@ import {
   FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT,
   SPACE_PROPOSAL_MONTH_LIMIT,
   VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT,
-  ECOSYSTEM_SPACES,
+  MAINNET_ECOSYSTEM_SPACES,
   ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT,
   TURBO_SPACE_PROPOSAL_DAY_LIMIT,
   TURBO_SPACE_PROPOSAL_MONTH_LIMIT
@@ -329,7 +329,7 @@ describe('writer/proposal', () => {
     it.each([
       ['flagged', FLAGGED_SPACE_PROPOSAL_DAY_LIMIT, 'flagged', true],
       ['verified', VERIFIED_SPACE_PROPOSAL_DAY_LIMIT, 'verified', true],
-      ['ecosystem', ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT, 'id', ECOSYSTEM_SPACES[0]],
+      ['ecosystem', ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT, 'id', MAINNET_ECOSYSTEM_SPACES[0]],
       ['turbo', TURBO_SPACE_PROPOSAL_DAY_LIMIT, 'turbo', true],
       ['normal', SPACE_PROPOSAL_DAY_LIMIT, null, null]
     ])(
@@ -354,7 +354,7 @@ describe('writer/proposal', () => {
     it.each([
       ['flagged', FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT, 'flagged', true],
       ['verified', VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT, 'verified', true],
-      ['ecosystem', ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT, 'id', ECOSYSTEM_SPACES[0]],
+      ['ecosystem', ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT, 'id', MAINNET_ECOSYSTEM_SPACES[0]],
       ['turbo', TURBO_SPACE_PROPOSAL_MONTH_LIMIT, 'turbo', true],
       ['normal', SPACE_PROPOSAL_MONTH_LIMIT, null, null]
     ])(
