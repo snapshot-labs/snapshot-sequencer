@@ -5,6 +5,6 @@ export async function verify(): Promise<any> {
 }
 
 export async function action(message): Promise<void> {
-  const query = 'DELETE FROM follows WHERE follower = ? AND space = ? LIMIT 1';
-  await db.queryAsync(query, [message.from, message.space]);
+  const query = 'DELETE FROM follows WHERE follower = ? AND space = ? AND network = ? LIMIT 1';
+  await db.queryAsync(query, [message.from, message.space, message.network || 's']);
 }

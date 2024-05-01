@@ -25,6 +25,7 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
     ipfs,
     follower: message.from,
     space: message.space,
+    network: message.network || 's',
     created: message.timestamp
   };
 

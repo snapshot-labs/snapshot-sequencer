@@ -106,8 +106,9 @@ CREATE TABLE follows (
   ipfs VARCHAR(64) NOT NULL,
   follower VARCHAR(64) NOT NULL,
   space VARCHAR(64) NOT NULL,
+  network VARCHAR(24) NOT NULL DEFAULT 's',
   created INT(11) NOT NULL,
-  PRIMARY KEY (follower, space),
+  PRIMARY KEY (follower, space, network),
   INDEX ipfs (ipfs),
   INDEX created (created)
 );
