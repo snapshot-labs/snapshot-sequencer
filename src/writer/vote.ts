@@ -178,11 +178,11 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     await db.queryAsync(
       `
         INSERT INTO votes SET ?;
-        INSERT INTO leaderboard (space, user, vote_count)
-          VALUES(?, ?, 1)
-          ON DUPLICATE KEY UPDATE vote_count = vote_count + 1
+        INSERT INTO leaderboard (space, user, vote_count, last_vote)
+          VALUES(?, ?, 1, ?)
+          ON DUPLICATE KEY UPDATE vote_count = vote_count + 1, last_vote = ?
       `,
-      [params, msg.space, voter]
+      [params, msg.space, voter, created, created]
     );
   }
 
