@@ -110,6 +110,8 @@ CREATE TABLE follows (
   created INT(11) NOT NULL,
   PRIMARY KEY (follower, space, network),
   INDEX ipfs (ipfs),
+  INDEX space (space),
+  INDEX network (network),
   INDEX created (created)
 );
 
