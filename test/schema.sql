@@ -189,6 +189,6 @@ CREATE TABLE leaderboard (
   PRIMARY KEY user_space (user,space),
   INDEX space (space),
   INDEX vote_count (vote_count),
-  INDEX proposal_count (proposal_count)
+  INDEX proposal_count (proposal_count),
   INDEX last_vote (last_vote)
 );
