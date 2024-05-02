@@ -1,50 +1,60 @@
 import 'dotenv/config';
-import { refreshProposalsCount, refreshVotesCount } from '../src/helpers/actions';
 import db from '../src/helpers/mysql';
+import { refreshProposalsCount, refreshVotesCount } from '../src/helpers/actions';
 
 // Usage: yarn ts-node scripts/refresh_leaderboard_counters.ts --space [OPTIONAL-SPACE-ID] --pivot TIMESTAMP
 async function main() {
-  const filters: string[] = [];
+  let spacesFilter = '';
+  let usersFilter = '';
 
   process.argv.forEach((arg, index) => {
     if (arg === '--space') {
       if (!process.argv[index + 1]) throw new Error('Space ID is missing');
-      console.log('Filtered by space:', process.argv[index + 1]);
-      filters.push(`id = '${process.argv[index + 1]}'`);
+      console.log('Filtered by spaces.id =', process.argv[index + 1]);
+      spacesFilter = `WHERE space = '${process.argv[index + 1].trim()}'`;
     }
 
     if (arg === '--pivot') {
       if (!process.argv[index + 1]) throw new Error('Pivot timestamp is missing');
-      console.log('Filtered by created >= ', process.argv[index + 1]);
-      filters.push(`created >= ${process.argv[index + 1]}`);
+      console.log('Filtered by users.created >=', process.argv[index + 1]);
+      usersFilter = `WHERE created >= ${process.argv[index + 1].trim()}`;
     }
   });
+  console.log('');
 
-  const filtersQuery = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
-  const query = `SELECT id, name, created FROM spaces ${filtersQuery} ORDER BY created ASC`;
+  const users: { id: string; created: number }[] = await db.queryAsync(
+    `SELECT id, created FROM users ${usersFilter} ORDER BY created ASC`
+  );
 
-  const spaces: { id: string; name: string; created: number }[] = await db.queryAsync(query);
+  for (const userIndex in users) {
+    const { id: user, created } = users[userIndex];
+    console.log(`Processing user ${user} (${+userIndex + 1}/${users.length}) - (ts:${created})`);
 
-  for (const index in spaces) {
-    console.log(
-      `Processing space #${spaces[index].id} (${spaces[index].name}) (ts:${
-        spaces[index].created
-      }) - ${+index + 1}/${spaces.length}`
+    const spaces: { space: string }[] = await db.queryAsync(
+      `SELECT DISTINCT(space) FROM votes ${
+        spacesFilter || 'WHERE 1=1'
+      } AND voter = ? GROUP BY space`,
+      user
     );
 
-    const votesCountRes = await refreshVotesCount([spaces[index].id]);
+    const proposalsCountRes = await refreshProposalsCount([], [user]);
     console.log(
-      '  Inserting/Updating vote_count - ',
-      `Affected: ${votesCountRes.affectedRows}`,
-      `Changed: ${votesCountRes.changedRows}`
-    );
-
-    const proposalsCountRes = await refreshProposalsCount([spaces[index].id]);
-    console.log(
-      '  Inserting/Updating proposal_count',
+      ` PROPOSAL_COUNT >`,
       `Affected: ${proposalsCountRes.affectedRows}`,
       `Changed: ${proposalsCountRes.changedRows}`
     );
+
+    for (const spaceIndex in spaces) {
+      const space = spaces[spaceIndex].space;
+
+      const votesCountRes = await refreshVotesCount([space], [user]);
+      console.log(
+        ` VOTE_COUNT     >`,
+        `Affected: ${votesCountRes.affectedRows}`,
+        `Changed: ${votesCountRes.changedRows}`,
+        `- ${space}`
+      );
+    }
   }
 }
 
