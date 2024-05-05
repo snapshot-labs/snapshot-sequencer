@@ -174,7 +174,7 @@ describe('ingestor', () => {
     const invalidRequest = cloneDeep(voteRequest);
     invalidRequest.body.data.message.metadata = JSON.stringify({ reason: ' - '.repeat(5000) });
 
-    await expect(ingestor(invalidRequest)).rejects.toMatch('large');
+    await expect(ingestor(invalidRequest)).rejects.toMatch('wrong envelope format');
   });
 
   it('rejects when IPFS pinning fail', async () => {

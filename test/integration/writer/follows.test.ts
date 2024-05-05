@@ -31,13 +31,13 @@ describe('writer/follow', () => {
     });
 
     it('rejects when the user has followed too much spaces', () => {
-      expect(verify({ from: followerId })).rejects.toEqual(
+      expect(verify({ from: followerId, timestamp: 0, space: '0cf5e.eth' })).rejects.toEqual(
         `you can join max ${FOLLOWS_LIMIT_PER_USER} spaces`
       );
     });
 
     it('returns true when the user has not reached the limit', () => {
-      expect(verify({ from: '0x1' })).resolves.toEqual(true);
+      expect(verify({ from: '0x1', timestamp: 0, space: '0cf5e.eth' })).resolves.toEqual(true);
     });
   });
 });
