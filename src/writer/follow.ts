@@ -1,6 +1,21 @@
 import { FOLLOWS_LIMIT_PER_USER } from '../helpers/limits';
 import db from '../helpers/mysql';
 
+const NETWORK_WHITELIST = [
+  's',
+  's-tn',
+  'eth',
+  'matic',
+  'arb1',
+  'oeth',
+  'gor',
+  'sep',
+  'linea-testnet',
+  'sn',
+  'sn-tn',
+  'sn-sep'
+];
+
 export const getFollowsCount = async (follower: string): Promise<number> => {
   const query = `SELECT COUNT(*) AS count FROM follows WHERE follower = ?`;
 
@@ -14,6 +29,10 @@ export async function verify(message): Promise<any> {
 
   if (count >= FOLLOWS_LIMIT_PER_USER) {
     return Promise.reject(`you can join max ${FOLLOWS_LIMIT_PER_USER} spaces`);
+  }
+
+  if (message.network && !NETWORK_WHITELIST.includes(message.network)) {
+    return Promise.reject(`network ${message.network} is not allowed`);
   }
 
   return true;
