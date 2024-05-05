@@ -83,9 +83,14 @@ export function refreshProposalsCount(spaces?: string[], users?: string[]) {
   );
 }
 
-export function refreshVotesCount(spaces: string[], users?: string[]) {
-  const whereFilters = ['spaces.deleted = 0', 'space IN (?)'];
-  const params = [spaces];
+export function refreshVotesCount(spaces?: string[], users?: string[]) {
+  const whereFilters = ['spaces.deleted = 0'];
+  const params: string[][] = [];
+
+  if (spaces?.length) {
+    whereFilters.push('space IN (?)');
+    params.push(spaces);
+  }
 
   if (users?.length) {
     whereFilters.push('voter IN (?)');
