@@ -74,15 +74,15 @@ export function refreshProposalsCount(spaces?: string[]) {
 export function refreshVotesCount(spaces: string[]) {
   return db.queryAsync(
     `
-      INSERT INTO leaderboard (vote_count, user, space)
+      INSERT INTO leaderboard (vote_count, last_vote, user, space)
         (SELECT * FROM (
-          SELECT COUNT(votes.id) AS vote_count, voter, space
+          SELECT COUNT(votes.id) AS vote_count, MAX(votes.created) as last_vote, voter, space
           FROM votes
           JOIN spaces ON BINARY spaces.id = BINARY votes.space
           WHERE spaces.deleted = 0 AND space IN (?)
           GROUP BY voter, space
         ) AS t)
-      ON DUPLICATE KEY UPDATE vote_count = t.vote_count
+      ON DUPLICATE KEY UPDATE vote_count = t.vote_count, last_vote = t.last_vote
     `,
     spaces
   );
