@@ -155,7 +155,8 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
       `
       UPDATE votes
       SET id = ?, ipfs = ?, created = ?, choice = ?, reason = ?, metadata = ?, app = ?, vp = ?, vp_by_strategy = ?, vp_state = ?
-      WHERE voter = ? AND proposal = ? AND space = ?
+      WHERE voter = ? AND proposal = ? AND space = ?;
+      UPDATE leaderboard SET last_vote = ? WHERE user = ? AND space = ? LIMIT 1;
     `,
       [
         id,
@@ -170,6 +171,9 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
         params.vp_state,
         voter,
         proposalId,
+        msg.space,
+        created,
+        voter,
         msg.space
       ]
     );
