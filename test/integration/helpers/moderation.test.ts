@@ -53,6 +53,13 @@ describe('moderation', () => {
         );
       });
 
+      it('returns true if body contains flagged links (case insensitive)', () => {
+        expect(containsFlaggedLinks('this is a link https://A.com')).toBe(true);
+        expect(containsFlaggedLinks('this is a link https://ABC.com')).toBe(true);
+        expect(containsFlaggedLinks('this is a link HTTPS://ABC.COM')).toBe(true);
+        expect(containsFlaggedLinks('this is a link https://test.com/ABC')).toBe(true);
+      });
+
       it('returns true if body contains flagged links with other path', () => {
         expect(containsFlaggedLinks('this is a link https://a.com/abc/abc')).toBe(true);
         expect(containsFlaggedLinks('this is a link http://xyz.com/abc')).toBe(true);
