@@ -76,9 +76,7 @@ export default async function ingestor(req) {
       'vote-array',
       'vote-string',
       'proposal',
-      'update-proposal',
-      'delete-proposal',
-      'statement'
+      'update-proposal'
     ];
     if (body.address !== message.from) {
       if (!aliasTypes.includes(type)) return Promise.reject('wrong from');
