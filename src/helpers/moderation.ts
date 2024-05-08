@@ -51,7 +51,14 @@ export default async function run() {
 export function containsFlaggedLinks(body: string): boolean {
   if (flaggedLinks.length === 0) return false;
 
-  return new RegExp(flaggedLinks.join('|'), 'i').test(body);
+  const escapedLinks = flaggedLinks.map(link =>
+    link.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/https?:\/\//, '')
+  );
+  const regex = new RegExp(
+    `(?:https?:\\/\\/)?(?:www\\.)?(${escapedLinks.join('|')})(?:[\\/\\S]*)?`,
+    'i'
+  );
+  return regex.test(body);
 }
 
 export function flagEntity({ type, action, value }) {
