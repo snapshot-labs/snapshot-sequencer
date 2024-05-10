@@ -106,9 +106,12 @@ CREATE TABLE follows (
   ipfs VARCHAR(64) NOT NULL,
   follower VARCHAR(64) NOT NULL,
   space VARCHAR(64) NOT NULL,
+  network VARCHAR(24) NOT NULL DEFAULT 's',
   created INT(11) NOT NULL,
-  PRIMARY KEY (follower, space),
+  PRIMARY KEY (follower, space, network),
   INDEX ipfs (ipfs),
+  INDEX space (space),
+  INDEX network (network),
   INDEX created (created)
 );
 
@@ -185,8 +188,10 @@ CREATE TABLE leaderboard (
   space VARCHAR(64) NOT NULL,
   vote_count SMALLINT UNSIGNED NOT NULL DEFAULT '0',
   proposal_count SMALLINT UNSIGNED NOT NULL DEFAULT '0',
+  last_vote BIGINT,
   PRIMARY KEY user_space (user,space),
   INDEX space (space),
   INDEX vote_count (vote_count),
-  INDEX proposal_count (proposal_count)
+  INDEX proposal_count (proposal_count),
+  INDEX last_vote (last_vote)
 );
