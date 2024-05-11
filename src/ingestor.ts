@@ -63,7 +63,7 @@ export default async function ingestor(req) {
     if (!['settings', 'alias', 'profile'].includes(type)) {
       if (!message.space) return Promise.reject('unknown space');
 
-      // Disable space checking for follow/unfollow, checking delegate to the writer
+      // Disable space checking for follow/unfollow, checking delegated to the writer
       if (!['follow', 'unfollow'].includes(type)) {
         const space = await getSpace(message.space);
         if (!space) return Promise.reject('unknown space');
