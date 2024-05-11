@@ -59,30 +59,42 @@ describe('writer/follow', () => {
       );
     });
 
-    it('rejects when the space does not exist on default network', () => {
-      mockGetSpace.mockRejectedValueOnce('unknown space');
+    describe('on snapshot network', () => {
+      it('rejects when the space does not exist', () => {
+        mockGetSpace.mockRejectedValueOnce('unknown space');
 
-      return expect(verify({ from: '0x1', network: 's', space: 'hello.eth' })).rejects.toEqual(
-        'unknown space'
-      );
+        return expect(verify({ from: '0x1', network: 's', space: 'hello.eth' })).rejects.toEqual(
+          'unknown space'
+        );
+      });
+
+      it('rejects when the space does not exist (missing network params)', () => {
+        mockGetSpace.mockRejectedValueOnce('unknown space');
+
+        return expect(verify({ from: '0x1', space: 'hello.eth' })).rejects.toEqual('unknown space');
+      });
     });
 
-    it('rejects when the space does not exist on missing network params', () => {
-      mockGetSpace.mockRejectedValueOnce('unknown space');
+    describe('on sx network', () => {
+      it('returns true when the space exist', () => {
+        return expect(
+          verify({
+            from: '0x1',
+            network: 'eth',
+            space: '0xaeee929Ca508Dd1F185a8E74F4a9c37c25595c25'
+          })
+        ).resolves.toEqual(true);
+      });
 
-      return expect(verify({ from: '0x1', space: 'hello.eth' })).rejects.toEqual('unknown space');
-    });
-
-    it('does not check the space when on other network', () => {
-      return expect(verify({ from: '0x1', network: 'eth', space: 'hello.eth' })).resolves.toEqual(
-        true
-      );
-    });
-
-    it('returns true when all data are valid', () => {
-      mockGetSpace.mockResolvedValueOnce({});
-
-      return expect(verify({ from: '0x1', network: 's' })).resolves.toEqual(true);
+      it('rejects when the space does exist', () => {
+        return expect(
+          verify({
+            from: '0x1',
+            network: 'eth',
+            space: 'not-exist'
+          })
+        ).rejects.toEqual('unknown space');
+      });
     });
   });
 

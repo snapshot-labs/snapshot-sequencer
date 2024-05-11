@@ -1,3 +1,4 @@
+import snapshot from '@snapshot-labs/snapshot.js';
 import db from './mysql';
 import { jsonParse } from './utils';
 
@@ -51,6 +52,21 @@ export async function getSpace(id: string, includeDeleted = false) {
     hibernated: spaces[0].hibernated === 1,
     turbo: spaces[0].turbo === 1
   };
+}
+
+export async function sxSpaceExists(spaceId: string): Promise<boolean> {
+  const { space } = await snapshot.utils.subgraphRequest(
+    'https://api.studio.thegraph.com/query/23545/sx/version/latest',
+    {
+      space: {
+        __args: {
+          id: spaceId
+        },
+        id: true
+      }
+    }
+  );
+  return !!space?.id;
 }
 
 export function refreshProposalsCount(spaces?: string[]) {

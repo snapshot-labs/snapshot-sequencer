@@ -1,4 +1,4 @@
-import { getSpace } from '../../../src/helpers/actions';
+import { getSpace, sxSpaceExists } from '../../../src/helpers/actions';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
 import { spacesSqlFixtures } from '../../fixtures/space';
 
@@ -65,6 +65,18 @@ describe('helpers/actions', () => {
 
     it('returns false when no space is found', () => {
       expect(getSpace('test-space.eth')).resolves.toBe(false);
+    });
+  });
+
+  describe('sxSpaceExists()', () => {
+    it('returns the space id when it exists', async () => {
+      const id = '0xaeee929Ca508Dd1F185a8E74F4a9c37c25595c25';
+      return expect(sxSpaceExists(id)).resolves.toEqual(true);
+    });
+
+    it('returns null when it does not exist', async () => {
+      const id = 'not-existing-space-id';
+      return expect(sxSpaceExists(id)).resolves.toEqual(false);
     });
   });
 });
