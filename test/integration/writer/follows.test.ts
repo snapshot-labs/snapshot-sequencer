@@ -59,12 +59,18 @@ describe('writer/follow', () => {
       );
     });
 
-    it('rejects when the space does not exist', () => {
+    it('rejects when the space does not exist on default network', () => {
       mockGetSpace.mockRejectedValueOnce('unknown space');
 
       return expect(verify({ from: '0x1', network: 's', space: 'hello.eth' })).rejects.toEqual(
         'unknown space'
       );
+    });
+
+    it('rejects when the space does not exist on missing network params', () => {
+      mockGetSpace.mockRejectedValueOnce('unknown space');
+
+      return expect(verify({ from: '0x1', space: 'hello.eth' })).rejects.toEqual('unknown space');
     });
 
     it('does not check the space when on other network', () => {
