@@ -2,6 +2,19 @@ import { verify, action } from '../../../src/writer/follow';
 import { FOLLOWS_LIMIT_PER_USER } from '../../../src/helpers/limits';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
 
+const mockGetSpace = jest.fn((): any => {
+  return {};
+});
+jest.mock('../../../src/helpers/actions', () => {
+  const originalModule = jest.requireActual('../../../src/helpers/actions');
+
+  return {
+    __esModule: true,
+    ...originalModule,
+    getSpace: () => mockGetSpace()
+  };
+});
+
 describe('writer/follow', () => {
   afterAll(async () => {
     await db.queryAsync('DELETE FROM follows');
@@ -31,23 +44,39 @@ describe('writer/follow', () => {
     });
 
     it('rejects when the user has followed too much spaces', () => {
-      expect(verify({ from: followerId })).rejects.toEqual(
+      return expect(verify({ from: followerId })).rejects.toEqual(
         `you can join max ${FOLLOWS_LIMIT_PER_USER} spaces`
       );
     });
 
     it('returns true when the user has not reached the limit', () => {
-      expect(verify({ from: '0x1' })).resolves.toEqual(true);
+      return expect(verify({ from: '0x1' })).resolves.toEqual(true);
     });
 
     it('rejects when the network is not allowed', () => {
-      expect(verify({ from: '0x1', network: 'not-allowed' })).rejects.toEqual(
+      return expect(verify({ from: '0x1', network: 'not-allowed' })).rejects.toEqual(
         'network not-allowed is not allowed'
       );
     });
 
+    it('rejects when the space does not exist', () => {
+      mockGetSpace.mockRejectedValueOnce('unknown space');
+
+      return expect(verify({ from: '0x1', network: 's', space: 'hello.eth' })).rejects.toEqual(
+        'unknown space'
+      );
+    });
+
+    it('does not check the space when on other network', () => {
+      return expect(verify({ from: '0x1', network: 'eth', space: 'hello.eth' })).resolves.toEqual(
+        true
+      );
+    });
+
     it('returns true when all data are valid', () => {
-      expect(verify({ from: '0x1', network: 's' })).resolves.toEqual(true);
+      mockGetSpace.mockResolvedValueOnce({});
+
+      return expect(verify({ from: '0x1', network: 's' })).resolves.toEqual(true);
     });
   });
 
@@ -64,7 +93,7 @@ describe('writer/follow', () => {
 
         await action(message, ipfs, 1, id);
 
-        await expect(
+        return expect(
           db.queryAsync('SELECT * FROM follows WHERE follower = ?', [message.from])
         ).resolves.toEqual([
           {
@@ -92,7 +121,7 @@ describe('writer/follow', () => {
 
         await action(message, ipfs, 1, id);
 
-        await expect(
+        return expect(
           db.queryAsync('SELECT * FROM follows WHERE follower = ?', [message.from])
         ).resolves.toEqual([
           {

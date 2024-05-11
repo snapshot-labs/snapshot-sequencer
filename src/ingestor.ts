@@ -62,10 +62,14 @@ export default async function ingestor(req) {
     let aliased = false;
     if (!['settings', 'alias', 'profile'].includes(type)) {
       if (!message.space) return Promise.reject('unknown space');
-      const space = await getSpace(message.space);
-      if (!space) return Promise.reject('unknown space');
-      network = space.network;
-      if (space.voting?.aliased) aliased = true;
+
+      // Disable space checking for follow/unfollow, checking delegate to the writer
+      if (!['follow', 'unfollow'].includes(type)) {
+        const space = await getSpace(message.space);
+        if (!space) return Promise.reject('unknown space');
+        network = space.network;
+        if (space.voting?.aliased) aliased = true;
+      }
     }
 
     // Check if signing address is an alias
