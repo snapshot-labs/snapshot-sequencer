@@ -53,7 +53,20 @@ export async function getSpace(id: string, includeDeleted = false) {
   };
 }
 
-export function refreshProposalsCount(spaces?: string[]) {
+export function refreshProposalsCount(spaces?: string[], users?: string[]) {
+  const whereFilters = ['spaces.deleted = 0'];
+  const params: string[][] = [];
+
+  if (spaces?.length) {
+    whereFilters.push('space IN (?)');
+    params.push(spaces);
+  }
+
+  if (users?.length) {
+    whereFilters.push('author IN (?)');
+    params.push(users);
+  }
+
   return db.queryAsync(
     `
       INSERT INTO leaderboard (proposal_count, user, space)
@@ -61,17 +74,29 @@ export function refreshProposalsCount(spaces?: string[]) {
           SELECT COUNT(proposals.id) AS proposal_count, author, space
           FROM proposals
           JOIN spaces ON BINARY spaces.id = BINARY proposals.space
-          WHERE spaces.deleted = 0
-          ${spaces ? ' AND space IN (?)' : ''}
+          WHERE ${whereFilters.join(' AND ')}
           GROUP BY author, space
         ) AS t)
       ON DUPLICATE KEY UPDATE proposal_count = t.proposal_count
     `,
-    spaces
+    params
   );
 }
 
-export function refreshVotesCount(spaces: string[]) {
+export function refreshVotesCount(spaces?: string[], users?: string[]) {
+  const whereFilters = ['spaces.deleted = 0'];
+  const params: string[][] = [];
+
+  if (spaces?.length) {
+    whereFilters.push('space IN (?)');
+    params.push(spaces);
+  }
+
+  if (users?.length) {
+    whereFilters.push('voter IN (?)');
+    params.push(users);
+  }
+
   return db.queryAsync(
     `
       INSERT INTO leaderboard (vote_count, last_vote, user, space)
@@ -79,11 +104,11 @@ export function refreshVotesCount(spaces: string[]) {
           SELECT COUNT(votes.id) AS vote_count, MAX(votes.created) as last_vote, voter, space
           FROM votes
           JOIN spaces ON BINARY spaces.id = BINARY votes.space
-          WHERE spaces.deleted = 0 AND space IN (?)
+          WHERE ${whereFilters.join(' AND ')}
           GROUP BY voter, space
         ) AS t)
       ON DUPLICATE KEY UPDATE vote_count = t.vote_count, last_vote = t.last_vote
     `,
-    spaces
+    params
   );
 }
