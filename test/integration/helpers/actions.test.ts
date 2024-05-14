@@ -21,50 +21,81 @@ describe('helpers/actions', () => {
       await db.queryAsync('DELETE FROM snapshot_sequencer_test.spaces');
     });
 
-    it('returns the space for the given ID', () => {
-      expect(getSpace('test.eth')).resolves.toEqual({
-        verified: true,
-        flagged: false,
-        deleted: false,
-        hibernated: false,
-        turbo: false,
-        name: 'Test Space',
-        admins: ['0xFC01614d28595d9ea5963daD9f44C0E0F0fE10f0'],
-        symbol: 'TEST',
-        network: '1',
-        strategies: [{ name: 'basic' }]
+    describe('for snapshot space', () => {
+      it('returns the space for the given ID', () => {
+        expect(getSpace('test.eth')).resolves.toEqual({
+          verified: true,
+          flagged: false,
+          deleted: false,
+          hibernated: false,
+          turbo: false,
+          name: 'Test Space',
+          admins: ['0xFC01614d28595d9ea5963daD9f44C0E0F0fE10f0'],
+          symbol: 'TEST',
+          network: '1',
+          strategies: [{ name: 'basic' }]
+        });
+      });
+
+      it('returns the space for the given ID with network', () => {
+        expect(getSpace('test.eth', false, 's')).resolves.toEqual({
+          verified: true,
+          flagged: false,
+          deleted: false,
+          hibernated: false,
+          turbo: false,
+          name: 'Test Space',
+          admins: ['0xFC01614d28595d9ea5963daD9f44C0E0F0fE10f0'],
+          symbol: 'TEST',
+          network: '1',
+          strategies: [{ name: 'basic' }]
+        });
+      });
+
+      it('does not return deleted space by default', async () => {
+        await db.queryAsync(
+          'UPDATE snapshot_sequencer_test.spaces SET deleted = 1 WHERE id = ? LIMIT 1',
+          ['test.eth']
+        );
+        expect(getSpace('test.eth')).resolves.toBe(false);
+      });
+
+      it('returns deleted space when asked', async () => {
+        await db.queryAsync(
+          'UPDATE snapshot_sequencer_test.spaces SET deleted = 1 WHERE id = ? LIMIT 1',
+          ['test.eth']
+        );
+        expect(getSpace('test.eth', true)).resolves.toEqual({
+          verified: true,
+          flagged: false,
+          deleted: true,
+          hibernated: false,
+          turbo: false,
+          name: 'Test Space',
+          admins: ['0xFC01614d28595d9ea5963daD9f44C0E0F0fE10f0'],
+          symbol: 'TEST',
+          network: '1',
+          strategies: [{ name: 'basic' }]
+        });
+      });
+
+      it('returns false when no space is found', () => {
+        expect(getSpace('test-space.eth')).resolves.toBe(false);
       });
     });
 
-    it('does not return deleted space by default', async () => {
-      await db.queryAsync(
-        'UPDATE snapshot_sequencer_test.spaces SET deleted = 1 WHERE id = ? LIMIT 1',
-        ['test.eth']
-      );
-      expect(getSpace('test.eth')).resolves.toBe(false);
-    });
-
-    it('returns deleted space when asked', async () => {
-      await db.queryAsync(
-        'UPDATE snapshot_sequencer_test.spaces SET deleted = 1 WHERE id = ? LIMIT 1',
-        ['test.eth']
-      );
-      expect(getSpace('test.eth', true)).resolves.toEqual({
-        verified: true,
-        flagged: false,
-        deleted: true,
-        hibernated: false,
-        turbo: false,
-        name: 'Test Space',
-        admins: ['0xFC01614d28595d9ea5963daD9f44C0E0F0fE10f0'],
-        symbol: 'TEST',
-        network: '1',
-        strategies: [{ name: 'basic' }]
+    describe('for sx spaces', () => {
+      it('returns the space for the given ID', () => {
+        expect(
+          getSpace('0xaeee929Ca508Dd1F185a8E74F4a9c37c25595c25', false, 'eth')
+        ).resolves.toEqual({
+          network: 1
+        });
       });
-    });
 
-    it('returns false when no space is found', () => {
-      expect(getSpace('test-space.eth')).resolves.toBe(false);
+      it('returns false when the space does not exist', () => {
+        expect(getSpace('not-existing-space-id', false, 'eth')).resolves.toBe(false);
+      });
     });
   });
 

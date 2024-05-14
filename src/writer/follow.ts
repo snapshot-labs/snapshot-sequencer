@@ -1,4 +1,3 @@
-import { getSpace, sxSpaceExists } from '../helpers/actions';
 import { FOLLOWS_LIMIT_PER_USER } from '../helpers/limits';
 import db from '../helpers/mysql';
 
@@ -26,14 +25,6 @@ export async function verify(message): Promise<any> {
 
   if (message.network && !networks.includes(message.network)) {
     return Promise.reject(`network ${message.network} is not allowed`);
-  }
-
-  if (!message.network || message.network === defaultNetwork) {
-    const space = await getSpace(message.space);
-    if (!space) return Promise.reject('unknown space');
-  } else {
-    const spaceExist = await sxSpaceExists(message.space);
-    if (!spaceExist) return Promise.reject('unknown space');
   }
 
   return true;

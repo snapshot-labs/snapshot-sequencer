@@ -2,19 +2,6 @@ import { verify, action } from '../../../src/writer/follow';
 import { FOLLOWS_LIMIT_PER_USER } from '../../../src/helpers/limits';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
 
-const mockGetSpace = jest.fn((): any => {
-  return {};
-});
-jest.mock('../../../src/helpers/actions', () => {
-  const originalModule = jest.requireActual('../../../src/helpers/actions');
-
-  return {
-    __esModule: true,
-    ...originalModule,
-    getSpace: () => mockGetSpace()
-  };
-});
-
 describe('writer/follow', () => {
   afterAll(async () => {
     await db.queryAsync('DELETE FROM follows');
@@ -57,44 +44,6 @@ describe('writer/follow', () => {
       return expect(verify({ from: '0x1', network: 'not-allowed' })).rejects.toEqual(
         'network not-allowed is not allowed'
       );
-    });
-
-    describe('on snapshot network', () => {
-      it('rejects when the space does not exist', () => {
-        mockGetSpace.mockRejectedValueOnce('unknown space');
-
-        return expect(verify({ from: '0x1', network: 's', space: 'hello.eth' })).rejects.toEqual(
-          'unknown space'
-        );
-      });
-
-      it('rejects when the space does not exist (missing network params)', () => {
-        mockGetSpace.mockRejectedValueOnce('unknown space');
-
-        return expect(verify({ from: '0x1', space: 'hello.eth' })).rejects.toEqual('unknown space');
-      });
-    });
-
-    describe('on sx network', () => {
-      it('returns true when the space exist', () => {
-        return expect(
-          verify({
-            from: '0x1',
-            network: 'eth',
-            space: '0xaeee929Ca508Dd1F185a8E74F4a9c37c25595c25'
-          })
-        ).resolves.toEqual(true);
-      });
-
-      it('rejects when the space does exist', () => {
-        return expect(
-          verify({
-            from: '0x1',
-            network: 'eth',
-            space: 'not-exist'
-          })
-        ).rejects.toEqual('unknown space');
-      });
     });
   });
 
