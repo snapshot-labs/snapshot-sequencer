@@ -27,11 +27,10 @@ async function main() {
 async function processVotesCount(pivot: number) {
   const processedVoters = new Set<string>();
   const batchWindow = 60 * 60 * 24; // 1 day
-  console.log(`Processing voters from ${pivot} to ${pivot + batchWindow}`);
-
   let _pivot = pivot;
 
   while (_pivot < Date.now() / 1000) {
+    console.log(`Processing voters from ${_pivot} to ${_pivot + batchWindow}`);
     const votersId = await db
       .queryAsync(
         `SELECT voter FROM votes WHERE created >= ?
@@ -42,18 +41,19 @@ async function processVotesCount(pivot: number) {
       .map(v => v.voter);
     const startTs = +new Date() / 1000;
     let count = 0;
+    const newVoters = Array.from(new Set<string>(votersId.values())).filter(
+      v => !processedVoters.has(v)
+    );
 
-    for (const id of Array.from(new Set<string>(votersId.values()))) {
-      if (processedVoters.has(id)) {
-        continue;
-      }
+    console.log(`Found ${newVoters.length} new voters`);
 
+    for (const id of newVoters) {
       processedVoters.add(id);
 
       process.stdout.write(`\n${id} `);
       const votes = await db.queryAsync(
-        'SELECT space, COUNT(voter) as votes_count, MAX(created) as last_vote FROM votes WHERE voter = ? GROUP BY space',
-        id
+        'SELECT space, voter as votes_count, created as last_vote FROM votes WHERE voter = ? AND created > ? AND created <= ?',
+        [id, _pivot, _pivot + batchWindow]
       );
 
       votes.forEach(async vote => {
