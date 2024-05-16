@@ -45,7 +45,7 @@ export async function getSpace(id: string, includeDeleted = false, network = def
     if (!spaceExist) return false;
 
     return {
-      network: 1
+      network: 0
     };
   }
 
