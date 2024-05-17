@@ -1,5 +1,7 @@
+import snapshot from '@snapshot-labs/snapshot.js';
 import db from './mysql';
 import { jsonParse } from './utils';
+import { defaultNetwork } from '../writer/follow';
 
 export async function addOrUpdateSpace(space: string, settings: any) {
   if (!settings?.name) return false;
@@ -37,7 +39,16 @@ export async function getProposal(space, id) {
   return proposal;
 }
 
-export async function getSpace(id: string, includeDeleted = false) {
+export async function getSpace(id: string, includeDeleted = false, network = defaultNetwork) {
+  if (network !== defaultNetwork) {
+    const spaceExist = await sxSpaceExists(id);
+    if (!spaceExist) return false;
+
+    return {
+      network: 0
+    };
+  }
+
   const query = `SELECT settings, deleted, flagged, verified, turbo, hibernated FROM spaces WHERE id = ? AND deleted in (?) LIMIT 1`;
   const spaces = await db.queryAsync(query, [id, includeDeleted ? [0, 1] : [0]]);
 
@@ -51,6 +62,21 @@ export async function getSpace(id: string, includeDeleted = false) {
     hibernated: spaces[0].hibernated === 1,
     turbo: spaces[0].turbo === 1
   };
+}
+
+export async function sxSpaceExists(spaceId: string): Promise<boolean> {
+  const { space } = await snapshot.utils.subgraphRequest(
+    'https://api.studio.thegraph.com/query/23545/sx/version/latest',
+    {
+      space: {
+        __args: {
+          id: spaceId
+        },
+        id: true
+      }
+    }
+  );
+  return !!space?.id;
 }
 
 export function refreshProposalsCount(spaces?: string[], users?: string[]) {
