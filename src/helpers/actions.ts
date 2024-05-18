@@ -40,7 +40,7 @@ export async function getProposal(space, id) {
 }
 
 export async function getSpace(id: string, includeDeleted = false, network = defaultNetwork) {
-  if (NETWORK_WHITELIST.includes(network)) {
+  if (NETWORK_WHITELIST.includes(network) && network !== defaultNetwork) {
     const spaceExist = await sxSpaceExists(id);
     if (!spaceExist) return false;
 
