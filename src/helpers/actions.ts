@@ -1,7 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from './mysql';
 import { jsonParse } from './utils';
-import { defaultNetwork } from '../writer/follow';
+import { NETWORK_WHITELIST, defaultNetwork } from '../writer/follow';
 
 export async function addOrUpdateSpace(space: string, settings: any) {
   if (!settings?.name) return false;
@@ -40,7 +40,7 @@ export async function getProposal(space, id) {
 }
 
 export async function getSpace(id: string, includeDeleted = false, network = defaultNetwork) {
-  if (network !== defaultNetwork) {
+  if (NETWORK_WHITELIST.includes(network) && network !== defaultNetwork) {
     const spaceExist = await sxSpaceExists(id);
     if (!spaceExist) return false;
 
