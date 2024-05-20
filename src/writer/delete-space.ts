@@ -27,10 +27,9 @@ export async function action(body): Promise<void> {
   try {
     const query = `
       UPDATE spaces SET deleted = 1 WHERE id = ? LIMIT 1;
-      DELETE FROM leaderboard WHERE space = ?;
     `;
 
-    await db.queryAsync(query, [space, space]);
+    await db.queryAsync(query, [space]);
   } catch (e) {
     capture(e, { space });
     log.warn('[writer] Failed to store settings', space, e);

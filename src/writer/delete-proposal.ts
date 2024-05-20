@@ -20,20 +20,13 @@ export async function verify(body): Promise<any> {
 
 export async function action(body): Promise<void> {
   const msg = jsonParse(body.msg);
-  const proposal = await getProposal(msg.space, msg.payload.proposal);
   const id = msg.payload.proposal;
 
   await db.queryAsync(
     `
     DELETE FROM proposals WHERE id = ? LIMIT 1;
     DELETE FROM votes WHERE proposal = ?;
-    UPDATE leaderboard
-      SET proposal_count = GREATEST(proposal_count - 1, 0)
-      WHERE user = ? AND space = ?
-      LIMIT 1;
   `,
-    [id, id, proposal.author, msg.space]
+    [id, id]
   );
-
-  await refreshVotesCount([msg.space]);
 }
