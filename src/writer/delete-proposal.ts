@@ -1,4 +1,4 @@
-import { getProposal, getSpace, refreshVotesCount } from '../helpers/actions';
+import { getProposal, getSpace } from '../helpers/actions';
 import { jsonParse } from '../helpers/utils';
 import db from '../helpers/mysql';
 
