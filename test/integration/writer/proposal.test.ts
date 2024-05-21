@@ -48,7 +48,7 @@ describe('writer/proposal', () => {
         await expect(action(input, 'ipfs', 'receipt', id)).resolves.toBeUndefined();
 
         const [proposal] = await db.queryAsync('SELECT * FROM proposals WHERE id = ?', [id]);
-        expect(proposal.flagged).toBe(1);
+        return expect(proposal.flagged).toBe(1);
       });
     });
 
@@ -59,7 +59,7 @@ describe('writer/proposal', () => {
         await expect(action(input, 'ipfs', 'receipt', id)).resolves.toBeUndefined();
 
         const [proposal] = await db.queryAsync('SELECT * FROM proposals WHERE id = ?', [id]);
-        expect(proposal.flagged).toBe(0);
+        return expect(proposal.flagged).toBe(0);
       });
     });
   });

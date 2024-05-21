@@ -3,6 +3,7 @@ import db from '../helpers/mysql';
 
 const MAINNET_NETWORK_WHITELIST = ['s', 'eth', 'matic', 'arb1', 'oeth', 'sn'];
 const TESTNET_NETWORK_WHITELIST = ['s-tn', 'gor', 'sep', 'linea-testnet', 'sn-tn', 'sn-sep'];
+export const NETWORK_WHITELIST = [...MAINNET_NETWORK_WHITELIST, ...TESTNET_NETWORK_WHITELIST];
 
 export const getFollowsCount = async (follower: string): Promise<number> => {
   const query = `SELECT COUNT(*) AS count FROM follows WHERE follower = ?`;
