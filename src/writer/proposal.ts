@@ -252,7 +252,10 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
 
   const query = `
     INSERT INTO proposals SET ?;
+    INSERT INTO leaderboard (space, user, proposal_count)
+    VALUES(?, ?, 1)
+    ON DUPLICATE KEY UPDATE proposal_count = proposal_count + 1
   `;
 
-  await db.queryAsync(query, [proposal]);
+  await db.queryAsync(query, [proposal, space, author]);
 }
