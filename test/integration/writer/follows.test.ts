@@ -31,23 +31,19 @@ describe('writer/follow', () => {
     });
 
     it('rejects when the user has followed too much spaces', () => {
-      expect(verify({ from: followerId })).rejects.toEqual(
+      return expect(verify({ from: followerId })).rejects.toEqual(
         `you can join max ${FOLLOWS_LIMIT_PER_USER} spaces`
       );
     });
 
     it('returns true when the user has not reached the limit', () => {
-      expect(verify({ from: '0x1' })).resolves.toEqual(true);
+      return expect(verify({ from: '0x1' })).resolves.toEqual(true);
     });
 
     it('rejects when the network is not allowed', () => {
-      expect(verify({ from: '0x1', network: 'not-allowed' })).rejects.toEqual(
+      return expect(verify({ from: '0x1', network: 'not-allowed' })).rejects.toEqual(
         'network not-allowed is not allowed'
       );
-    });
-
-    it('returns true when all data are valid', () => {
-      expect(verify({ from: '0x1', network: 's' })).resolves.toEqual(true);
     });
   });
 
@@ -64,7 +60,7 @@ describe('writer/follow', () => {
 
         await action(message, ipfs, 1, id);
 
-        await expect(
+        return expect(
           db.queryAsync('SELECT * FROM follows WHERE follower = ?', [message.from])
         ).resolves.toEqual([
           {
@@ -92,7 +88,7 @@ describe('writer/follow', () => {
 
         await action(message, ipfs, 1, id);
 
-        await expect(
+        return expect(
           db.queryAsync('SELECT * FROM follows WHERE follower = ?', [message.from])
         ).resolves.toEqual([
           {

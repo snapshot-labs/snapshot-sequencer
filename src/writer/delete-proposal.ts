@@ -1,4 +1,4 @@
-import { getProposal, getSpace, refreshVotesCount } from '../helpers/actions';
+import { getProposal, getSpace } from '../helpers/actions';
 import { jsonParse } from '../helpers/utils';
 import db from '../helpers/mysql';
 
@@ -21,19 +21,32 @@ export async function verify(body): Promise<any> {
 export async function action(body): Promise<void> {
   const msg = jsonParse(body.msg);
   const proposal = await getProposal(msg.space, msg.payload.proposal);
+  const voters = await db.queryAsync(`SELECT voter FROM votes WHERE proposal = ?`, [
+    msg.payload.proposal
+  ]);
   const id = msg.payload.proposal;
 
-  await db.queryAsync(
-    `
+  let queries = `
     DELETE FROM proposals WHERE id = ? LIMIT 1;
     DELETE FROM votes WHERE proposal = ?;
     UPDATE leaderboard
       SET proposal_count = GREATEST(proposal_count - 1, 0)
       WHERE user = ? AND space = ?
       LIMIT 1;
-  `,
-    [id, id, proposal.author, msg.space]
-  );
+  `;
 
-  await refreshVotesCount([msg.space]);
+  const parameters = [id, id, proposal.author, msg.space];
+
+  if (voters.length > 0) {
+    queries += `
+    UPDATE leaderboard SET vote_count = GREATEST(vote_count - 1, 0)
+      WHERE user IN (?) AND space = ?;
+  `;
+    parameters.push(
+      voters.map(voter => voter.voter),
+      msg.space
+    );
+  }
+
+  await db.queryAsync(queries, parameters);
 }
