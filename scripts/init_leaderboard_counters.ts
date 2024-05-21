@@ -52,7 +52,7 @@ async function processVotesCount(pivot: number) {
 
       process.stdout.write(`\n${id} `);
       const votes = await db.queryAsync(
-        'SELECT space, voter as votes_count, created as last_vote FROM votes WHERE voter = ? AND created > ? AND created <= ?',
+        'SELECT space, voter, COUNT(voter) as votes_count, MAX(created) as last_vote FROM votes WHERE voter = ? AND created > ? AND created <= ? GROUP BY space',
         [id, _pivot, _pivot + batchWindow]
       );
 
