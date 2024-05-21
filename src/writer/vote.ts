@@ -88,8 +88,10 @@ export async function verify(body): Promise<any> {
       { url: scoreAPIUrl }
     );
     if (vp.vp === 0) return Promise.reject('no voting power');
-  } catch (e) {
-    capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
+  } catch (e: any) {
+    if (e.code !== 504) {
+      capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
+    }
     log.warn(
       `[writer] Failed to check voting power (vote), ${msg.space}, ${body.address}, ${
         proposal.snapshot
@@ -194,8 +196,10 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   try {
     const result = await updateProposalAndVotes(proposalId);
     if (!result) log.warn(`[writer] updateProposalAndVotes() false, ${proposalId}`);
-  } catch (e) {
-    capture(e, { contexts: { input: { space: msg.space, id: proposalId } } });
+  } catch (e: any) {
+    if (e.code !== 504) {
+      capture(e, { contexts: { input: { space: msg.space, id: proposalId } } });
+    }
     log.warn(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
   }
 }
