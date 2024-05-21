@@ -158,7 +158,6 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
       UPDATE votes
       SET id = ?, ipfs = ?, created = ?, choice = ?, reason = ?, metadata = ?, app = ?, vp = ?, vp_by_strategy = ?, vp_state = ?
       WHERE voter = ? AND proposal = ? AND space = ?;
-      UPDATE leaderboard SET last_vote = ? WHERE user = ? AND space = ? LIMIT 1;
     `,
       [
         id,
@@ -173,9 +172,6 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
         params.vp_state,
         voter,
         proposalId,
-        msg.space,
-        created,
-        voter,
         msg.space
       ]
     );
@@ -184,11 +180,8 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     await db.queryAsync(
       `
         INSERT INTO votes SET ?;
-        INSERT INTO leaderboard (space, user, vote_count, last_vote)
-          VALUES(?, ?, 1, ?)
-          ON DUPLICATE KEY UPDATE vote_count = vote_count + 1, last_vote = ?
       `,
-      [params, msg.space, voter, created, created]
+      [params]
     );
   }
 
