@@ -26,17 +26,27 @@ export async function action(body): Promise<void> {
   ]);
   const id = msg.payload.proposal;
 
-  await db.queryAsync(
-    `
+  let queries = `
     DELETE FROM proposals WHERE id = ? LIMIT 1;
     DELETE FROM votes WHERE proposal = ?;
     UPDATE leaderboard
       SET proposal_count = GREATEST(proposal_count - 1, 0)
       WHERE user = ? AND space = ?
       LIMIT 1;
+  `;
+
+  const parameters = [id, id, proposal.author, msg.space];
+
+  if (voters.length > 0) {
+    queries += `
     UPDATE leaderboard SET vote_count = GREATEST(vote_count - 1, 0)
       WHERE user IN (?) AND space = ?;
-  `,
-    [id, id, proposal.author, msg.space, voters.map(voter => voter.voter), msg.space]
-  );
+  `;
+    parameters.push(
+      voters.map(voter => voter.voter),
+      msg.space
+    );
+  }
+
+  await db.queryAsync(queries, parameters);
 }
