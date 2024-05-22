@@ -41,11 +41,12 @@ describe('writer/proposal', () => {
         setData({ flaggedLinks: [] });
       });
 
-      it('flag the proposal', async () => {
-        expect.assertions(2);
+      it('creates and flags the proposal', async () => {
+        expect.assertions(3);
         mockContainsFlaggedLinks.mockReturnValueOnce(true);
         const id = '0x01-flagged';
         await expect(action(input, 'ipfs', 'receipt', id)).resolves.toBeUndefined();
+        expect(mockContainsFlaggedLinks).toBeCalledTimes(1);
 
         const [proposal] = await db.queryAsync('SELECT * FROM proposals WHERE id = ?', [id]);
         return expect(proposal.flagged).toBe(1);
@@ -53,10 +54,11 @@ describe('writer/proposal', () => {
     });
 
     describe('when the proposal does not contain flagged links', () => {
-      it('does not flag proposal', async () => {
-        expect.assertions(2);
+      it('creates and does not flag proposal', async () => {
+        expect.assertions(3);
         const id = '0x02-non-flagged';
         await expect(action(input, 'ipfs', 'receipt', id)).resolves.toBeUndefined();
+        expect(mockContainsFlaggedLinks).toBeCalledTimes(1);
 
         const [proposal] = await db.queryAsync('SELECT * FROM proposals WHERE id = ?', [id]);
         return expect(proposal.flagged).toBe(0);
