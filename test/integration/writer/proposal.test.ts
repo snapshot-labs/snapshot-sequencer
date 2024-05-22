@@ -42,7 +42,7 @@ describe('writer/proposal', () => {
       });
 
       it('creates and flags the proposal', async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
         mockContainsFlaggedLinks.mockReturnValueOnce(true);
         const id = '0x01-flagged';
         expect(await action(input, 'ipfs', 'receipt', id)).toBeUndefined();
@@ -55,7 +55,7 @@ describe('writer/proposal', () => {
 
     describe('when the proposal does not contain flagged links', () => {
       it('creates and does not flag proposal', async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
         const id = '0x02-non-flagged';
         expect(await action(input, 'ipfs', 'receipt', id)).toBeUndefined();
         expect(mockContainsFlaggedLinks).toBeCalledTimes(1);
