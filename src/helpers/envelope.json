@@ -38,7 +38,8 @@
                   "type": "number"
                 },
                 "space": {
-                  "type": "string"
+                  "type": "string",
+                  "pattern": "^[^ ]+$"
                 }
               },
               "required": [
