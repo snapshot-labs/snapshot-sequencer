@@ -1,7 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import kebabCase from 'lodash/kebabCase';
-import { getQuorum, jsonParse, validateChoices } from '../helpers/utils';
+import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 import db from '../helpers/mysql';
 import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
@@ -151,8 +151,8 @@ export async function verify(body): Promise<any> {
       }
 
       if (!isValid) return Promise.reject('validation failed');
-    } catch (e) {
-      capture(e, { space: msg.space, address: body.address });
+    } catch (e: any) {
+      captureError(e, { space: msg.space, address: body.address }, [504]);
       log.warn(
         `[writer] Failed to check proposal validation, ${msg.space}, ${
           body.address

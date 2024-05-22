@@ -1,6 +1,6 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import kebabCase from 'lodash/kebabCase';
-import { hasStrategyOverride, jsonParse } from '../helpers/utils';
+import { captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
 import { getProposal } from '../helpers/actions';
 import db from '../helpers/mysql';
 import { updateProposalAndVotes } from '../scores';
@@ -88,8 +88,8 @@ export async function verify(body): Promise<any> {
       { url: scoreAPIUrl }
     );
     if (vp.vp === 0) return Promise.reject('no voting power');
-  } catch (e) {
-    capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
+  } catch (e: any) {
+    captureError(e, { contexts: { input: { space: msg.space, address: body.address } } }, [504]);
     log.warn(
       `[writer] Failed to check voting power (vote), ${msg.space}, ${body.address}, ${
         proposal.snapshot
@@ -194,8 +194,8 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   try {
     const result = await updateProposalAndVotes(proposalId);
     if (!result) log.warn(`[writer] updateProposalAndVotes() false, ${proposalId}`);
-  } catch (e) {
-    capture(e, { contexts: { input: { space: msg.space, id: proposalId } } });
+  } catch (e: any) {
+    captureError(e, { contexts: { input: { space: msg.space, id: proposalId } } }, [504]);
     log.warn(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
   }
 }

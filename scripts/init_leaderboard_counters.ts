@@ -69,16 +69,16 @@ async function processVotesCount(pivot: number) {
         process.stdout.write('.');
       });
 
-      _pivot = _pivot + batchWindow;
       count += 1;
     }
 
+    _pivot = _pivot + batchWindow;
     console.log(
       `\nProcessed ${count} voters (${Math.round(count / (+new Date() / 1000 - startTs))} voters/s)`
     );
   }
 
-  console.log(`Processed ${processedVoters.size} voters`);
+  console.log(`\nProcessed ${processedVoters.size} voters in total`);
 }
 
 (async () => {
