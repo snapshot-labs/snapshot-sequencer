@@ -5,7 +5,6 @@ import { getProposal } from '../helpers/actions';
 import db from '../helpers/mysql';
 import { updateProposalAndVotes } from '../scores';
 import log from '../helpers/log';
-import { capture } from '@snapshot-labs/snapshot-sentry';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
@@ -66,7 +65,7 @@ export async function verify(body): Promise<any> {
       );
       if (!validate) return Promise.reject('failed vote validation');
     } catch (e) {
-      capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
+      captureError(e, { contexts: { input: { space: msg.space, address: body.address } } }, [504]);
       log.warn(
         `[writer] Failed to check vote validation, ${msg.space}, ${body.address}, ${JSON.stringify(
           e
