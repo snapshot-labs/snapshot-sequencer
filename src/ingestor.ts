@@ -36,7 +36,6 @@ export default async function ingestor(req) {
       log.warn(`[ingestor] Wrong envelope format ${JSON.stringify(schemaIsValid)}`);
       return Promise.reject('wrong envelope format');
     }
-    // check if message.proposal contains whitespace, if so reject
 
     const ts = Date.now() / 1e3;
     const over = 300;
