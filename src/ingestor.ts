@@ -49,6 +49,9 @@ export default async function ingestor(req) {
     if (message.timestamp > overTs || message.timestamp < underTs)
       return Promise.reject('wrong timestamp');
 
+    if (message.proposal && message.proposal.includes(' '))
+      return Promise.reject('proposal cannot contain whitespace');
+
     if (domain.name !== NAME || domain.version !== VERSION) return Promise.reject('wrong domain');
 
     // Ignore EIP712Domain type, it's not used
