@@ -38,6 +38,14 @@ async function main() {
     types.push('proposal', 'vote');
   }
 
+  if (!pivot) {
+    const firstVoted = await db.queryAsync(
+      'SELECT created FROM votes ORDER BY created ASC LIMIT 1'
+    );
+    if (!firstVoted.length) throw new Error('No votes found in the database');
+    pivot = firstVoted[0].created as number;
+  }
+
   if (types.includes('proposal')) {
     await processProposalsCount(spaces);
   } else if (types.includes('vote')) {
@@ -59,47 +67,45 @@ async function processProposalsCount(spaces: string[]) {
 }
 
 async function processVotesCount(spaces: string[], pivot: number) {
-  console.log('Building voters list, this may take a while... (each step is 500k voters)');
-
-  const voters: Map<string, number> = new Map();
-  let index = 0;
+  const processedVoters = new Set<string>();
+  const batchWindow = 60 * 60 * 24 * 2; // 2 day
   let _pivot = pivot;
 
-  while (true) {
-    process.stdout.write(index % 10 === 0 ? '_' : '.');
-    const params: any[] = [_pivot];
-    if (spaces.length) params.push(spaces);
-
-    const users = await db.queryAsync(
-      `SELECT distinct(voter) as id, created FROM votes WHERE created > ?
-      ${spaces.length ? 'AND space IN (?)' : ''}
-      ORDER BY created ASC LIMIT 500000`,
-      params
-    );
-    if (!users.length) break;
-
-    _pivot = users[users.length - 1].created;
-    index += 1;
-    users.forEach(user => {
-      if (!voters.has(user.id)) {
-        voters.set(user.id, user.created);
-      }
-    });
-  }
-
-  console.log(`Found ${voters.size} unique voters`);
-
-  let i = 0;
-  for (const [voterId, ts] of voters.entries()) {
-    console.log(`Processing user ${voterId} (${+i + 1}/${voters.size}) - (pivot:${ts})`);
-
-    const votesCountRes = await refreshVotesCount(spaces, [voterId]);
+  while (_pivot < Date.now() / 1000) {
     console.log(
-      ` VOTE_COUNT     >`,
-      `Affected: ${votesCountRes.affectedRows}`,
-      `Changed: ${votesCountRes.changedRows}`
+      `\nProcessing voters from ${_pivot} to ${_pivot + batchWindow} (${new Date(_pivot * 1000)})`
     );
-    i += 1;
+    const votersId = await db
+      .queryAsync(
+        `SELECT voter FROM votes WHERE created >= ?
+      AND created < ?
+      ORDER BY created ASC`,
+        [_pivot, _pivot + batchWindow]
+      )
+      .map(v => v.voter);
+    const startTs = +new Date() / 1000;
+    let count = 0;
+    const newVoters = Array.from(new Set<string>(votersId.values())).filter(
+      v => !processedVoters.has(v)
+    );
+
+    console.log(`Found ${newVoters.length} new voters`);
+
+    for (const id of newVoters) {
+      processedVoters.add(id);
+
+      await refreshVotesCount(spaces, [id]);
+      process.stdout.write('.');
+
+      count += 1;
+    }
+
+    _pivot = _pivot + batchWindow;
+    console.log(
+      `\nProcessed ${count} voters (${Math.round(
+        count / (+new Date() / 1000 - startTs)
+      )} voters/s) - ${processedVoters.size} total processed`
+    );
   }
 }
 
