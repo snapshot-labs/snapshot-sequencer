@@ -1,8 +1,71 @@
 import 'dotenv/config';
 import db from '../src/helpers/mysql';
-import { refreshProposalsCount, refreshVotesCount } from '../src/helpers/actions';
 
 const ALLOWED_TYPES = ['proposal', 'vote'];
+
+function refreshProposalsCount(spaces?: string[], users?: string[]) {
+  const whereFilters = ['spaces.deleted = 0'];
+  const params: string[][] = [];
+
+  if (spaces?.length) {
+    whereFilters.push('space IN (?)');
+    params.push(spaces);
+  }
+
+  if (users?.length) {
+    whereFilters.push('author IN (?)');
+    params.push(users);
+  }
+
+  return db.queryAsync(
+    `
+      INSERT INTO leaderboard (proposal_count, user, space)
+        (SELECT * FROM (
+          SELECT COUNT(proposals.id) AS proposal_count, author, space
+          FROM proposals
+          JOIN spaces ON BINARY spaces.id = BINARY proposals.space
+          WHERE ${whereFilters.join(' AND ')}
+          GROUP BY author, space
+        ) AS t)
+      ON DUPLICATE KEY UPDATE proposal_count = t.proposal_count
+    `,
+    params
+  );
+}
+
+async function refreshVotesCount(spaces?: string[], users?: string[]) {
+  const whereFilters: string[] = [];
+  const params: string[][] = [];
+
+  if (spaces?.length) {
+    whereFilters.push('space IN (?)');
+    params.push(spaces);
+  }
+
+  if (users?.length) {
+    whereFilters.push('voter IN (?)');
+    params.push(users);
+  }
+
+  whereFilters.push('space NOT IN (?)');
+  params.push(
+    (await db.queryAsync('SELECT id FROM spaces WHERE deleted = 1')).map(space => space.id)
+  );
+
+  return db.queryAsync(
+    `
+      INSERT INTO leaderboard (vote_count, last_vote, user, space)
+        (SELECT * FROM (
+          SELECT COUNT(votes.id) AS vote_count, MAX(votes.created) as last_vote, voter, space
+          FROM votes
+          WHERE ${whereFilters.join(' AND ')}
+          GROUP BY voter, space
+        ) AS t)
+      ON DUPLICATE KEY UPDATE vote_count = t.vote_count, last_vote = t.last_vote
+    `,
+    params
+  );
+}
 
 // Usage: yarn ts-node scripts/refresh_leaderboard_counters.ts --type proposal|vote --space OPTIONAL-SPACE-ID --pivot TIMESTAMP
 async function main() {
