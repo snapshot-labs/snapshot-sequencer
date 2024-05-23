@@ -71,9 +71,10 @@ async function refreshVotesCount(spaces?: string[], users?: string[]) {
   );
 }
 
-// Usage: yarn ts-node scripts/refresh_leaderboard_counters.ts --type proposal|vote --space OPTIONAL-SPACE-ID --pivot TIMESTAMP
+// Usage: yarn ts-node scripts/refresh_leaderboard_counters.ts --type proposal|vote --space OPTIONAL-SPACE-ID --pivot TIMESTAMP --end TIMESTAMP
 async function main() {
   let pivot = 0;
+  let end = 0;
   const types: string[] = [];
   const spaces: string[] = [];
 
@@ -88,6 +89,12 @@ async function main() {
       if (!process.argv[index + 1]) throw new Error('Pivot timestamp is missing');
       console.log('Filtered by votes.created >=', process.argv[index + 1]);
       pivot = +process.argv[index + 1].trim();
+    }
+
+    if (arg === '--end') {
+      if (!process.argv[index + 1]) throw new Error('End timestamp is missing');
+      console.log('Filtered by votes.created <=', process.argv[index + 1]);
+      end = +process.argv[index + 1].trim();
     }
 
     if (arg === '--type') {
@@ -116,7 +123,7 @@ async function main() {
   if (types.includes('proposal')) {
     await processProposalsCount(spaces);
   } else if (types.includes('vote')) {
-    await processVotesCount(spaces, pivot);
+    await processVotesCount(spaces, pivot, end);
   }
 }
 
@@ -133,12 +140,12 @@ async function processProposalsCount(spaces: string[]) {
   );
 }
 
-async function processVotesCount(spaces: string[], pivot: number) {
+async function processVotesCount(spaces: string[], pivot: number, end?: number) {
   const processedVoters = new Set<string>();
   const batchWindow = 60 * 60 * 24 * 2; // 2 day
   let _pivot = pivot;
 
-  while (_pivot < Date.now() / 1000) {
+  while (_pivot < (end || Date.now() / 1000)) {
     console.log(
       `\nProcessing voters from ${_pivot} to ${_pivot + batchWindow} (${new Date(_pivot * 1000)})`
     );
