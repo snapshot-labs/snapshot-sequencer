@@ -3,8 +3,8 @@ import db from '../src/helpers/mysql';
 
 const ALLOWED_TYPES = ['proposal', 'vote'];
 
-function refreshProposalsCount(spaces?: string[], users?: string[]) {
-  const whereFilters = ['spaces.deleted = 0'];
+async function refreshProposalsCount(spaces?: string[], users?: string[]) {
+  const whereFilters: string[] = [];
   const params: string[][] = [];
 
   if (spaces?.length) {
@@ -17,13 +17,17 @@ function refreshProposalsCount(spaces?: string[], users?: string[]) {
     params.push(users);
   }
 
+  whereFilters.push('space NOT IN (?)');
+  params.push(
+    (await db.queryAsync('SELECT id FROM spaces WHERE deleted = 1')).map(space => space.id)
+  );
+
   return db.queryAsync(
     `
       INSERT INTO leaderboard (proposal_count, user, space)
         (SELECT * FROM (
           SELECT COUNT(proposals.id) AS proposal_count, author, space
           FROM proposals
-          JOIN spaces ON BINARY spaces.id = BINARY proposals.space
           WHERE ${whereFilters.join(' AND ')}
           GROUP BY author, space
         ) AS t)
@@ -138,12 +142,17 @@ async function processVotesCount(spaces: string[], pivot: number) {
     console.log(
       `\nProcessing voters from ${_pivot} to ${_pivot + batchWindow} (${new Date(_pivot * 1000)})`
     );
+    const params: any[] = [_pivot, _pivot + batchWindow];
+    if (spaces.length) {
+      params.push(spaces);
+    }
     const votersId = await db
       .queryAsync(
         `SELECT voter FROM votes WHERE created >= ?
       AND created < ?
+      ${spaces.length ? 'AND space IN (?)' : ''}
       ORDER BY created ASC`,
-        [_pivot, _pivot + batchWindow]
+        params
       )
       .map(v => v.voter);
     const startTs = +new Date() / 1000;
