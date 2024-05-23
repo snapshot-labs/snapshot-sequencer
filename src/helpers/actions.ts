@@ -109,8 +109,8 @@ export function refreshProposalsCount(spaces?: string[], users?: string[]) {
   );
 }
 
-export function refreshVotesCount(spaces?: string[], users?: string[]) {
-  const whereFilters = ['spaces.deleted = 0'];
+export async function refreshVotesCount(spaces?: string[], users?: string[]) {
+  const whereFilters: string[] = [];
   const params: string[][] = [];
 
   if (spaces?.length) {
@@ -123,13 +123,17 @@ export function refreshVotesCount(spaces?: string[], users?: string[]) {
     params.push(users);
   }
 
+  whereFilters.push('space NOT IN (?)');
+  params.push(
+    (await db.queryAsync('SELECT id FROM spaces WHERE deleted = 1')).map(space => space.id)
+  );
+
   return db.queryAsync(
     `
       INSERT INTO leaderboard (vote_count, last_vote, user, space)
         (SELECT * FROM (
           SELECT COUNT(votes.id) AS vote_count, MAX(votes.created) as last_vote, voter, space
           FROM votes
-          JOIN spaces ON BINARY spaces.id = BINARY votes.space
           WHERE ${whereFilters.join(' AND ')}
           GROUP BY voter, space
         ) AS t)
