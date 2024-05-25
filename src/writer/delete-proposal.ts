@@ -39,7 +39,7 @@ export async function action(body): Promise<void> {
       WHERE id = ?;
   `;
 
-  const parameters = [id, id, proposal.author, msg.space, proposal.votes, msg.space];
+  const parameters = [id, id, proposal.author, msg.space, voters.length, msg.space];
 
   if (voters.length > 0) {
     queries += `
