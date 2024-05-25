@@ -1,11 +1,10 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import kebabCase from 'lodash/kebabCase';
-import { hasStrategyOverride, jsonParse } from '../helpers/utils';
+import { captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
 import { getProposal } from '../helpers/actions';
 import db from '../helpers/mysql';
 import { updateProposalAndVotes } from '../scores';
 import log from '../helpers/log';
-import { capture } from '@snapshot-labs/snapshot-sentry';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
@@ -66,7 +65,7 @@ export async function verify(body): Promise<any> {
       );
       if (!validate) return Promise.reject('failed vote validation');
     } catch (e) {
-      capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
+      captureError(e, { contexts: { input: { space: msg.space, address: body.address } } }, [504]);
       log.warn(
         `[writer] Failed to check vote validation, ${msg.space}, ${body.address}, ${JSON.stringify(
           e
@@ -88,8 +87,8 @@ export async function verify(body): Promise<any> {
       { url: scoreAPIUrl }
     );
     if (vp.vp === 0) return Promise.reject('no voting power');
-  } catch (e) {
-    capture(e, { contexts: { input: { space: msg.space, address: body.address } } });
+  } catch (e: any) {
+    captureError(e, { contexts: { input: { space: msg.space, address: body.address } } }, [504]);
     log.warn(
       `[writer] Failed to check voting power (vote), ${msg.space}, ${body.address}, ${
         proposal.snapshot
@@ -155,7 +154,8 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
       `
       UPDATE votes
       SET id = ?, ipfs = ?, created = ?, choice = ?, reason = ?, metadata = ?, app = ?, vp = ?, vp_by_strategy = ?, vp_state = ?
-      WHERE voter = ? AND proposal = ? AND space = ?
+      WHERE voter = ? AND proposal = ? AND space = ?;
+      UPDATE leaderboard SET last_vote = ? WHERE user = ? AND space = ? LIMIT 1;
     `,
       [
         id,
@@ -170,6 +170,9 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
         params.vp_state,
         voter,
         proposalId,
+        msg.space,
+        created,
+        voter,
         msg.space
       ]
     );
@@ -177,10 +180,13 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     // Store vote in dedicated table
     await db.queryAsync(
       `
-      INSERT INTO votes SET ?;
-      UPDATE spaces SET vote_count = vote_count + 1 WHERE id = ?;
-    `,
-      [params, msg.space]
+        INSERT INTO votes SET ?;
+        INSERT INTO leaderboard (space, user, vote_count, last_vote)
+          VALUES(?, ?, 1, ?)
+          ON DUPLICATE KEY UPDATE vote_count = vote_count + 1, last_vote = ?;
+        UPDATE spaces SET vote_count = vote_count + 1 WHERE id = ?;
+      `,
+      [params, msg.space, voter, created, created, msg.space]
     );
   }
 
@@ -188,8 +194,8 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   try {
     const result = await updateProposalAndVotes(proposalId);
     if (!result) log.warn(`[writer] updateProposalAndVotes() false, ${proposalId}`);
-  } catch (e) {
-    capture(e, { contexts: { input: { space: msg.space, id: proposalId } } });
+  } catch (e: any) {
+    captureError(e, { contexts: { input: { space: msg.space, id: proposalId } } }, [504]);
     log.warn(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
   }
 }

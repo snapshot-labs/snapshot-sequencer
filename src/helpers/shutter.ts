@@ -1,10 +1,9 @@
 import express from 'express';
 import { randomBytes } from 'crypto';
-import fetch from 'node-fetch';
 import { init, decrypt } from '@shutter-network/shutter-crypto';
 import { arrayify } from '@ethersproject/bytes';
 import { toUtf8String } from '@ethersproject/strings';
-import { getIp, jsonParse, rpcError, rpcSuccess } from './utils';
+import { fetchWithKeepAlive, getIp, jsonParse, rpcError, rpcSuccess } from './utils';
 import { updateProposalAndVotes } from '../scores';
 import db from './mysql';
 import log from './log';
@@ -51,7 +50,7 @@ export async function rpcRequest(method, params, url: string = SHUTTER_URL) {
       id: randomBytes(6).toString('hex')
     })
   };
-  const res = await fetch(url, init);
+  const res = await fetchWithKeepAlive(url, init);
   const { result } = await res.json();
   return result;
 }

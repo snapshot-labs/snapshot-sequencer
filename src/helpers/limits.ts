@@ -1,3 +1,5 @@
+const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
+
 export const FLAGGED_SPACE_PROPOSAL_DAY_LIMIT = 1;
 export const FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT = 5;
 
@@ -15,7 +17,7 @@ export const ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT = 750;
 
 export const FOLLOWS_LIMIT_PER_USER = 25;
 
-export const ECOSYSTEM_SPACES = [
+export const MAINNET_ECOSYSTEM_SPACES = [
   'orbapp.eth',
   'cakevote.eth',
   'outcome.eth',
@@ -24,6 +26,8 @@ export const ECOSYSTEM_SPACES = [
   'arbitrumfoundation.eth'
 ];
 
+export const TESTNET_ECOSYSTEM_SPACES = ['citiesdao.eth'];
+
 export const ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT = 20;
 
 export function getSpaceLimits(space): number[] {
@@ -31,7 +35,10 @@ export function getSpaceLimits(space): number[] {
     return [FLAGGED_SPACE_PROPOSAL_DAY_LIMIT, FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
-  if (ECOSYSTEM_SPACES.includes(space.id)) {
+  const ecosystemSpaces =
+    SNAPSHOT_ENV === 'testnet' ? TESTNET_ECOSYSTEM_SPACES : MAINNET_ECOSYSTEM_SPACES;
+
+  if (ecosystemSpaces.includes(space.id)) {
     return [ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT, ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
@@ -39,7 +46,7 @@ export function getSpaceLimits(space): number[] {
     return [TURBO_SPACE_PROPOSAL_DAY_LIMIT, TURBO_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 
-  if (space.verified) {
+  if (space.verified || SNAPSHOT_ENV === 'testnet') {
     return [VERIFIED_SPACE_PROPOSAL_DAY_LIMIT, VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT];
   }
 

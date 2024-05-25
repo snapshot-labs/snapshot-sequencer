@@ -1,4 +1,5 @@
 import db from '../helpers/mysql';
+import { defaultNetwork } from './follow';
 
 export async function verify(message): Promise<any> {
   const query = `SELECT * FROM follows WHERE follower = ? AND space = ? LIMIT 1`;
@@ -11,9 +12,13 @@ export async function verify(message): Promise<any> {
 
 export async function action(message): Promise<void> {
   const query = `
-    DELETE FROM follows WHERE follower = ? AND space = ? LIMIT 1;
+    DELETE FROM follows WHERE follower = ? AND space = ? AND network = ? LIMIT 1;
     UPDATE spaces SET follower_count = follower_count - 1 WHERE id = ?;
   `;
-
-  await db.queryAsync(query, [message.from, message.space, message.space]);
+  await db.queryAsync(query, [
+    message.from,
+    message.space,
+    message.network || defaultNetwork,
+    message.space
+  ]);
 }

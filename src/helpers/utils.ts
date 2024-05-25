@@ -6,6 +6,7 @@ import { Response } from 'express';
 import fetch from 'node-fetch';
 import { URL } from 'url';
 import snapshot from '@snapshot-labs/snapshot.js';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import { BigNumber } from '@ethersproject/bignumber';
 
 export const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
@@ -181,3 +182,9 @@ export const getQuorum = async (options: any, network: string, blockTag: number)
       throw new Error(`Unsupported quorum strategy: ${strategy}`);
   }
 };
+
+export function captureError(e: any, context?: any, ignoredErrorCodes?: number[]) {
+  if (ignoredErrorCodes?.includes(e.code)) return;
+
+  capture(e, context);
+}
