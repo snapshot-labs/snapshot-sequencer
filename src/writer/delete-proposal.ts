@@ -34,7 +34,9 @@ export async function action(body): Promise<void> {
       SET proposal_count = GREATEST(proposal_count - 1, 0)
       WHERE user = ? AND space = ?
       LIMIT 1;
-    UPDATE spaces SET proposal_count = proposal_count - 1, vote_count = vote_count - ? WHERE id = ?;
+    UPDATE spaces
+      SET proposal_count = GREATEST(proposal_count - 1, 0), vote_count = GREATEST(vote_count - ?, 0)
+      WHERE id = ?;
   `;
 
   const parameters = [id, id, proposal.author, msg.space, proposal.votes, msg.space];
