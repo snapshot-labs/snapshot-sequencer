@@ -94,14 +94,20 @@ describe('helpers/actions', () => {
   });
 
   describe('sxSpaceExists()', () => {
-    it('returns true when it exists', async () => {
-      const id = '0xaeee929Ca508Dd1F185a8E74F4a9c37c25595c25';
-      return expect(sxSpaceExists(id)).resolves.toEqual(true);
+    const mapping = {
+      sn: '0x001080f1ced38269d7a32068700179c6335dee568f8599cf74b120869f8ec641',
+      arb1: '0xFd36252770642Ac48FC3A06d7A1D00be8946dd18',
+      oeth: '0x82572911308D2579f15e3cF21402Dcf1D5408300',
+      matic: '0x80D0Ffd8739eABF16436074fF64DC081c60C833A',
+      eth: '0xaeee929Ca508Dd1F185a8E74F4a9c37c25595c25'
+    };
+
+    it.each(Object.entries(mapping))('returns true when it exists for %s', async (network, id) => {
+      return expect(sxSpaceExists(network, id)).resolves.toEqual(true);
     });
 
     it('returns false when it does not exist', async () => {
-      const id = 'not-existing-space-id';
-      return expect(sxSpaceExists(id)).resolves.toEqual(false);
+      return expect(sxSpaceExists('sep', mapping['eth'])).resolves.toEqual(false);
     });
   });
 });
