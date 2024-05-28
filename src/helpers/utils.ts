@@ -72,7 +72,16 @@ export function hasStrategyOverride(strategies: any[]) {
     '"api-v2-override"'
   ];
   const strategiesStr = JSON.stringify(strategies).toLowerCase();
-  return keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`));
+  if (keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`))) return true;
+  // Check for split-delegation with delegationOverride
+  const splitDelegation = strategies.filter(strategy => strategy.name === 'split-delegation');
+  if (
+    splitDelegation.length > 0 &&
+    splitDelegation.some(strategy => strategy.params?.delegationOverride)
+  )
+    return true;
+
+  return false;
 }
 
 export function validateChoices({ type, choices }): boolean {
