@@ -78,7 +78,7 @@ export function hasStrategyOverride(strategies: any[]) {
   return (
     splitDelegation.length > 0 &&
     splitDelegation.some(strategy => strategy.params?.delegationOverride)
-  )
+  );
 }
 
 export function validateChoices({ type, choices }): boolean {
