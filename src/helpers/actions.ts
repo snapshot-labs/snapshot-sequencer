@@ -41,7 +41,7 @@ export async function getProposal(space, id) {
 
 export async function getSpace(id: string, includeDeleted = false, network = defaultNetwork) {
   if (NETWORK_WHITELIST.includes(network) && network !== defaultNetwork) {
-    const spaceExist = await sxSpaceExists(id);
+    const spaceExist = await sxSpaceExists(network, id);
     if (!spaceExist) return false;
 
     return {
@@ -64,18 +64,27 @@ export async function getSpace(id: string, includeDeleted = false, network = def
   };
 }
 
-export async function sxSpaceExists(spaceId: string): Promise<boolean> {
-  const { space } = await snapshot.utils.subgraphRequest(
-    'https://api.studio.thegraph.com/query/23545/sx/version/latest',
-    {
-      space: {
-        __args: {
-          id: spaceId
-        },
-        id: true
-      }
+export async function sxSpaceExists(network: string, spaceId: string): Promise<boolean> {
+  const urls = {
+    eth: 'https://api.studio.thegraph.com/query/23545/sx/version/latest',
+    sep: 'https://api.studio.thegraph.com/query/23545/sx-sepolia/version/latest',
+    matic: 'https://api.studio.thegraph.com/query/23545/sx-polygon/version/latest',
+    arb1: 'https://api.studio.thegraph.com/query/23545/sx-arbitrum/version/latest',
+    oeth: 'https://api.studio.thegraph.com/query/23545/sx-optimism/version/latest',
+    sn: 'https://api-1.snapshotx.xyz',
+    'sn-sep': 'https://testnet-api-1.snapshotx.xyz',
+    'linea-testnet':
+      'https://thegraph.goerli.zkevm.consensys.net/subgraphs/name/snapshot-labs/sx-subgraph'
+  };
+
+  const { space } = await snapshot.utils.subgraphRequest(urls[network], {
+    space: {
+      __args: {
+        id: spaceId
+      },
+      id: true
     }
-  );
+  });
   return !!space?.id;
 }
 
