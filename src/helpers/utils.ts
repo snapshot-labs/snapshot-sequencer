@@ -75,13 +75,10 @@ export function hasStrategyOverride(strategies: any[]) {
   if (keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`))) return true;
   // Check for split-delegation with delegationOverride
   const splitDelegation = strategies.filter(strategy => strategy.name === 'split-delegation');
-  if (
+  return (
     splitDelegation.length > 0 &&
     splitDelegation.some(strategy => strategy.params?.delegationOverride)
   )
-    return true;
-
-  return false;
 }
 
 export function validateChoices({ type, choices }): boolean {
