@@ -35,6 +35,24 @@ export const spacesSqlFixtures: Record<string, any>[] = [
       network: '1',
       strategies: [{ name: 'basic' }]
     }
+  },
+  {
+    id: 'test-deleted.eth',
+    name: 'Test deleted space',
+    verified: 0,
+    flagged: 0,
+    deleted: 1,
+    hibernated: 0,
+    turbo: 0,
+    created: 1649844547,
+    updated: 1649844547,
+    settings: {
+      name: 'Test deleted space',
+      admins: ['0x87D68ecFBcF53c857ABf494728Cf3DE1016b27B0'],
+      symbol: 'TEST2',
+      network: '1',
+      strategies: [{ name: 'basic' }]
+    }
   }
 ];
 

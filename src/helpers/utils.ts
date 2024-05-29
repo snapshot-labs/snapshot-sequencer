@@ -6,6 +6,7 @@ import { Response } from 'express';
 import fetch from 'node-fetch';
 import { URL } from 'url';
 import snapshot from '@snapshot-labs/snapshot.js';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import { BigNumber } from '@ethersproject/bignumber';
 
 export const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
@@ -71,7 +72,13 @@ export function hasStrategyOverride(strategies: any[]) {
     '"api-v2-override"'
   ];
   const strategiesStr = JSON.stringify(strategies).toLowerCase();
-  return keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`));
+  if (keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`))) return true;
+  // Check for split-delegation with delegationOverride
+  const splitDelegation = strategies.filter(strategy => strategy.name === 'split-delegation');
+  return (
+    splitDelegation.length > 0 &&
+    splitDelegation.some(strategy => strategy.params?.delegationOverride)
+  );
 }
 
 export function validateChoices({ type, choices }): boolean {
@@ -181,3 +188,9 @@ export const getQuorum = async (options: any, network: string, blockTag: number)
       throw new Error(`Unsupported quorum strategy: ${strategy}`);
   }
 };
+
+export function captureError(e: any, context?: any, ignoredErrorCodes?: number[]) {
+  if (ignoredErrorCodes?.includes(e.code)) return;
+
+  capture(e, context);
+}

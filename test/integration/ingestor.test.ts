@@ -158,6 +158,13 @@ describe('ingestor', () => {
     expect(mockGetSpace).toHaveBeenCalledTimes(1);
   });
 
+  it('rejects when the proposal ID contains whitespace', async () => {
+    const invalidRequest = cloneDeep(proposalRequest);
+    invalidRequest.body.data.message.proposal = '0x ';
+
+    await expect(ingestor(invalidRequest)).rejects.toMatch('whitespace');
+  });
+
   describe('when the message creator is not the sender', () => {
     it.todo('rejects when alias is not available for the type');
     it.todo('rejects when alias is not enabled');
