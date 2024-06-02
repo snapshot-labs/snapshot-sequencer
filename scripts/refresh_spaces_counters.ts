@@ -9,18 +9,16 @@ async function main() {
 
   for (const i in spaces) {
     const stats = await db.queryAsync(
-      `SELECT COUNT(voter) as vote_count, COUNT(DISTINCT(proposal)) as proposal_count FROM votes WHERE space = ? GROUP BY space`,
+      `SELECT COUNT(voter) as vote_count, COUNT(DISTINCT(proposal)) as proposal_count FROM votes WHERE space = ?`,
       [spaces[i].id]
     );
-
-    for (const stat of stats) {
-      await db.queryAsync(`UPDATE spaces SET vote_count = ?, proposal_count = ? WHERE id = ?`, [
-        stat.vote_count,
-        stat.proposal_count,
-        spaces[i].id
-      ]);
-      console.log(`${i} / ${spaces.length}`);
-    }
+    const stat = stats[0];
+    await db.queryAsync(`UPDATE spaces SET vote_count = ?, proposal_count = ? WHERE id = ?`, [
+      stat.vote_count,
+      stat.proposal_count,
+      spaces[i].id
+    ]);
+    console.log(`${i} / ${spaces.length}`);
   }
 }
 
