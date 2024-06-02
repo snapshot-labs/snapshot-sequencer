@@ -23,6 +23,10 @@ async function main() {
   await db.queryAsync(
     'UPDATE spaces SET proposal_count = (SELECT count(id) from proposals WHERE space = spaces.id)'
   );
+
+  await db.queryAsync(
+    'UPDATE spaces SET follower_count = (SELECT count(id) from follows WHERE space = spaces.id)'
+  );
 }
 
 (async () => {
