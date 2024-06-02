@@ -61,32 +61,29 @@ export default async function ingestor(req) {
     if (!Object.keys(hashTypes).includes(hash)) return Promise.reject('wrong types');
     type = hashTypes[hash];
 
-    let aliased = false;
     if (!['settings', 'alias', 'profile'].includes(type)) {
       if (!message.space) return Promise.reject('unknown space');
 
       const space = await getSpace(message.space, false, message.network);
       if (!space) return Promise.reject('unknown space');
       network = space.network;
-      if (space.voting?.aliased) aliased = true;
     }
 
     // Check if signing address is an alias
-    const aliasTypes = ['follow', 'unfollow', 'subscribe', 'unsubscribe', 'profile'];
-    const aliasOptionTypes = [
+    const aliasTypes = [
+      'follow',
+      'unfollow',
+      'subscribe',
+      'unsubscribe',
+      'profile',
       'vote',
       'vote-array',
       'vote-string',
       'proposal',
-      'delete-proposal',
-      'statement'
+      'update-proposal'
     ];
     if (body.address !== message.from) {
-      if (!aliasTypes.includes(type) && !aliasOptionTypes.includes(type))
-        return Promise.reject('wrong from');
-
-      if (aliasOptionTypes.includes(type) && !aliased) return Promise.reject('alias not enabled');
-
+      if (!aliasTypes.includes(type)) return Promise.reject('wrong from');
       if (!(await isValidAlias(message.from, body.address))) return Promise.reject('wrong alias');
     }
 
