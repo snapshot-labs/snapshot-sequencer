@@ -57,6 +57,10 @@ describe('helpers/actions', () => {
         return expect(getSpace('test.eth')).resolves.toEqual(expectedSpace);
       });
 
+      it('returns the space (case-insensitive) for the given ID', () => {
+        return expect(getSpace('TEST.eth')).resolves.toEqual(expectedSpace);
+      });
+
       it('returns the space for the given ID with a valid network', () => {
         return expect(getSpace('test.eth', false, defaultNetwork)).resolves.toEqual(expectedSpace);
       });
