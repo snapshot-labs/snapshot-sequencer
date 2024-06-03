@@ -12,7 +12,7 @@ export async function addOrUpdateSpace(space: string, settings: any) {
 
   await db.queryAsync(query, [
     {
-      id: space,
+      id: space.toLowerCase(),
       name: settings.name,
       created: ts,
       updated: ts,
@@ -49,7 +49,7 @@ export async function getSpace(id: string, includeDeleted = false, network = def
     };
   }
 
-  const query = `SELECT settings, deleted, flagged, verified, turbo, hibernated FROM spaces WHERE id = ? AND deleted in (?) LIMIT 1`;
+  const query = `SELECT settings, deleted, flagged, verified, turbo, hibernated FROM spaces WHERE LOWER(id) = LOWER(?) AND deleted in (?) LIMIT 1`;
   const spaces = await db.queryAsync(query, [id, includeDeleted ? [0, 1] : [0]]);
 
   if (!spaces[0]) return false;
