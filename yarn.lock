@@ -1299,10 +1299,10 @@
   dependencies:
     "@sentry/node" "^7.81.1"
 
-"@snapshot-labs/snapshot.js@^0.11.29":
-  version "0.11.29"
-  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot.js/-/snapshot.js-0.11.29.tgz#ce8dbb0fb7283f590098b1487f55a0dbc8d3dafe"
-  integrity sha512-ZztGp8Cs8fHmBi95KUoXv0xcRkQISi2vHo2shKJV1ZrNLKQcT90Okjyy6Ra0naVNOJMCnJhtdsse4GayPvfAqQ==
+"@snapshot-labs/snapshot.js@^0.11.30":
+  version "0.11.30"
+  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot.js/-/snapshot.js-0.11.30.tgz#1e9c7e2f3cdee33892ec0ab9e2bd2be243774803"
+  integrity sha512-BsKNOVKQ2VVbiTOTTsxXtF+1+VCKeayRBBXcVh8Na1RErAM3/XWaQvrS34xBimxaAHAQEZl7/4O/gaJnWCQk+w==
   dependencies:
     "@ensdomains/eth-ens-namehash" "^2.0.15"
     "@ethersproject/abi" "^5.6.4"
