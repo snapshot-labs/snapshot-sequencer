@@ -1,6 +1,6 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from '../helpers/mysql';
-import { jsonParse } from '../helpers/utils';
+import { jsonParse, clearStampCache } from '../helpers/utils';
 import log from '../helpers/log';
 
 export async function verify(body): Promise<any> {
@@ -17,6 +17,10 @@ export async function verify(body): Promise<any> {
 export async function action(message, ipfs): Promise<void> {
   const profile = jsonParse(message.profile, {});
 
+  const existingProfile = JSON.parse(
+    (await db.queryAsync('SELECT profile FROM users WHERE id = ?', [message.from])?.[0]) || '{}'
+  );
+
   const params = {
     id: message.from,
     ipfs,
@@ -25,4 +29,6 @@ export async function action(message, ipfs): Promise<void> {
   };
 
   await db.queryAsync('REPLACE INTO users SET ?', params);
+
+  if (profile.avatar !== existingProfile.avatar) clearStampCache('avatar', message.from);
 }

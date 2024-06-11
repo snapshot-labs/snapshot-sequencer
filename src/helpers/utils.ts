@@ -194,3 +194,9 @@ export function captureError(e: any, context?: any, ignoredErrorCodes?: number[]
 
   capture(e, context);
 }
+
+export function clearStampCache(type: string, id: string): boolean {
+  fetch(`https://cdn.stamp.fyi/clear/${type}/eth:${id}`);
+
+  return true;
+}
