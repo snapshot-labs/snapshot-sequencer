@@ -1,7 +1,8 @@
+import db from '../helpers/mysql';
 import isEqual from 'lodash/isEqual';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { addOrUpdateSpace, getSpace } from '../helpers/actions';
-import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
+import { clearStampCache, DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import log from '../helpers/log';
 
@@ -89,7 +90,11 @@ export async function verify(body): Promise<any> {
 
 export async function action(body): Promise<void> {
   const msg = jsonParse(body.msg);
-  const space = msg.space;
+  const space = msg.space.toLowerCase();
+  const existingSettings = JSON.parse(
+    (await db.queryAsync('SELECT settings FROM spaces WHERE id = ?', [space])?.[0]) || '{}'
+  );
+
   try {
     await addOrUpdateSpace(space, msg.payload);
   } catch (e) {
@@ -97,4 +102,6 @@ export async function action(body): Promise<void> {
     log.warn('[writer] Failed to store settings', msg.space, JSON.stringify(e));
     return Promise.reject('failed store settings');
   }
+
+  if (existingSettings.avatar !== msg.payload.avatar) clearStampCache('space', space);
 }

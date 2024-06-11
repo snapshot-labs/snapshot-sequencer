@@ -12,7 +12,7 @@ export async function addOrUpdateSpace(space: string, settings: any) {
 
   await db.queryAsync(query, [
     {
-      id: space.toLowerCase(),
+      id: space,
       name: settings.name,
       created: ts,
       updated: ts,
