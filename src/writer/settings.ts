@@ -103,5 +103,5 @@ export async function action(body): Promise<void> {
     return Promise.reject('failed store settings');
   }
 
-  if (existingSettings.avatar !== msg.payload.avatar) clearStampCache('space', space);
+  if (existingSettings.avatar !== msg.payload.avatar) await clearStampCache('space', space);
 }

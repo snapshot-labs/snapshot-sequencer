@@ -30,5 +30,5 @@ export async function action(message, ipfs): Promise<void> {
 
   await db.queryAsync('REPLACE INTO users SET ?', params);
 
-  if (profile.avatar !== existingProfile.avatar) clearStampCache('avatar', message.from);
+  if (profile.avatar !== existingProfile.avatar) await clearStampCache('avatar', message.from);
 }
