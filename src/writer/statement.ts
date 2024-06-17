@@ -25,7 +25,8 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     space,
     about: msg.payload.about,
     statement: msg.payload.statement,
-    created
+    created,
+    updated: created
   };
 
   const query =
