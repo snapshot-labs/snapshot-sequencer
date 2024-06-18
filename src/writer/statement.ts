@@ -33,7 +33,8 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     statement: msg.payload.statement,
     discourse: msg.payload.discourse || '',
     status: msg.payload.status || 'inactive',
-    created
+    created,
+    updated: created
   };
 
   const query =
