@@ -126,7 +126,14 @@ export default async function ingestor(req) {
         app: kebabCase(message.app || '')
       };
     if (type === 'alias') payload = { alias: message.alias };
-    if (type === 'statement') payload = { about: message.about, statement: message.statement };
+    if (type === 'statement')
+      payload = {
+        about: message.about,
+        statement: message.statement,
+        discourse: message.discourse,
+        status: message.status,
+        network: message.network
+      };
     if (type === 'delete-proposal') payload = { proposal: message.proposal };
     if (type === 'update-proposal') {
       payload = {
