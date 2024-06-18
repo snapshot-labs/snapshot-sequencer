@@ -9,8 +9,18 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { BigNumber } from '@ethersproject/bignumber';
 
+const MAINNET_NETWORK_ID_WHITELIST = ['s', 'eth', 'matic', 'arb1', 'oeth', 'sn'];
+const TESTNET_NETWORK_ID_WHITELIST = ['s-tn', 'sep', 'linea-testnet', 'sn-sep'];
+const broviderUrl = process.env.BROVIDER_URL ?? 'https://rpc.snapshot.org';
+
+export const NETWORK_ID_WHITELIST = [
+  ...MAINNET_NETWORK_ID_WHITELIST,
+  ...TESTNET_NETWORK_ID_WHITELIST
+];
 export const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
-const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
+export const NETWORK_IDS =
+  process.env.NETWORK === 'testnet' ? TESTNET_NETWORK_ID_WHITELIST : MAINNET_NETWORK_ID_WHITELIST;
+export const DEFAULT_NETWORK_ID = NETWORK_IDS[0];
 
 export function jsonParse(input, fallback?) {
   try {
@@ -21,7 +31,7 @@ export function jsonParse(input, fallback?) {
 }
 
 export function sendError(res: Response, description: any, status?: number) {
-  const statusCode = status || (typeof description === 'string' ? 400 : 500);
+  const statusCode = status ?? (typeof description === 'string' ? 400 : 500);
   return res.status(statusCode).json({
     error: statusCode < 500 ? 'client_error' : 'server_error',
     error_description: description
