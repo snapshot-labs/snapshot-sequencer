@@ -32,7 +32,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     about: msg.payload.about,
     statement: msg.payload.statement,
     discourse: msg.payload.discourse || '',
-    status: msg.payload.status || 'inactive',
+    status: msg.payload.status || 'INACTIVE',
     created,
     updated: created
   };
