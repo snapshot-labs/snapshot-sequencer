@@ -1,7 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from '../helpers/mysql';
-import { jsonParse } from '../helpers/utils';
 import log from '../helpers/log';
+import { DEFAULT_NETWORK_ID, NETWORK_IDS, jsonParse } from '../helpers/utils';
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg, {});
@@ -10,6 +10,11 @@ export async function verify(body): Promise<any> {
     log.warn(`[writer] Wrong statement format ${JSON.stringify(schemaIsValid)}`);
     return Promise.reject('wrong statement format');
   }
+
+  if (msg.payload.network && !NETWORK_IDS.includes(msg.payload.network)) {
+    return Promise.reject(`network ${msg.payload.network} is not allowed`);
+  }
+
   return true;
 }
 
@@ -23,13 +28,25 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     ipfs,
     delegate,
     space,
+    network: msg.payload.network || DEFAULT_NETWORK_ID,
     about: msg.payload.about,
     statement: msg.payload.statement,
-    created
+    discourse: msg.payload.discourse || '',
+    status: msg.payload.status || 'INACTIVE',
+    created,
+    updated: created
   };
 
   const query =
-    'INSERT INTO statements SET ? ON DUPLICATE KEY UPDATE ipfs = ?, about = ?, statement = ?, updated = ?';
-  const params = [item, item.ipfs, item.about, item.statement, item.created];
+    'INSERT INTO statements SET ? ON DUPLICATE KEY UPDATE ipfs = ?, about = ?, statement = ?, discourse = ?, status = ?, updated = ?';
+  const params = [
+    item,
+    item.ipfs,
+    item.about,
+    item.statement,
+    item.discourse,
+    item.status,
+    item.created
+  ];
   await db.queryAsync(query, params);
 }
