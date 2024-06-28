@@ -74,7 +74,9 @@ async function processVotesCount(pivot: number) {
 
     _pivot = _pivot + batchWindow;
     console.log(
-      `\nProcessed ${count} voters (${Math.round(count / (+new Date() / 1000 - startTs))} voters/s)`
+      `\nProcessed ${count} voters (${Math.round(
+        count / Math.min(+new Date() / 1000 - startTs, 1)
+      )} voters/s)`
     );
   }
 
