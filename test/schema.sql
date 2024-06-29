@@ -166,3 +166,38 @@ CREATE TABLE statements (
   INDEX updated (updated),
   INDEX status (status)
 );
+
+CREATE TABLE leaderboard (
+  user VARCHAR(100) NOT NULL,
+  space VARCHAR(64) NOT NULL,
+  vote_count SMALLINT UNSIGNED NOT NULL DEFAULT '0',
+  proposal_count SMALLINT UNSIGNED NOT NULL DEFAULT '0',
+  last_vote BIGINT,
+  PRIMARY KEY user_space (user,space),
+  INDEX space (space),
+  INDEX vote_count (vote_count),
+  INDEX proposal_count (proposal_count),
+  INDEX last_vote (last_vote)
+);
+
+CREATE TABLE messages (
+  mci INT NOT NULL AUTO_INCREMENT,
+  id VARCHAR(66) NOT NULL,
+  ipfs VARCHAR(64) NOT NULL,
+  address VARCHAR(100) NOT NULL,
+  version VARCHAR(6) NOT NULL,
+  timestamp BIGINT NOT NULL,
+  space VARCHAR(100),
+  type VARCHAR(24) NOT NULL,
+  sig VARCHAR(256) NOT NULL,
+  receipt VARCHAR(256) NOT NULL,
+  PRIMARY KEY (id),
+  INDEX mci (mci),
+  INDEX ipfs (ipfs),
+  INDEX address (address),
+  INDEX version (version),
+  INDEX timestamp (timestamp),
+  INDEX space (space),
+  INDEX type (type),
+  INDEX receipt (receipt)
+);
