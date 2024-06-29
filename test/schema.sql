@@ -29,7 +29,7 @@ CREATE TABLE spaces (
 CREATE TABLE proposals (
   id VARCHAR(66) NOT NULL,
   ipfs VARCHAR(64) NOT NULL,
-  author VARCHAR(64) NOT NULL,
+  author VARCHAR(100) NOT NULL,
   created INT(11) NOT NULL,
   updated INT(11) DEFAULT NULL,
   space VARCHAR(64) NOT NULL,
@@ -76,7 +76,7 @@ CREATE TABLE proposals (
 CREATE TABLE votes (
   id VARCHAR(66) NOT NULL,
   ipfs VARCHAR(64) NOT NULL,
-  voter VARCHAR(64) NOT NULL,
+  voter VARCHAR(100) NOT NULL,
   created INT(11) NOT NULL,
   space VARCHAR(64) NOT NULL,
   proposal VARCHAR(66) NOT NULL,
@@ -104,7 +104,7 @@ CREATE TABLE votes (
 CREATE TABLE follows (
   id VARCHAR(66) NOT NULL,
   ipfs VARCHAR(64) NOT NULL,
-  follower VARCHAR(64) NOT NULL,
+  follower VARCHAR(100) NOT NULL,
   space VARCHAR(100) NOT NULL,
   network VARCHAR(24) NOT NULL DEFAULT 's',
   created INT(11) NOT NULL,
@@ -118,7 +118,7 @@ CREATE TABLE follows (
 CREATE TABLE aliases (
   id VARCHAR(66) NOT NULL,
   ipfs VARCHAR(64) NOT NULL,
-  address VARCHAR(64) NOT NULL,
+  address VARCHAR(100) NOT NULL,
   alias VARCHAR(64) NOT NULL,
   created INT(11) NOT NULL,
   PRIMARY KEY (address, alias),
@@ -128,7 +128,7 @@ CREATE TABLE aliases (
 CREATE TABLE subscriptions (
   id VARCHAR(66) NOT NULL,
   ipfs VARCHAR(64) NOT NULL,
-  address VARCHAR(64) NOT NULL,
+  address VARCHAR(100) NOT NULL,
   space VARCHAR(64) NOT NULL,
   created INT(11) NOT NULL,
   PRIMARY KEY (address, space),
@@ -137,7 +137,7 @@ CREATE TABLE subscriptions (
 );
 
 CREATE TABLE users (
-  id VARCHAR(64) NOT NULL,
+  id VARCHAR(100) NOT NULL,
   ipfs VARCHAR(64) NOT NULL,
   profile JSON,
   created INT(11) NOT NULL,
@@ -165,39 +165,4 @@ CREATE TABLE statements (
   INDEX created (created),
   INDEX updated (updated),
   INDEX status (status)
-);
-
-CREATE TABLE messages (
-  mci INT NOT NULL AUTO_INCREMENT,
-  id VARCHAR(66) NOT NULL,
-  ipfs VARCHAR(64) NOT NULL,
-  address VARCHAR(64) NOT NULL,
-  version VARCHAR(6) NOT NULL,
-  timestamp BIGINT NOT NULL,
-  space VARCHAR(64),
-  type VARCHAR(24) NOT NULL,
-  sig VARCHAR(256) NOT NULL,
-  receipt VARCHAR(256) NOT NULL,
-  PRIMARY KEY (id),
-  INDEX mci (mci),
-  INDEX ipfs (ipfs),
-  INDEX address (address),
-  INDEX version (version),
-  INDEX timestamp (timestamp),
-  INDEX space (space),
-  INDEX type (type),
-  INDEX receipt (receipt)
-);
-
-CREATE TABLE leaderboard (
-  user VARCHAR(64) NOT NULL,
-  space VARCHAR(64) NOT NULL,
-  vote_count SMALLINT UNSIGNED NOT NULL DEFAULT '0',
-  proposal_count SMALLINT UNSIGNED NOT NULL DEFAULT '0',
-  last_vote BIGINT,
-  PRIMARY KEY user_space (user,space),
-  INDEX space (space),
-  INDEX vote_count (vote_count),
-  INDEX proposal_count (proposal_count),
-  INDEX last_vote (last_vote)
 );
