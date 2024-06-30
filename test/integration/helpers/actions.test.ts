@@ -1,6 +1,6 @@
 import { getSpace, sxSpaceExists } from '../../../src/helpers/actions';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
-import { defaultNetwork } from '../../../src/writer/follow';
+import { DEFAULT_NETWORK_ID } from '../../../src/helpers/utils';
 import { spacesSqlFixtures } from '../../fixtures/space';
 
 describe('helpers/actions', () => {
@@ -57,8 +57,14 @@ describe('helpers/actions', () => {
         return expect(getSpace('test.eth')).resolves.toEqual(expectedSpace);
       });
 
+      it('returns the space (case-insensitive) for the given ID', () => {
+        return expect(getSpace('TEST.eth')).resolves.toEqual(expectedSpace);
+      });
+
       it('returns the space for the given ID with a valid network', () => {
-        return expect(getSpace('test.eth', false, defaultNetwork)).resolves.toEqual(expectedSpace);
+        return expect(getSpace('test.eth', false, DEFAULT_NETWORK_ID)).resolves.toEqual(
+          expectedSpace
+        );
       });
 
       it('returns a snapshot space for the given ID with an invalid network', () => {

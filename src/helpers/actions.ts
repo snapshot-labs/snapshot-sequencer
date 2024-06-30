@@ -1,7 +1,6 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from './mysql';
-import { jsonParse } from './utils';
-import { NETWORK_WHITELIST, defaultNetwork } from '../writer/follow';
+import { DEFAULT_NETWORK_ID, NETWORK_ID_WHITELIST, jsonParse } from './utils';
 
 export async function addOrUpdateSpace(space: string, settings: any) {
   if (!settings?.name) return false;
@@ -39,8 +38,8 @@ export async function getProposal(space, id) {
   return proposal;
 }
 
-export async function getSpace(id: string, includeDeleted = false, network = defaultNetwork) {
-  if (NETWORK_WHITELIST.includes(network) && network !== defaultNetwork) {
+export async function getSpace(id: string, includeDeleted = false, network = DEFAULT_NETWORK_ID) {
+  if (NETWORK_ID_WHITELIST.includes(network) && network !== DEFAULT_NETWORK_ID) {
     const spaceExist = await sxSpaceExists(network, id);
     if (!spaceExist) return false;
 
@@ -50,7 +49,7 @@ export async function getSpace(id: string, includeDeleted = false, network = def
   }
 
   const query = `SELECT settings, deleted, flagged, verified, turbo, hibernated FROM spaces WHERE id = ? AND deleted in (?) LIMIT 1`;
-  const spaces = await db.queryAsync(query, [id, includeDeleted ? [0, 1] : [0]]);
+  const spaces = await db.queryAsync(query, [id.toLowerCase(), includeDeleted ? [0, 1] : [0]]);
 
   if (!spaces[0]) return false;
 
