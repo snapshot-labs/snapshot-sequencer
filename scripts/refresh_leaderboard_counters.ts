@@ -113,9 +113,12 @@ async function main() {
   }
 
   if (!start) {
-    const firstVoted = await db.queryAsync(
-      'SELECT created FROM votes ORDER BY created ASC LIMIT 1'
-    );
+    const query =
+      spaces.length > 0
+        ? 'SELECT created FROM votes WHERE space IN (?) ORDER BY created ASC LIMIT 1'
+        : 'SELECT created FROM votes ORDER BY created ASC LIMIT 1';
+
+    const firstVoted = await db.queryAsync(query, spaces.length > 0 ? [spaces] : []);
     if (!firstVoted.length) throw new Error('No votes found in the database');
     start = firstVoted[0].created as number;
   }
