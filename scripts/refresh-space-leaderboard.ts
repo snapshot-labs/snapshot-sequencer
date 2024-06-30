@@ -49,10 +49,10 @@ async function main(space) {
     await db.queryAsync(
       `
       INSERT INTO leaderboard (space, address, count, last_vote)
-      (SELECT space, voter AS address, COUNT(*) AS count, MAX(created) AS last_vote
-      FROM votes
-      WHERE space = ? AND created >= ? AND created < ?
-      GROUP BY voter)
+        (SELECT space, voter AS address, COUNT(*) AS count, MAX(created) AS last_vote
+        FROM votes
+        WHERE space = ? AND created >= ? AND created < ?
+        GROUP BY voter)
       ON DUPLICATE KEY UPDATE count = count + VALUES(count), last_vote = VALUES(last_vote)
     `,
       [space, start, end]
