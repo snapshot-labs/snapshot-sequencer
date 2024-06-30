@@ -18,7 +18,7 @@ async function getFirstAndLastVote(space: string) {
     await db.queryAsync('SELECT created FROM votes WHERE space = ? ORDER BY created DESC LIMIT 1', [
       space
     ])
-  ).created;
+  )[0].created;
 
   console.log(
     'Will process votes from',
@@ -40,13 +40,12 @@ async function processVotes(space: string, start: number, end: number) {
   console.log('Get votes from', new Date(start * 1000), 'to', new Date(end * 1000));
 
   await db.queryAsync(
-    `
-    INSERT INTO leaderboard (space, address, vote_count, last_vote)
-      (SELECT space, voter AS address, COUNT(*) AS count, MAX(created) AS last_vote
+    `INSERT INTO leaderboard (space, user, vote_count, last_vote)
+      (SELECT space, voter AS user, COUNT(*) AS vote_count, MAX(created) AS last_vote
       FROM votes
       WHERE space = ? AND created >= ? AND created < ?
       GROUP BY voter)
-    ON DUPLICATE KEY UPDATE vote_count = vote_count + VALUES(count), last_vote = VALUES(last_vote)
+    ON DUPLICATE KEY UPDATE vote_count = vote_count + VALUES(vote_count), last_vote = VALUES(last_vote)
   `,
     [space, start, end]
   );
@@ -56,12 +55,12 @@ async function processProposalsCount(space: string) {
   console.log('Processing proposals counts for space', space);
   await db.queryAsync(
     `
-    INSERT INTO leaderboard (space, address, proposal_count)
-      (SELECT space, author AS address, COUNT(*) AS count
+    INSERT INTO leaderboard (space, user, proposal_count)
+      (SELECT space, author AS user, COUNT(*) AS proposal_count
       FROM proposals
       WHERE space = ?
       GROUP BY author)
-    ON DUPLICATE KEY UPDATE proposal_count = proposal_count + VALUES(count)
+    ON DUPLICATE KEY UPDATE proposal_count = proposal_count + VALUES(proposal_count)
   `,
     [space]
   );
@@ -77,6 +76,7 @@ async function main(space) {
   while (true) {
     const end = start + 86400; // 24 hours
     await processVotes(space, start, end);
+
     if (end > lastVote) break;
     start = end;
   }
