@@ -183,9 +183,10 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
         INSERT INTO votes SET ?;
         INSERT INTO leaderboard (space, user, vote_count, last_vote)
           VALUES(?, ?, 1, ?)
-          ON DUPLICATE KEY UPDATE vote_count = vote_count + 1, last_vote = ?
+          ON DUPLICATE KEY UPDATE vote_count = vote_count + 1, last_vote = ?;
+        UPDATE spaces SET vote_count = vote_count + 1 WHERE id = ?;
       `,
-      [params, msg.space, voter, created, created]
+      [params, msg.space, voter, created, created, msg.space]
     );
   }
 
