@@ -36,6 +36,38 @@ async function deleteLeaderboard(space: string) {
   console.log('Leaderboard for space', space, 'has been removed');
 }
 
+async function processVotes(space: string, start: number, end: number) {
+  console.log('Get votes from', new Date(start * 1000), 'to', new Date(end * 1000));
+
+  await db.queryAsync(
+    `
+    INSERT INTO leaderboard (space, address, vote_count, last_vote)
+      (SELECT space, voter AS address, COUNT(*) AS count, MAX(created) AS last_vote
+      FROM votes
+      WHERE space = ? AND created >= ? AND created < ?
+      GROUP BY voter)
+    ON DUPLICATE KEY UPDATE vote_count = vote_count + VALUES(count), last_vote = VALUES(last_vote)
+  `,
+    [space, start, end]
+  );
+}
+
+async function processProposalsCount(space: string) {
+  console.log('Processing proposals counts for space', space);
+  await db.queryAsync(
+    `
+    INSERT INTO leaderboard (space, address, proposal_count)
+      (SELECT space, author AS address, COUNT(*) AS count
+      FROM proposals
+      WHERE space = ?
+      GROUP BY author)
+    ON DUPLICATE KEY UPDATE proposal_count = proposal_count + VALUES(count)
+  `,
+    [space]
+  );
+  console.log('Proposals count for space', space, 'has been processed');
+}
+
 async function main(space) {
   await deleteLeaderboard(space);
   const { firstVote, lastVote } = await getFirstAndLastVote(space);
@@ -44,24 +76,12 @@ async function main(space) {
   let start = firstVote;
   while (true) {
     const end = start + 86400; // 24 hours
-    console.log('Get votes from', new Date(start * 1000), 'to', new Date(end * 1000));
-
-    await db.queryAsync(
-      `
-      INSERT INTO leaderboard (space, address, count, last_vote)
-        (SELECT space, voter AS address, COUNT(*) AS count, MAX(created) AS last_vote
-        FROM votes
-        WHERE space = ? AND created >= ? AND created < ?
-        GROUP BY voter)
-      ON DUPLICATE KEY UPDATE count = count + VALUES(count), last_vote = VALUES(last_vote)
-    `,
-      [space, start, end]
-    );
-
+    await processVotes(space, start, end);
     if (end > lastVote) break;
     start = end;
   }
 
+  await processProposalsCount(space);
   process.exit(0);
 }
 
