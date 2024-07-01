@@ -126,7 +126,7 @@ async function main() {
   if (types.includes('proposal')) {
     await processProposalsCount(spaces);
   } else if (types.includes('vote')) {
-    await processVotesCount(spaces, start, end);
+    await processVotesCount(spaces, start, end || Date.now() / 1000);
   }
 }
 
@@ -143,12 +143,20 @@ async function processProposalsCount(spaces: string[]) {
   );
 }
 
-async function processVotesCount(spaces: string[], start: number, end?: number) {
+async function processVotesCount(spaces: string[], start: number, end: number) {
   const processedVoters = new Set<string>();
   const batchWindow = 60 * 60 * 24 * 2; // 2 day
   let _start = start;
+  const totalVotersCount = (
+    await db.queryAsync(
+      'SELECT COUNT(distinct(voter)) as count FROM votes WHERE created >= ? AND created < ? AND space IN (?)',
+      [start, end, spaces]
+    )
+  )[0].count;
 
-  while (_start < (end || Date.now() / 1000)) {
+  console.log(`Total voters to process: ${totalVotersCount}`);
+
+  while (_start < end) {
     console.log(
       `\nProcessing voters from ${_start} to ${_start + batchWindow} (${new Date(_start * 1000)})`
     );
@@ -183,11 +191,16 @@ async function processVotesCount(spaces: string[], start: number, end?: number) 
     }
 
     _start = _start + batchWindow;
-    console.log(
-      `\nProcessed ${count} voters (${Math.round(
-        count / (+new Date() / 1000 - startTs)
-      )} voters/s) - ${processedVoters.size} total processed`
-    );
+
+    if (count) {
+      console.log(
+        `\nProcessed ${count} voters (${Math.round(
+          count / Math.min(+new Date() / 1000 - startTs, 1)
+        )} voters/s) - ${processedVoters.size} total processed (${Math.round(
+          (processedVoters.size / totalVotersCount) * 100
+        )} %)`
+      );
+    }
   }
 }
 
