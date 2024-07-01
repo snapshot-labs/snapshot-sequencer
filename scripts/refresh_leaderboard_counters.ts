@@ -147,6 +147,7 @@ async function processVotesCount(spaces: string[], start: number, end: number) {
   const processedVoters = new Set<string>();
   const batchWindow = 60 * 60 * 24 * 2; // 2 day
   let _start = start;
+  console.log('Searching for total number of voters ....');
   const totalVotersCount = (
     await db.queryAsync(
       'SELECT COUNT(distinct(voter)) as count FROM votes WHERE created >= ? AND created < ? AND space IN (?)',
@@ -195,7 +196,7 @@ async function processVotesCount(spaces: string[], start: number, end: number) {
     if (count) {
       console.log(
         `\nProcessed ${count} voters (${Math.round(
-          count / Math.min(+new Date() / 1000 - startTs, 1)
+          count / Math.max(+new Date() / 1000 - startTs, 1)
         )} voters/s) - ${processedVoters.size} total processed (${Math.round(
           (processedVoters.size / totalVotersCount) * 100
         )} %)`
