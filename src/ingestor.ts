@@ -34,7 +34,7 @@ export default async function ingestor(req) {
   let type = '';
   const endTimer = timeIngestorProcess.startTimer();
   const networkMetadata =
-    NETWORK_METADATA[snapshot.utils.isStarknetAddress(req.body.address) ? 'starknet' : 'evm'];
+    NETWORK_METADATA[snapshot.utils.isEvmAddress(req.body.address) ? 'evm' : 'starknet'];
   let network = networkMetadata.defaultNetwork;
 
   try {
