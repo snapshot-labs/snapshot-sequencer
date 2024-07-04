@@ -29,6 +29,24 @@ const NETWORK_METADATA = {
   }
 };
 
+/*
+  Format and return a normalized address to ensure all addresses in the DB
+  have the same format (checksummed) and length (padded)
+*/
+function normalizedAddress(address: string) {
+  if (isStarknetAddress(address)) {
+    const addr = address.split('0x').pop()!;
+    if (addr.length < 64) {
+      const padding = '0'.repeat(64 - addr.length);
+      return `0x${padding}${addr}`;
+    }
+
+    return addr;
+  }
+
+  return address;
+}
+
 export default async function ingestor(req) {
   let success = 0;
   let type = '';
@@ -202,6 +220,8 @@ export default async function ingestor(req) {
     if (['follow', 'unfollow', 'subscribe', 'unsubscribe', 'profile'].includes(type)) {
       legacyBody = message;
     }
+
+    legacyBody.address = normalizedAddress(legacyBody.address);
 
     let context;
     try {
