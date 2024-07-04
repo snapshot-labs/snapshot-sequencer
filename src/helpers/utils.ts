@@ -208,3 +208,7 @@ export function captureError(e: any, context?: any, ignoredErrorCodes?: number[]
 export async function clearStampCache(type: string, id: string) {
   return fetch(`https://cdn.stamp.fyi/clear/${type}/${type === 'avatar' ? 'eth:' : ''}${id}`);
 }
+
+export function isStarknetAddress(address: string): boolean {
+  return /^0x[a-fA-F0-9]{43,64}$/.test(address);
+}

@@ -7,7 +7,7 @@
       "properties": {
         "address": {
           "type": "string",
-          "format": "address"
+          "format": "evmOrStarknetAddress"
         },
         "data": {
           "type": "object",
@@ -32,7 +32,7 @@
               "properties": {
                 "from": {
                   "type": "string",
-                  "format": "address"
+                  "format": "evmOrStarknetAddress"
                 },
                 "timestamp": {
                   "type": "number"
@@ -62,7 +62,7 @@
           "additionalProperties": false
         },
         "sig": {
-          "type": "string"
+          "type": ["string", "array"]
         }
       },
       "required": [

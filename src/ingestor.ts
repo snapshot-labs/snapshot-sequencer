@@ -5,7 +5,7 @@ import kebabCase from 'lodash/kebabCase';
 import relayer, { issueReceipt } from './helpers/relayer';
 import envelope from './helpers/envelope.json';
 import writer from './writer';
-import { getIp, jsonParse, sha256 } from './helpers/utils';
+import { getIp, jsonParse, sha256, isStarknetAddress } from './helpers/utils';
 import { isValidAlias } from './helpers/alias';
 import { getProposal, getSpace } from './helpers/actions';
 import { storeMsg, doesMessageExist } from './helpers/highlight';
@@ -14,18 +14,32 @@ import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedIps } from './helpers/moderation';
 import { timeIngestorProcess } from './helpers/metrics';
 
-const NAME = 'snapshot';
-const VERSION = '0.1.4';
-const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
+const NETWORK_METADATA = {
+  evm: {
+    name: 'snapshot',
+    version: '0.1.4',
+    broviderUrl: process.env.BROVIDER_URL ?? 'https://rpc.snapshot.org',
+    defaultNetwork: '1'
+  },
+  starknet: {
+    name: 'sx-starknet',
+    version: '0.1.0',
+    broviderUrl: process.env.STARKNET_RPC_URL,
+    defaultNetwork: process.env.NETWORK === 'mainnet' ? 'SN_MAIN' : 'SN_SEPOLIA'
+  }
+};
 
 export default async function ingestor(req) {
   let success = 0;
   let type = '';
-  let network = '1';
   const endTimer = timeIngestorProcess.startTimer();
+  const networkMetadata =
+    NETWORK_METADATA[isStarknetAddress(req.body.address) ? 'starknet' : 'evm'];
+  let network = networkMetadata.defaultNetwork;
 
   try {
     const body = req.body;
+    const formattedSignature = Array.from(body.sig).join(',');
 
     if (flaggedIps.includes(sha256(getIp(req)))) {
       return Promise.reject('unauthorized');
@@ -52,7 +66,9 @@ export default async function ingestor(req) {
     if (message.proposal && message.proposal.includes(' '))
       return Promise.reject('proposal cannot contain whitespace');
 
-    if (domain.name !== NAME || domain.version !== VERSION) return Promise.reject('wrong domain');
+    if (domain.name !== networkMetadata.name || domain.version !== networkMetadata.version) {
+      return Promise.reject('wrong domain');
+    }
 
     // Ignore EIP712Domain type, it's not used
     delete types.EIP712Domain;
@@ -86,7 +102,7 @@ export default async function ingestor(req) {
     // Check if signature is valid
     try {
       const isValidSig = await snapshot.utils.verify(body.address, body.sig, body.data, network, {
-        broviderUrl
+        broviderUrl: networkMetadata.broviderUrl
       });
       if (!isValidSig) throw new Error('invalid signature');
     } catch (e: any) {
@@ -94,7 +110,7 @@ export default async function ingestor(req) {
       return Promise.reject('signature validation failed');
     }
 
-    const id = snapshot.utils.getHash(body.data);
+    const id = snapshot.utils.getHash(body.data, body.address);
     let payload = {};
 
     if (await doesMessageExist(id)) {
@@ -179,7 +195,7 @@ export default async function ingestor(req) {
         type,
         payload
       }),
-      sig: body.sig
+      sig: formattedSignature
     };
     const msg = jsonParse(legacyBody.msg);
 
@@ -210,7 +226,7 @@ export default async function ingestor(req) {
       };
       [pinned, receipt] = await Promise.all([
         pin(ipfsBody, process.env.PINEAPPLE_URL),
-        issueReceipt(body.sig)
+        issueReceipt(formattedSignature)
       ]);
     } catch (e) {
       capture(e);
@@ -228,7 +244,7 @@ export default async function ingestor(req) {
         msg.timestamp,
         msg.space || '',
         msg.type,
-        body.sig,
+        formattedSignature,
         receipt
       );
     } catch (e: any) {
