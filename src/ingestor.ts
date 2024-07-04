@@ -29,24 +29,6 @@ const NETWORK_METADATA = {
   }
 };
 
-/*
-  Format and return a normalized address to ensure all addresses in the DB
-  have the same format (checksummed) and length (padded)
-*/
-function normalizedAddress(address: string) {
-  if (isStarknetAddress(address)) {
-    const addr = address.split('0x').pop()!;
-    if (addr.length < 64) {
-      const padding = '0'.repeat(64 - addr.length);
-      return `0x${padding}${addr}`;
-    }
-
-    return addr;
-  }
-
-  return address;
-}
-
 export default async function ingestor(req) {
   let success = 0;
   let type = '';
@@ -204,7 +186,7 @@ export default async function ingestor(req) {
       type = 'vote';
     }
 
-    let legacyBody = {
+    let legacyBody: any = {
       address: message.from,
       msg: JSON.stringify({
         version: domain.version,
@@ -221,7 +203,13 @@ export default async function ingestor(req) {
       legacyBody = message;
     }
 
-    legacyBody.address = normalizedAddress(legacyBody.address);
+    if (legacyBody.address) {
+      legacyBody.address = snapshot.utils.getFormattedAddress(legacyBody.address);
+    }
+
+    if (legacyBody.from) {
+      legacyBody.from = snapshot.utils.getFormattedAddress(legacyBody.from);
+    }
 
     let context;
     try {
