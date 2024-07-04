@@ -81,10 +81,14 @@ export default async function ingestor(req) {
     if (!['settings', 'alias', 'profile'].includes(type)) {
       if (!message.space) return Promise.reject('unknown space');
 
-      const space = await getSpace(message.space, false, message.network);
-      if (!space) return Promise.reject('unknown space');
-      network = space.network;
-      if (space.voting?.aliased) aliased = true;
+      try {
+        const space = await getSpace(message.space, false, message.network);
+        if (!space) return Promise.reject('unknown space');
+        network = space.network;
+        if (space.voting?.aliased) aliased = true;
+      } catch (e: any) {
+        return Promise.reject(e.message);
+      }
     }
 
     // Check if signing address is an alias
