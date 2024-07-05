@@ -31,20 +31,17 @@ const NETWORK_METADATA = {
 };
 
 export default async function ingestor(req) {
+  if (flaggedIps.includes(sha256(getIp(req)))) {
+    return Promise.reject('unauthorized');
+  }
+
+  let network = '0';
   let success = 0;
   let type = '';
   const endTimer = timeIngestorProcess.startTimer();
-  const networkMetadata =
-    NETWORK_METADATA[snapshot.utils.isEvmAddress(req.body.address) ? 'evm' : 'starknet'];
-  let network = networkMetadata.defaultNetwork;
 
   try {
     const body = req.body;
-    const formattedSignature = castArray(body.sig).join(',');
-
-    if (flaggedIps.includes(sha256(getIp(req)))) {
-      return Promise.reject('unauthorized');
-    }
 
     const schemaIsValid = snapshot.utils.validateSchema(envelope, body);
     if (schemaIsValid !== true) {
@@ -52,6 +49,10 @@ export default async function ingestor(req) {
       return Promise.reject('wrong envelope format');
     }
 
+    const networkMetadata =
+      NETWORK_METADATA[snapshot.utils.isEvmAddress(req.body.address) ? 'evm' : 'starknet'];
+    network = networkMetadata.defaultNetwork;
+    const formattedSignature = castArray(body.sig).join(',');
     const ts = Date.now() / 1e3;
     const over = 300;
     const under = 60 * 60 * 24 * 3; // 3 days
