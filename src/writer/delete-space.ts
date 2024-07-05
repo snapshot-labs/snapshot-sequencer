@@ -1,7 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from '../helpers/mysql';
 import { getSpace } from '../helpers/actions';
-import { jsonParse, DEFAULT_NETWORK } from '../helpers/utils';
+import { jsonParse, DEFAULT_NETWORK, DEFAULT_NETWORK_ID } from '../helpers/utils';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import log from '../helpers/log';
 
@@ -28,9 +28,11 @@ export async function action(body): Promise<void> {
     const query = `
       UPDATE spaces SET deleted = 1 WHERE id = ? LIMIT 1;
       DELETE FROM leaderboard WHERE space = ?;
+      DELETE FROM follows WHERE space = ? AND network = ?;
+      DELETE FROM subscriptions WHERE space = ?;
     `;
 
-    await db.queryAsync(query, [space, space]);
+    await db.queryAsync(query, [space, space, space, DEFAULT_NETWORK_ID, space]);
   } catch (e) {
     capture(e, { space });
     log.warn('[writer] Failed to store settings', space, e);
