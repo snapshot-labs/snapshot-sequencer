@@ -2,6 +2,7 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import hashTypes from '@snapshot-labs/snapshot.js/src/sign/hashedTypes.json';
 import { pin } from '@snapshot-labs/pineapple';
 import kebabCase from 'lodash/kebabCase';
+import castArray from 'lodash/castArray';
 import relayer, { issueReceipt } from './helpers/relayer';
 import envelope from './helpers/envelope.json';
 import writer from './writer';
@@ -39,7 +40,7 @@ export default async function ingestor(req) {
 
   try {
     const body = req.body;
-    const formattedSignature = Array.from(body.sig).join(',');
+    const formattedSignature = castArray(body.sig).join(',');
 
     if (flaggedIps.includes(sha256(getIp(req)))) {
       return Promise.reject('unauthorized');
