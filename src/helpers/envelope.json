@@ -6,8 +6,16 @@
       "type": "object",
       "properties": {
         "address": {
-          "type": "string",
-          "format": "evmOrStarknetAddress"
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "address"
+            },
+            {
+              "type": "string",
+              "format": "starknetAddress"
+            }
+          ]
         },
         "data": {
           "type": "object",
@@ -31,8 +39,16 @@
               "type": "object",
               "properties": {
                 "from": {
-                  "type": "string",
-                  "format": "evmOrStarknetAddress"
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "address"
+                    },
+                    {
+                      "type": "string",
+                      "format": "starknetAddress"
+                    }
+                  ]
                 },
                 "timestamp": {
                   "type": "number"

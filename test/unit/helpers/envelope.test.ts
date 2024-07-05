@@ -35,6 +35,39 @@ describe('envelope.json', () => {
     expect(snapshot.utils.validateSchema(envelope, validBody)).toBe(true);
   });
 
+  it('returns true when address is a starknet address', () => {
+    const starknetBody = snapshot.utils.clone(validBody);
+    starknetBody.address = '0x2a0a8f3b6097e7a6bd7649deb30715323072a159c0e6b71b689bd245c146cc0';
+
+    expect(snapshot.utils.validateSchema(envelope, starknetBody)).toBe(true);
+  });
+
+  it('returns true when message.from is a starknet address', () => {
+    const starknetBody = snapshot.utils.clone(validBody);
+    starknetBody.data.message.from =
+      '0x2a0a8f3b6097e7a6bd7649deb30715323072a159c0e6b71b689bd245c146cc0';
+
+    expect(snapshot.utils.validateSchema(envelope, starknetBody)).toBe(true);
+  });
+
+  it('returns false when address is not a valid address', () => {
+    const invalidBody = snapshot.utils.clone(validBody);
+    invalidBody.address = 'hello';
+
+    expect(snapshot.utils.validateSchema(envelope, invalidBody)?.[0]).toEqual(
+      expect.objectContaining({ instancePath: '/address' })
+    );
+  });
+
+  it('returns false when message.from is not a valid address', () => {
+    const invalidBody = snapshot.utils.clone(validBody);
+    invalidBody.data.message.from = 'hello';
+
+    expect(snapshot.utils.validateSchema(envelope, invalidBody)?.[0]).toEqual(
+      expect.objectContaining({ instancePath: '/data/message/from' })
+    );
+  });
+
   it('return true when space is valid', () => {
     expect(snapshot.utils.validateSchema(envelope, withSpace(validBody, 'space.eth'))).toBe(true);
   });
