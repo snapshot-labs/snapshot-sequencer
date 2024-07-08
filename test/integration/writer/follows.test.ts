@@ -1,10 +1,15 @@
 import { verify, action } from '../../../src/writer/follow';
 import { FOLLOWS_LIMIT_PER_USER } from '../../../src/helpers/limits';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
+import { spacesSqlFixtures } from '../../fixtures/space';
 
 describe('writer/follow', () => {
+  const TEST_PREFIX = 'test-follow-';
+  const space = spacesSqlFixtures[1];
+
   afterAll(async () => {
     await db.queryAsync('DELETE FROM follows');
+    await db.queryAsync('DELETE FROM spaces WHERE id = ?', [`${TEST_PREFIX}-${space.id}`]);
     await db.endAsync();
     await sequencerDB.endAsync();
   });
@@ -101,6 +106,28 @@ describe('writer/follow', () => {
           }
         ]);
       });
+    });
+
+    it('should increment the follower count of the space', async () => {
+      await db.queryAsync('INSERT INTO spaces SET ?', {
+        ...space,
+        id: `${TEST_PREFIX}-${space.id}`,
+        settings: JSON.stringify(space.settings)
+      });
+
+      const id = '3';
+      const ipfs = '4';
+      const message = {
+        from: '0x4',
+        space: `${TEST_PREFIX}-${space.id}`,
+        timestamp: 1
+      };
+
+      await action(message, ipfs, 1, id);
+
+      return expect(
+        db.queryAsync('SELECT follower_count FROM spaces WHERE id = ?', [message.space])
+      ).resolves.toEqual([{ follower_count: 1 }]);
     });
   });
 });
