@@ -21,6 +21,7 @@ export async function verify(body): Promise<any> {
 export async function action(body): Promise<void> {
   const msg = jsonParse(body.msg);
   const proposal = await getProposal(msg.space, msg.payload.proposal);
+
   const voters = await db.queryAsync(`SELECT voter FROM votes WHERE proposal = ?`, [
     msg.payload.proposal
   ]);
@@ -33,9 +34,12 @@ export async function action(body): Promise<void> {
       SET proposal_count = GREATEST(proposal_count - 1, 0)
       WHERE user = ? AND space = ?
       LIMIT 1;
+    UPDATE spaces
+      SET proposal_count = GREATEST(proposal_count - 1, 0), vote_count = GREATEST(vote_count - ?, 0)
+      WHERE id = ?;
   `;
 
-  const parameters = [id, id, proposal.author, msg.space];
+  const parameters = [id, id, proposal.author, msg.space, voters.length, msg.space];
 
   if (voters.length > 0) {
     queries += `
