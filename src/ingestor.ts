@@ -49,8 +49,8 @@ export default async function ingestor(req) {
       return Promise.reject('wrong envelope format');
     }
 
-    const networkMetadata =
-      NETWORK_METADATA[snapshot.utils.isEvmAddress(req.body.address) ? 'evm' : 'starknet'];
+    const networkDataType = snapshot.utils.isEvmAddress(req.body.address) ? 'evm' : 'starknet';
+    const networkMetadata = NETWORK_METADATA[networkDataType];
     network = networkMetadata.defaultNetwork;
     const formattedSignature = castArray(body.sig).join(',');
     const ts = Date.now() / 1e3;
@@ -210,11 +210,11 @@ export default async function ingestor(req) {
     }
 
     if (legacyBody.address) {
-      legacyBody.address = snapshot.utils.getFormattedAddress(legacyBody.address);
+      legacyBody.address = snapshot.utils.getFormattedAddress(legacyBody.address, networkDataType);
     }
 
     if (legacyBody.from) {
-      legacyBody.from = snapshot.utils.getFormattedAddress(legacyBody.from);
+      legacyBody.from = snapshot.utils.getFormattedAddress(legacyBody.from, networkDataType);
     }
 
     let context;
