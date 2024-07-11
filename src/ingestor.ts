@@ -209,7 +209,6 @@ export default async function ingestor(req) {
       legacyBody = message;
     }
 
-
     let context;
     try {
       context = await writer[type].verify(legacyBody);
