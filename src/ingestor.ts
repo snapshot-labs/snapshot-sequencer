@@ -209,13 +209,6 @@ export default async function ingestor(req) {
       legacyBody = message;
     }
 
-    if (legacyBody.address) {
-      legacyBody.address = snapshot.utils.getFormattedAddress(legacyBody.address, networkDataType);
-    }
-
-    if (legacyBody.from) {
-      legacyBody.from = snapshot.utils.getFormattedAddress(legacyBody.from, networkDataType);
-    }
 
     let context;
     try {
