@@ -8,25 +8,25 @@ async function main() {
   console.log(`Found ${spaces.length} spaces`);
 
   for (const i in spaces) {
-    const stats = await db.queryAsync(
-      `SELECT COUNT(voter) as vote_count FROM votes WHERE space = ?`,
-      [spaces[i].id]
+    await db.queryAsync(
+      `UPDATE spaces SET vote_count = (
+        SELECT COALESCE(SUM(vote_count),0) FROM leaderboard WHERE space = ?
+      ) WHERE id = ?`,
+      [spaces[i].id, spaces[i].id]
     );
-    const stat = stats[0];
-    await db.queryAsync(`UPDATE spaces SET vote_count = ? WHERE id = ?`, [
-      stat.vote_count,
-      spaces[i].id
-    ]);
     console.log(`${i} / ${spaces.length}`);
   }
 
+  console.log('Updating proposal count');
   await db.queryAsync(
     'UPDATE spaces SET proposal_count = (SELECT count(id) from proposals WHERE space = spaces.id)'
   );
 
+  console.log('Updating follower count');
   await db.queryAsync(
     'UPDATE spaces SET follower_count = (SELECT count(id) from follows WHERE space = spaces.id)'
   );
+  console.log('Done! ✅');
 }
 
 (async () => {
