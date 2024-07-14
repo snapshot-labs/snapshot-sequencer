@@ -98,7 +98,10 @@ export default async function ingestor(req) {
     const aliasOptionTypes = ['vote', 'vote-array', 'vote-string', 'proposal', 'delete-proposal'];
     if (
       snapshot.utils.getFormattedAddress(body.address, networkDataType) !==
-      snapshot.utils.getFormattedAddress(message.from, networkDataType)
+      snapshot.utils.getFormattedAddress(
+        message.from,
+        snapshot.utils.isEvmAddress(message.from) ? 'evm' : 'starknet'
+      )
     ) {
       if (!aliasTypes.includes(type) && !aliasOptionTypes.includes(type))
         return Promise.reject('wrong from');
