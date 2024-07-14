@@ -96,7 +96,10 @@ export default async function ingestor(req) {
     // Check if signing address is an alias
     const aliasTypes = ['follow', 'unfollow', 'subscribe', 'unsubscribe', 'profile', 'statement'];
     const aliasOptionTypes = ['vote', 'vote-array', 'vote-string', 'proposal', 'delete-proposal'];
-    if (body.address !== message.from) {
+    if (
+      snapshot.utils.getFormattedAddress(body.address, networkDataType) !==
+      snapshot.utils.getFormattedAddress(message.from, networkDataType)
+    ) {
       if (!aliasTypes.includes(type) && !aliasOptionTypes.includes(type))
         return Promise.reject('wrong from');
 
