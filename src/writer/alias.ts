@@ -21,7 +21,10 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
   const params = {
     id,
     ipfs,
-    address: message.address,
+    address: snapshot.utils.getFormattedAddress(
+      message.address,
+      snapshot.utils.isEvmAddress(message.address) ? 'evm' : 'starknet'
+    ),
     alias: msg.payload.alias,
     created: msg.timestamp
   };
