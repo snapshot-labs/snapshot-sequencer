@@ -37,7 +37,7 @@ describe('envelope.json', () => {
 
   it('returns true when address is a starknet address', () => {
     const starknetBody = snapshot.utils.clone(validBody);
-    starknetBody.address = '0x2a0a8f3b6097e7a6bd7649deb30715323072a159c0e6b71b689bd245c146cc0';
+    starknetBody.address = '0x02a0a8f3b6097e7a6bd7649deb30715323072a159c0e6b71b689bd245c146cc0';
 
     expect(snapshot.utils.validateSchema(envelope, starknetBody)).toBe(true);
   });
@@ -45,7 +45,7 @@ describe('envelope.json', () => {
   it('returns true when message.from is a starknet address', () => {
     const starknetBody = snapshot.utils.clone(validBody);
     starknetBody.data.message.from =
-      '0x2a0a8f3b6097e7a6bd7649deb30715323072a159c0e6b71b689bd245c146cc0';
+      '0x02a0a8f3b6097e7a6bd7649deb30715323072a159c0e6b71b689bd245c146cc0';
 
     expect(snapshot.utils.validateSchema(envelope, starknetBody)).toBe(true);
   });
