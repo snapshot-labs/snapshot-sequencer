@@ -6,8 +6,16 @@
       "type": "object",
       "properties": {
         "address": {
-          "type": "string",
-          "format": "address"
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "address"
+            },
+            {
+              "type": "string",
+              "format": "starknetAddress"
+            }
+          ]
         },
         "data": {
           "type": "object",
@@ -31,8 +39,16 @@
               "type": "object",
               "properties": {
                 "from": {
-                  "type": "string",
-                  "format": "address"
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "address"
+                    },
+                    {
+                      "type": "string",
+                      "format": "starknetAddress"
+                    }
+                  ]
                 },
                 "timestamp": {
                   "type": "number"
@@ -62,7 +78,7 @@
           "additionalProperties": false
         },
         "sig": {
-          "type": "string"
+          "type": ["string", "array"]
         }
       },
       "required": [
