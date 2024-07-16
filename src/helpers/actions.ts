@@ -76,6 +76,8 @@ export async function sxSpaceExists(network: string, spaceId: string): Promise<b
       'https://thegraph.goerli.zkevm.consensys.net/subgraphs/name/snapshot-labs/sx-subgraph'
   };
 
+  if (!urls[network]) throw new Error(`network ${network} is not allowed`);
+
   const { space } = await snapshot.utils.subgraphRequest(urls[network], {
     space: {
       __args: {

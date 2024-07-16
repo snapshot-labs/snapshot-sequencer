@@ -2,6 +2,7 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import hashTypes from '@snapshot-labs/snapshot.js/src/sign/hashedTypes.json';
 import { pin } from '@snapshot-labs/pineapple';
 import kebabCase from 'lodash/kebabCase';
+import castArray from 'lodash/castArray';
 import relayer, { issueReceipt } from './helpers/relayer';
 import envelope from './helpers/envelope.json';
 import writer from './writer';
@@ -14,22 +15,33 @@ import { capture } from '@snapshot-labs/snapshot-sentry';
 import { flaggedIps } from './helpers/moderation';
 import { timeIngestorProcess } from './helpers/metrics';
 
-const NAME = 'snapshot';
-const VERSION = '0.1.4';
-const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
+const NETWORK_METADATA = {
+  evm: {
+    name: 'snapshot',
+    version: '0.1.4',
+    broviderUrl: process.env.BROVIDER_URL ?? 'https://rpc.snapshot.org',
+    defaultNetwork: '1'
+  },
+  starknet: {
+    name: 'sx-starknet',
+    version: '0.1.0',
+    broviderUrl: process.env.STARKNET_RPC_URL,
+    defaultNetwork: process.env.NETWORK === 'mainnet' ? 'SN_MAIN' : 'SN_SEPOLIA'
+  }
+};
 
 export default async function ingestor(req) {
+  if (flaggedIps.includes(sha256(getIp(req)))) {
+    return Promise.reject('unauthorized');
+  }
+
+  let network = '0';
   let success = 0;
   let type = '';
-  let network = '1';
   const endTimer = timeIngestorProcess.startTimer();
 
   try {
     const body = req.body;
-
-    if (flaggedIps.includes(sha256(getIp(req)))) {
-      return Promise.reject('unauthorized');
-    }
 
     const schemaIsValid = snapshot.utils.validateSchema(envelope, body);
     if (schemaIsValid !== true) {
@@ -37,6 +49,10 @@ export default async function ingestor(req) {
       return Promise.reject('wrong envelope format');
     }
 
+    const networkDataType = snapshot.utils.isEvmAddress(req.body.address) ? 'evm' : 'starknet';
+    const networkMetadata = NETWORK_METADATA[networkDataType];
+    network = networkMetadata.defaultNetwork;
+    const formattedSignature = castArray(body.sig).join(',');
     const ts = Date.now() / 1e3;
     const over = 300;
     const under = 60 * 60 * 24 * 3; // 3 days
@@ -52,7 +68,9 @@ export default async function ingestor(req) {
     if (message.proposal && message.proposal.includes(' '))
       return Promise.reject('proposal cannot contain whitespace');
 
-    if (domain.name !== NAME || domain.version !== VERSION) return Promise.reject('wrong domain');
+    if (domain.name !== networkMetadata.name || domain.version !== networkMetadata.version) {
+      return Promise.reject('wrong domain');
+    }
 
     // Ignore EIP712Domain type, it's not used
     delete types.EIP712Domain;
@@ -65,10 +83,14 @@ export default async function ingestor(req) {
     if (!['settings', 'alias', 'profile'].includes(type)) {
       if (!message.space) return Promise.reject('unknown space');
 
-      const space = await getSpace(message.space, false, message.network);
-      if (!space) return Promise.reject('unknown space');
-      network = space.network;
-      if (space.voting?.aliased) aliased = true;
+      try {
+        const space = await getSpace(message.space, false, message.network);
+        if (!space) return Promise.reject('unknown space');
+        network = space.network;
+        if (space.voting?.aliased) aliased = true;
+      } catch (e: any) {
+        return Promise.reject(e.message);
+      }
     }
 
     // Check if signing address is an alias
@@ -86,7 +108,7 @@ export default async function ingestor(req) {
     // Check if signature is valid
     try {
       const isValidSig = await snapshot.utils.verify(body.address, body.sig, body.data, network, {
-        broviderUrl
+        broviderUrl: networkMetadata.broviderUrl
       });
       if (!isValidSig) throw new Error('invalid signature');
     } catch (e: any) {
@@ -94,7 +116,7 @@ export default async function ingestor(req) {
       return Promise.reject('signature validation failed');
     }
 
-    const id = snapshot.utils.getHash(body.data);
+    const id = snapshot.utils.getHash(body.data, body.address);
     let payload = {};
 
     if (await doesMessageExist(id)) {
@@ -170,7 +192,7 @@ export default async function ingestor(req) {
       type = 'vote';
     }
 
-    let legacyBody = {
+    let legacyBody: any = {
       address: message.from,
       msg: JSON.stringify({
         version: domain.version,
@@ -179,7 +201,7 @@ export default async function ingestor(req) {
         type,
         payload
       }),
-      sig: body.sig
+      sig: formattedSignature
     };
     const msg = jsonParse(legacyBody.msg);
 
@@ -210,7 +232,7 @@ export default async function ingestor(req) {
       };
       [pinned, receipt] = await Promise.all([
         pin(ipfsBody, process.env.PINEAPPLE_URL),
-        issueReceipt(body.sig)
+        issueReceipt(formattedSignature)
       ]);
     } catch (e) {
       capture(e);
@@ -228,7 +250,7 @@ export default async function ingestor(req) {
         msg.timestamp,
         msg.space || '',
         msg.type,
-        body.sig,
+        formattedSignature,
         receipt
       );
     } catch (e: any) {
