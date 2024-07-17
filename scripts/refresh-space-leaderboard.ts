@@ -47,7 +47,7 @@ async function processVotes(space: string, start: number, end: number) {
     `INSERT INTO leaderboard (space, user, vote_count, last_vote)
       (SELECT space, voter AS user, COUNT(*) AS vote_count, MAX(created) AS last_vote
       FROM votes
-      WHERE ${space ? 'WHERE space = ? AND' : ''} created >= ? AND created < ?
+      WHERE ${space ? 'space = ? AND' : ''} created >= ? AND created < ?
       GROUP BY space, voter)
     ON DUPLICATE KEY UPDATE vote_count = vote_count + VALUES(vote_count), last_vote = VALUES(last_vote)
   `,
