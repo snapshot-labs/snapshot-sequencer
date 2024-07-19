@@ -17,9 +17,19 @@ export async function verify(body): Promise<any> {
 export async function action(message, ipfs): Promise<void> {
   const profile = jsonParse(message.profile, {});
 
-  const existingProfile = JSON.parse(
-    (await db.queryAsync('SELECT profile FROM users WHERE id = ?', [message.from])?.[0]) || '{}'
-  );
+  const existingProfile =
+    (
+      await db.queryAsync(
+        `SELECT
+            JSON_UNQUOTE(profile->'$.name') as name,
+            JSON_UNQUOTE(profile->'$.avatar') as avatar
+          FROM users
+          WHERE id = ?
+          LIMIT 1
+        `,
+        [message.from]
+      )
+    )[0] || {};
 
   const params = {
     id: message.from,
@@ -30,5 +40,7 @@ export async function action(message, ipfs): Promise<void> {
 
   await db.queryAsync('REPLACE INTO users SET ?', params);
 
-  if (profile.avatar !== existingProfile.avatar) await clearStampCache('avatar', message.from);
+  ['avatar', 'address'].forEach(async type => {
+    if (profile[type] !== existingProfile[type]) await clearStampCache(type, message.from);
+  });
 }
