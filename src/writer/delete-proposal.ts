@@ -1,6 +1,6 @@
 import { getProposal, getSpace } from '../helpers/actions';
-import { jsonParse } from '../helpers/utils';
 import db from '../helpers/mysql';
+import { jsonParse } from '../helpers/utils';
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);

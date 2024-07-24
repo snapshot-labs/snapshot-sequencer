@@ -1,10 +1,10 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import kebabCase from 'lodash/kebabCase';
-import { captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
 import { getProposal } from '../helpers/actions';
-import db from '../helpers/mysql';
-import { updateProposalAndVotes } from '../scores';
 import log from '../helpers/log';
+import db from '../helpers/mysql';
+import { captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
+import { updateProposalAndVotes } from '../scores';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 

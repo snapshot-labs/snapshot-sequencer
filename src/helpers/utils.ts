@@ -1,13 +1,13 @@
+import { createHash } from 'crypto';
 import http from 'http';
 import https from 'https';
-import isEqual from 'lodash/isEqual';
-import { createHash } from 'crypto';
-import { Response } from 'express';
-import fetch from 'node-fetch';
 import { URL } from 'url';
-import snapshot from '@snapshot-labs/snapshot.js';
-import { capture } from '@snapshot-labs/snapshot-sentry';
 import { BigNumber } from '@ethersproject/bignumber';
+import { capture } from '@snapshot-labs/snapshot-sentry';
+import snapshot from '@snapshot-labs/snapshot.js';
+import { Response } from 'express';
+import isEqual from 'lodash/isEqual';
+import fetch from 'node-fetch';
 
 const MAINNET_NETWORK_ID_WHITELIST = ['s', 'eth', 'matic', 'arb1', 'oeth', 'sn'];
 const TESTNET_NETWORK_ID_WHITELIST = ['s-tn', 'sep', 'linea-testnet', 'sn-sep'];

@@ -1,7 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
+import log from '../helpers/log';
 import db from '../helpers/mysql';
 import { jsonParse } from '../helpers/utils';
-import log from '../helpers/log';
 
 export async function verify(message): Promise<any> {
   const msg = jsonParse(message.msg, {});

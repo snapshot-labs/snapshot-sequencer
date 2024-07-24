@@ -1,5 +1,5 @@
-import { monitoringBlockedRequestsCount } from '../metrics';
 import { scan } from './chainpatrol';
+import { monitoringBlockedRequestsCount } from '../metrics';
 
 function extractUrls(text: string): string[] {
   return text.match(/(?:https?:\/\/)?[^\s<>()]+?\.[a-zA-Z]{2,}(?:\/[^\s<>()]*)?/g) || [];

@@ -1,5 +1,5 @@
-import { sha256 } from './utils';
 import { requestDeduplicatorSize } from './metrics';
+import { sha256 } from './utils';
 
 const ongoingRequests = new Map();
 

@@ -1,7 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import db from '../helpers/mysql';
-import { jsonParse, clearStampCache } from '../helpers/utils';
 import log from '../helpers/log';
+import db from '../helpers/mysql';
+import { clearStampCache, jsonParse } from '../helpers/utils';
 
 export async function verify(body): Promise<any> {
   const profile = jsonParse(body.profile, {});

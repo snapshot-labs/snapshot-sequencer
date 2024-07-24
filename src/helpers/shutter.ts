@@ -1,13 +1,13 @@
-import express from 'express';
 import { randomBytes } from 'crypto';
-import { init, decrypt } from '@shutter-network/shutter-crypto';
 import { arrayify } from '@ethersproject/bytes';
 import { toUtf8String } from '@ethersproject/strings';
+import { decrypt, init } from '@shutter-network/shutter-crypto';
+import { capture } from '@snapshot-labs/snapshot-sentry';
+import express from 'express';
+import log from './log';
+import db from './mysql';
 import { fetchWithKeepAlive, getIp, jsonParse, rpcError, rpcSuccess } from './utils';
 import { updateProposalAndVotes } from '../scores';
-import db from './mysql';
-import log from './log';
-import { capture } from '@snapshot-labs/snapshot-sentry';
 
 init().then(() => log.info('[shutter] init'));
 

@@ -1,5 +1,5 @@
-import db from '../helpers/mysql';
 import { FOLLOWS_LIMIT_PER_USER } from '../helpers/limits';
+import db from '../helpers/mysql';
 import { DEFAULT_NETWORK_ID, NETWORK_IDS } from '../helpers/utils';
 
 export const getFollowsCount = async (follower: string): Promise<number> => {

@@ -1,19 +1,19 @@
+import { pin } from '@snapshot-labs/pineapple';
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import hashTypes from '@snapshot-labs/snapshot.js/src/sign/hashedTypes.json';
-import { pin } from '@snapshot-labs/pineapple';
-import kebabCase from 'lodash/kebabCase';
 import castArray from 'lodash/castArray';
-import relayer, { issueReceipt } from './helpers/relayer';
-import envelope from './helpers/envelope.json';
-import writer from './writer';
-import { getIp, jsonParse, sha256 } from './helpers/utils';
-import { isValidAlias } from './helpers/alias';
+import kebabCase from 'lodash/kebabCase';
 import { getProposal, getSpace } from './helpers/actions';
-import { storeMsg, doesMessageExist } from './helpers/highlight';
+import { isValidAlias } from './helpers/alias';
+import envelope from './helpers/envelope.json';
+import { doesMessageExist, storeMsg } from './helpers/highlight';
 import log from './helpers/log';
-import { capture } from '@snapshot-labs/snapshot-sentry';
-import { flaggedIps } from './helpers/moderation';
 import { timeIngestorProcess } from './helpers/metrics';
+import { flaggedIps } from './helpers/moderation';
+import relayer, { issueReceipt } from './helpers/relayer';
+import { getIp, jsonParse, sha256 } from './helpers/utils';
+import writer from './writer';
 
 const NETWORK_METADATA = {
   evm: {

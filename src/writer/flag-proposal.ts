@@ -1,6 +1,6 @@
-import { jsonParse } from '../helpers/utils';
+import { getProposal, getSpace } from '../helpers/actions';
 import db from '../helpers/mysql';
-import { getSpace, getProposal } from '../helpers/actions';
+import { jsonParse } from '../helpers/utils';
 
 export function isAuthorized({ space, address }): boolean {
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());
