@@ -1,9 +1,9 @@
-import snapshot from '@snapshot-labs/snapshot.js';
-import db from '../helpers/mysql';
-import { getSpace } from '../helpers/actions';
-import { jsonParse, DEFAULT_NETWORK } from '../helpers/utils';
 import { capture } from '@snapshot-labs/snapshot-sentry';
+import snapshot from '@snapshot-labs/snapshot.js';
+import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
+import db from '../helpers/mysql';
+import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 

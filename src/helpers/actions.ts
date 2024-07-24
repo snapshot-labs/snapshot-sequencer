@@ -1,6 +1,6 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from './mysql';
-import { DEFAULT_NETWORK_ID, NETWORK_ID_WHITELIST, jsonParse } from './utils';
+import { DEFAULT_NETWORK_ID, jsonParse, NETWORK_ID_WHITELIST } from './utils';
 
 export async function addOrUpdateSpace(space: string, settings: any) {
   if (!settings?.name) return false;

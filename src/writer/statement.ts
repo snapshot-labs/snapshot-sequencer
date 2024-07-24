@@ -1,7 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import db from '../helpers/mysql';
 import log from '../helpers/log';
-import { DEFAULT_NETWORK_ID, NETWORK_IDS, jsonParse } from '../helpers/utils';
+import db from '../helpers/mysql';
+import { DEFAULT_NETWORK_ID, jsonParse, NETWORK_IDS } from '../helpers/utils';
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg, {});

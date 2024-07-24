@@ -1,15 +1,15 @@
-import express, { type Request, type Response, type NextFunction } from 'express';
-import relayer from './helpers/relayer';
-import { updateProposalAndVotes } from './scores';
-import typedData from './ingestor';
-import { sendError, verifyAuth } from './helpers/utils';
-import { flagEntity } from './helpers/moderation';
-import log from './helpers/log';
-import duplicateRequestPreventor, { cleanup } from './helpers/duplicateRequestPreventor';
-import { name, version } from '../package.json';
 import { capture } from '@snapshot-labs/snapshot-sentry';
+import express, { type NextFunction, type Request, type Response } from 'express';
+import duplicateRequestPreventor, { cleanup } from './helpers/duplicateRequestPreventor';
+import log from './helpers/log';
+import { flagEntity } from './helpers/moderation';
 import poke from './helpers/poke';
+import relayer from './helpers/relayer';
 import serve from './helpers/requestDeduplicator';
+import { sendError, verifyAuth } from './helpers/utils';
+import typedData from './ingestor';
+import { updateProposalAndVotes } from './scores';
+import { name, version } from '../package.json';
 
 const router = express.Router();
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';

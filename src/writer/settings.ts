@@ -1,10 +1,10 @@
-import db from '../helpers/mysql';
-import isEqual from 'lodash/isEqual';
-import snapshot from '@snapshot-labs/snapshot.js';
-import { addOrUpdateSpace, getSpace } from '../helpers/actions';
-import { clearStampCache, DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 import { capture } from '@snapshot-labs/snapshot-sentry';
+import snapshot from '@snapshot-labs/snapshot.js';
+import isEqual from 'lodash/isEqual';
+import { addOrUpdateSpace, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
+import db from '../helpers/mysql';
+import { clearStampCache, DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';

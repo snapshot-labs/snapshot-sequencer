@@ -1,8 +1,8 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import db from './helpers/mysql';
-import { hasStrategyOverride, sha256 } from './helpers/utils';
 import log from './helpers/log';
+import db from './helpers/mysql';
 import { getDecryptionKey } from './helpers/shutter';
+import { hasStrategyOverride, sha256 } from './helpers/utils';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 

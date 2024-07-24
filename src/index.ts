@@ -1,13 +1,13 @@
 import 'dotenv/config';
+import { fallbackLogger, initLogger } from '@snapshot-labs/snapshot-sentry';
 import cors from 'cors';
-import { initLogger, fallbackLogger } from '@snapshot-labs/snapshot-sentry';
 import express from 'express';
 import api from './api';
+import log from './helpers/log';
+import initMetrics from './helpers/metrics';
+import refreshModeration from './helpers/moderation';
 import rateLimit from './helpers/rateLimit';
 import shutter from './helpers/shutter';
-import log from './helpers/log';
-import refreshModeration from './helpers/moderation';
-import initMetrics from './helpers/metrics';
 
 const app = express();
 
