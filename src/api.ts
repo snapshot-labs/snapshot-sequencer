@@ -1,5 +1,5 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
-import express, { type NextFunction, type Request, type Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import duplicateRequestPreventor, { cleanup } from './helpers/duplicateRequestPreventor';
 import log from './helpers/log';
 import { flagEntity } from './helpers/moderation';
