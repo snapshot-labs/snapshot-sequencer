@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { sendError } from './utils';
 
 export const ERROR_MESSAGE = 'request already being processed';
