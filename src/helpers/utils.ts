@@ -79,7 +79,8 @@ export function hasStrategyOverride(strategies: any[]) {
     '"esd-delegation"',
     '"ocean-dao-brightid"',
     '"orbs-network-delegation"',
-    '"api-v2-override"'
+    '"api-v2-override"',
+    '"rocketpool-node-operator-delegate-v8"'
   ];
   const strategiesStr = JSON.stringify(strategies).toLowerCase();
   if (keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`))) return true;
