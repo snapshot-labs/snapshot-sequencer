@@ -50,7 +50,7 @@ export async function getSpace(id: string, includeDeleted = false, network = DEF
   }
 
   try {
-    if (ensNormalize(id) !== id) return false;
+    if (ensNormalize(id) !== id.toLowerCase()) return false;
   } catch (e) {
     return false;
   }

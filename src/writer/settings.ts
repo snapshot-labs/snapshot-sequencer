@@ -75,7 +75,7 @@ export async function verify(body): Promise<any> {
   }
 
   try {
-    if (ensNormalize(msg.space) !== msg.space) throw new Error('');
+    if (ensNormalize(msg.space) !== msg.space.toLowerCase()) throw new Error('');
   } catch (e) {
     return Promise.reject('Invalid space id');
   }
