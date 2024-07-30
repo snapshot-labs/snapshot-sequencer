@@ -1,4 +1,3 @@
-import { ensNormalize } from '@ethersproject/hash';
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from './mysql';
 import { DEFAULT_NETWORK_ID, jsonParse, NETWORK_ID_WHITELIST } from './utils';
@@ -47,12 +46,6 @@ export async function getSpace(id: string, includeDeleted = false, network = DEF
     return {
       network: 0
     };
-  }
-
-  try {
-    if (ensNormalize(id) !== id.toLowerCase()) return false;
-  } catch (e) {
-    return false;
   }
 
   const query = `SELECT settings, deleted, flagged, verified, turbo, hibernated FROM spaces WHERE id = ? AND deleted in (?) LIMIT 1`;

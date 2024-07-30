@@ -1,4 +1,3 @@
-import { ensNormalize } from '@ethersproject/hash';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import isEqual from 'lodash/isEqual';
@@ -72,12 +71,6 @@ export async function verify(body): Promise<any> {
     });
   } catch (e) {
     return Promise.reject(e);
-  }
-
-  try {
-    if (ensNormalize(msg.space) !== msg.space.toLowerCase()) throw new Error('');
-  } catch (e) {
-    return Promise.reject('Invalid space id');
   }
 
   const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {

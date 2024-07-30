@@ -106,20 +106,6 @@ describe('writer/settings', () => {
           )
         ).rejects.toContain('wrong space format');
       });
-
-      it('rejects when the ENS name is not valid', () => {
-        return expect(
-          verify(
-            editedInput(
-              {},
-              {
-                // Special char after the k
-                space: 'elonmusk‍‍.eth'
-              }
-            )
-          )
-        ).rejects.toContain('Invalid space id');
-      });
     });
 
     describe('on valid data', () => {
