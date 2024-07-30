@@ -3,9 +3,8 @@ import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/space.json';
 import SpaceSchema from '@snapshot-labs/snapshot.js/src/schemas/space.json';
 
-function editedInput(payload = {}, msg = {}) {
+function editedInput(payload = {}) {
   const result = { ...input, msg: JSON.parse(input.msg) };
-  result.msg = { ...result.msg, ...msg };
   result.msg.payload = { ...result.msg.payload, ...payload };
 
   return { ...result, msg: JSON.stringify(result.msg) };
