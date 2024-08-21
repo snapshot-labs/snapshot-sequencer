@@ -1,52 +1,19 @@
-import { DelegateMeta } from '..';
-import fetch from 'node-fetch';
-import { jsonToGraphQLQuery, VariableType } from 'json-to-graphql-query';
 import snapshot from '@snapshot-labs/snapshot.js';
-
-async function subgraphRequest(url: string, query, options: any = {}) {
-  const body: Record<string, any> = { query: jsonToGraphQLQuery({ query }) };
-  if (body) body.variables = options.variables;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      ...options?.headers
-    },
-    body: JSON.stringify(body)
-  });
-  let responseData: any = await res.text();
-  try {
-    responseData = JSON.parse(responseData);
-  } catch (e: any) {
-    throw new Error(
-      `Errors found in subgraphRequest: URL: ${url}, Status: ${
-        res.status
-      }, Response: ${responseData.substring(0, 400)}`
-    );
-  }
-  if (responseData.errors) {
-    throw new Error(
-      `Errors found in subgraphRequest: URL: ${url}, Status: ${
-        res.status
-      },  Response: ${JSON.stringify(responseData.errors).substring(0, 400)}`
-    );
-  }
-  const { data } = responseData;
-  return data || {};
-}
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { VariableType } from 'json-to-graphql-query';
+import { DelegateMeta } from '../';
 
 // NOTE: Disabling spaces without delegates with statement
 export const MAPPING = {
   's:arbitrumfoundation.eth': 'arbitrum',
   's:uniswapgovernance.eth': 'uniswap',
-  's:dopedao.eth': 'dopewars',
+  's:dopedao.eth': 'dopewars', // 2 results
   's:opcollective.eth': 'optimism',
   's:ens.eth': 'ens',
   's:aave.eth': 'aave',
-  's:gitcoindao.eth': 'gitcoin',
-  's:hop.eth': 'hop',
-  's:gmx.eth': 'gmx',
+  's:gitcoindao.eth': 'gitcoin', // 153 results
+  's:hop.eth': 'hop', // 41 results
+  's:gmx.eth': 'gmx', // 32 results
   // 's:fei.eth': 'fei', // no results
   // 's:eulerdao.eth': 'euler', // no results
   's:yam.eth': 'yam-finance', // 1 result
@@ -124,10 +91,14 @@ export async function fetchSpaceDelegates(spaceId: string): Promise<DelegateMeta
 
     if (afterCursor) variables.input.page.afterCursor = afterCursor;
 
-    const results = await subgraphRequest('https://api.tally.xyz/query', DELEGATES_QUERY, {
-      variables,
-      headers: { 'Api-Key': process.env.TALLY_API_KEY }
-    });
+    const results = await snapshot.utils.subgraphRequest(
+      'https://api.tally.xyz/query',
+      DELEGATES_QUERY,
+      {
+        variables,
+        headers: { 'Api-Key': process.env.TALLY_API_KEY }
+      }
+    );
 
     if (!results.delegates.nodes.length) break;
 
@@ -166,10 +137,14 @@ export async function fetchSpaceMeta(
     }
   };
 
-  const result = await subgraphRequest('https://api.tally.xyz/query', ORGANIZATION_QUERY, {
-    variables,
-    headers: { 'Api-Key': process.env.TALLY_API_KEY }
-  });
+  const result = await snapshot.utils.subgraphRequest(
+    'https://api.tally.xyz/query',
+    ORGANIZATION_QUERY,
+    {
+      variables,
+      headers: { 'Api-Key': process.env.TALLY_API_KEY }
+    }
+  );
 
   return {
     organizationId: result.organization.id,

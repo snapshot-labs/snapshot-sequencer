@@ -1,8 +1,8 @@
 import intersection from 'lodash/intersection';
-import * as tally from './tally';
 import * as agora from './agora';
 import * as karmahq from './karmahq';
-import { DelegateMeta } from '..';
+import * as tally from './tally';
+import { DelegateMeta } from '../';
 
 export type ProviderType = 'tally' | 'agora' | 'karmahq';
 interface ProviderInterface {
@@ -10,7 +10,11 @@ interface ProviderInterface {
   MAPPING: Record<string, string | Record<string, string>>;
 }
 
-export const PROVIDERS: Record<ProviderType, ProviderInterface> = { tally, agora, karmahq };
+export const PROVIDERS: Record<ProviderType, ProviderInterface> = {
+  tally,
+  agora,
+  karmahq
+};
 
 export async function run(
   providers: ProviderType[],

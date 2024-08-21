@@ -1,4 +1,4 @@
-import { PROVIDERS, run, ProviderType } from './provider';
+import { PROVIDERS, ProviderType, run } from './provider';
 
 const DEFAULT_PROVIDERS = Object.keys(PROVIDERS);
 

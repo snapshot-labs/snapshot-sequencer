@@ -1,7 +1,7 @@
-// import { subgraphRequest } from '@snapshot-labs/snapshot.js/src/utils';
-import fetch from 'node-fetch';
-import { jsonToGraphQLQuery, VariableType } from 'json-to-graphql-query';
-import { DelegateMeta } from '..';
+import snapshot from '@snapshot-labs/snapshot.js';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { VariableType } from 'json-to-graphql-query';
+import { DelegateMeta } from '../';
 
 export const MAPPING = {
   // NOTE: disabling pages not using graphql api
@@ -10,41 +10,6 @@ export const MAPPING = {
   // 's:uniswapgovernance.eth': 'https://vote.uniswapfoundation.org',
   's:lyra.eth': 'https://vote.lyra.finance'
 };
-
-async function subgraphRequest(url: string, query, options: any = {}) {
-  const body = JSON.stringify({
-    query: jsonToGraphQLQuery({ query }),
-    variables: options?.variables
-  });
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      ...options?.headers
-    },
-    body
-  });
-  let responseData: any = await res.text();
-  try {
-    responseData = JSON.parse(responseData);
-  } catch (e: any) {
-    throw new Error(
-      `Errors found in subgraphRequest: URL: ${url}, Status: ${
-        res.status
-      }, Response: ${responseData.substring(0, 400)}`
-    );
-  }
-  if (responseData.errors) {
-    throw new Error(
-      `Errors found in subgraphRequest: URL: ${url}, Status: ${
-        res.status
-      },  Response: ${JSON.stringify(responseData.errors).substring(0, 400)}`
-    );
-  }
-  const { data } = responseData;
-  return data || {};
-}
 
 const QUERY = {
   __variables: {
@@ -92,7 +57,9 @@ export async function fetchSpaceDelegates(spaceId: string): Promise<DelegateMeta
     first: 30
   };
 
-  const results = await subgraphRequest(`${MAPPING[spaceId]}/graphql`, QUERY, { variables });
+  const results = await snapshot.utils.subgraphRequest(`${MAPPING[spaceId]}/graphql`, QUERY, {
+    variables
+  });
   const delegates = results.delegates.edges.map((edge: any) => {
     return {
       address: edge.node.address.resolvedName.address,

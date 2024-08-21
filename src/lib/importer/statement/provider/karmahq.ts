@@ -1,5 +1,5 @@
 import fetch, { Response } from 'node-fetch';
-import { DelegateMeta } from '..';
+import { DelegateMeta } from '../';
 
 export const MAPPING = {
   's:aave.eth': 'aave',
