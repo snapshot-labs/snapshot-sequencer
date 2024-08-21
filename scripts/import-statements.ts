@@ -5,7 +5,7 @@ import { ProviderType } from '../src/lib/importer/statement/provider';
 // Usage: yarn ts-node scripts/import-statements.ts --providers tally,agora --spaces s:hop.eth
 async function main() {
   let providers: ProviderType[] | undefined = undefined;
-  let spaces: string[] = [];
+  let spaces: string[] | undefined = undefined;
 
   process.argv.forEach((arg, index) => {
     if (arg === '--providers') {
