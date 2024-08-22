@@ -148,7 +148,7 @@ CREATE TABLE users (
 
 CREATE TABLE statements (
   id VARCHAR(66) NOT NULL,
-  ipfs VARCHAR(64) NOT NULL,
+  ipfs VARCHAR(64) DEFAULT NULL,
   delegate VARCHAR(100) NOT NULL,
   space VARCHAR(100) NOT NULL,
   about TEXT,
