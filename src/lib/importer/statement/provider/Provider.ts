@@ -56,7 +56,7 @@ export class Provider {
     if (delegates.length) {
       this.delegates = { ...this.delegates, ...delegates };
 
-      this.importDelegates(delegates);
+      await this.importDelegates(delegates);
     }
 
     if (this.throttle_interval) {
