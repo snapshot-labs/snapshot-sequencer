@@ -1,5 +1,7 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import { Delegate } from '../';
+import { sequencerDB } from '../../../../helpers/mysql';
+import { sha256 } from '../../../../helpers/utils';
 
 export class Provider {
   spaceId: string;
@@ -29,12 +31,20 @@ export class Provider {
 
   formatDelegate(result: { delegate: string; statement: string }): Delegate {
     const [network, space] = this.spaceId.split(':');
+    const now = Math.floor(new Date().getTime() / 1000);
 
     return {
-      ...result,
+      id: sha256([result.delegate, result.statement, space, network].join('')),
+      delegate: snapshot.utils.getFormattedAddress(
+        result.delegate,
+        snapshot.utils.isEvmAddress(result.delegate) ? 'evm' : 'starknet'
+      ),
+      statement: result.statement,
       source: this.getId(),
       space,
-      network
+      network,
+      created: now,
+      updated: now
     };
   }
 
@@ -46,12 +56,21 @@ export class Provider {
     if (delegates.length) {
       this.delegates = { ...this.delegates, ...delegates };
 
-      console.log(`[${this.getId()}] -- Importing ${delegates.length} delegate(s)`);
+      this.importDelegates(delegates);
     }
 
     if (this.throttle_interval) {
       await snapshot.utils.sleep(this.throttle_interval);
     }
+  }
+
+  async importDelegates(delegates: Delegate[]) {
+    console.log(`[${this.getId()}] -- Importing ${delegates.length} delegate(s)`);
+
+    await sequencerDB.queryAsync(
+      `INSERT IGNORE INTO statements (id, delegate, statement, source, space, network, created, updated) VALUES ?`,
+      [delegates.map(d => Object.values(d))]
+    );
   }
 
   throttled(): boolean {

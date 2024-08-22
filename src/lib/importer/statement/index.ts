@@ -4,11 +4,14 @@ import { PROVIDERS } from './provider';
 const DEFAULT_PROVIDERS = Object.keys(PROVIDERS);
 
 export type Delegate = {
+  id: string;
   delegate: string;
   statement: string;
   source: string;
   space: string;
   network: string;
+  created: number;
+  updated: number;
 };
 
 export default async function main(providers = DEFAULT_PROVIDERS, spaces?: string[]) {
