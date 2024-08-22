@@ -54,6 +54,10 @@ export class Provider {
     }
   }
 
+  throttled(): boolean {
+    return this.throttle_interval > 0;
+  }
+
   getMapping() {
     return {};
   }
