@@ -1,15 +1,8 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { VariableType } from 'json-to-graphql-query';
-import { DelegateMeta } from '../';
-
-export const MAPPING = {
-  // NOTE: disabling pages not using graphql api
-  // 's:ens.eth': 'https://agora.ensdao.org',
-  // 's:opcollective.eth': 'https://vote.optimism.io',
-  // 's:uniswapgovernance.eth': 'https://vote.uniswapfoundation.org',
-  's:lyra.eth': 'https://vote.lyra.finance'
-};
+import { Provider } from './Provider';
+import { Delegate } from '../';
 
 const QUERY = {
   __variables: {
@@ -49,23 +42,55 @@ const QUERY = {
   }
 };
 
-export async function fetchSpaceDelegates(spaceId: string): Promise<DelegateMeta[]> {
-  const variables = {
-    orderBy: 'mostVotingPower',
-    statement: 'withStatement',
-    seed: Date.now().toString(),
-    first: 30
+export default class Agora extends Provider {
+  static MAPPING = {
+    // NOTE: disabling pages not using graphql api
+    // 's:ens.eth': 'https://agora.ensdao.org',
+    // 's:opcollective.eth': 'https://vote.optimism.io',
+    // 's:uniswapgovernance.eth': 'https://vote.uniswapfoundation.org',
+    's:lyra.eth': 'https://vote.lyra.finance'
   };
 
-  const results = await snapshot.utils.subgraphRequest(`${MAPPING[spaceId]}/graphql`, QUERY, {
-    variables
-  });
-  const delegates = results.delegates.edges.map((edge: any) => {
-    return {
-      address: edge.node.address.resolvedName.address,
-      statement: edge.node.statement.summary.trim()
-    };
-  });
+  static ID = 'agora';
 
-  return delegates;
+  async _fetch() {
+    const page = 0;
+    const variables = {
+      orderBy: 'mostVotingPower',
+      statement: 'withStatement',
+      seed: Date.now().toString(),
+      first: 30
+    };
+
+    this.beforeFetchPage(page);
+
+    const results = await snapshot.utils.subgraphRequest(
+      `${Agora.MAPPING[this.spaceId]}/graphql`,
+      QUERY,
+      {
+        variables
+      }
+    );
+
+    const _delegates: Delegate[] = results.delegates.edges.map((edge: any) => {
+      return this.formatDelegate({
+        delegate: edge.node.address.resolvedName.address,
+        statement: edge.node.statement.summary.trim()
+      });
+    });
+
+    await this.afterFetchPage(page, _delegates);
+  }
+
+  getId(): string {
+    return Agora.ID;
+  }
+
+  getMapping() {
+    return Agora.MAPPING;
+  }
+
+  static get availableSpaces(): string[] {
+    return Object.keys(Agora.MAPPING);
+  }
 }

@@ -1,16 +1,16 @@
 import 'dotenv/config';
 import run from '../src/lib/importer/statement';
-import { ProviderType } from '../src/lib/importer/statement/provider';
 
 // Usage: yarn ts-node scripts/import-statements.ts --providers tally,agora --spaces s:hop.eth
 async function main() {
-  let providers: ProviderType[] | undefined = undefined;
+  let providers: string[] | undefined = undefined;
   let spaces: string[] | undefined = undefined;
+  const startTime = new Date().getTime();
 
   process.argv.forEach((arg, index) => {
     if (arg === '--providers') {
       if (!process.argv[index + 1]) throw new Error('Providers value is missing');
-      providers = process.argv[index + 1].trim().split(',') as ProviderType[];
+      providers = process.argv[index + 1].trim().split(',');
     }
 
     if (arg === '--spaces') {
@@ -20,7 +20,7 @@ async function main() {
   });
 
   await run(providers, spaces);
-  console.log('Done! ✅');
+  console.log(`Done! ✅ in ${(Date.now() - startTime) / 1000}s`);
 }
 
 (async () => {
