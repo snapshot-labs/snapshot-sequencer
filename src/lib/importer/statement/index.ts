@@ -37,13 +37,11 @@ async function throttle(instances: any): Promise<any> {
 function buildParams(providers: string[], spaces?: string[]) {
   return providers.map(providerId => {
     const providerClass = PROVIDERS[providerId];
+    const availableSpaces = Object.keys(providerClass.MAPPING);
 
     if (!providerClass) throw new Error(`Unknown provider: ${providerId}`);
 
-    const spaceIds: string[] = intersection(
-      spaces || providerClass.availableSpaces,
-      providerClass.availableSpaces
-    );
+    const spaceIds: string[] = intersection(spaces || availableSpaces, availableSpaces);
 
     return { providerId, spaceIds };
   });

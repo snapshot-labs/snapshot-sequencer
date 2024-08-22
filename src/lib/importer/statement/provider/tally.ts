@@ -47,25 +47,25 @@ const ORGANIZATION_QUERY = {
 };
 
 export default class Tally extends Provider {
-  // NOTE: Disabling spaces without delegates with statement
   static MAPPING = {
     's:arbitrumfoundation.eth': 'arbitrum',
     's:uniswapgovernance.eth': 'uniswap',
-    's:dopedao.eth': 'dopewars', // 2 results
+    's:dopedao.eth': 'dopewars',
     's:opcollective.eth': 'optimism',
-    's:ens.eth': 'ens', // 581 results
+    's:ens.eth': 'ens',
     's:aave.eth': 'aave',
-    's:gitcoindao.eth': 'gitcoin', // 153 results
-    's:hop.eth': 'hop', // 41 results
-    's:gmx.eth': 'gmx', // 32 results
-    // 's:fei.eth': 'fei', // no results
-    // 's:eulerdao.eth': 'euler', // no results
-    's:yam.eth': 'yam-finance', // 1 result
-    // 's:fuse.eth': 'rari-capital', // no results
-    // 's:truefigov.eth': 'truefi', // no results
-    's:idlefinance.eth': 'idle' // 1 result
-    // 's:instadapp-gov.eth': 'instadapp' // no results
-    // 's:anglegovernance.eth': 'angle' // no results
+    's:gitcoindao.eth': 'gitcoin',
+    's:hop.eth': 'hop',
+    's:gmx.eth': 'gmx',
+    's:yam.eth': 'yam-finance',
+    's:idlefinance.eth': 'idle'
+    // Spaces below do not have delegates with statement
+    // 's:fei.eth': 'fei',
+    // 's:eulerdao.eth': 'euler',
+    // 's:fuse.eth': 'rari-capital',
+    // 's:truefigov.eth': 'truefi',
+    // 's:instadapp-gov.eth': 'instadapp'
+    // 's:anglegovernance.eth': 'angle'
   };
 
   static ID = 'tally';
@@ -149,13 +149,5 @@ export default class Tally extends Provider {
 
   getId(): string {
     return Tally.ID;
-  }
-
-  getMapping() {
-    return Tally.MAPPING;
-  }
-
-  static get availableSpaces(): string[] {
-    return Object.keys(Tally.MAPPING);
   }
 }

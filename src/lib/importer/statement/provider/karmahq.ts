@@ -88,12 +88,4 @@ export default class Karmahq extends Provider {
   getId(): string {
     return Karmahq.ID;
   }
-
-  getMapping() {
-    return Karmahq.MAPPING;
-  }
-
-  static get availableSpaces(): string[] {
-    return Object.keys(Karmahq.MAPPING);
-  }
 }

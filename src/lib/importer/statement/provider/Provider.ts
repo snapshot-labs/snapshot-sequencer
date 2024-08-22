@@ -77,10 +77,6 @@ export class Provider {
     return this.throttle_interval > 0;
   }
 
-  getMapping() {
-    return {};
-  }
-
   getId(): string {
     return '';
   }

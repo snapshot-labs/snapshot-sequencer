@@ -85,12 +85,4 @@ export default class Agora extends Provider {
   getId(): string {
     return Agora.ID;
   }
-
-  getMapping() {
-    return Agora.MAPPING;
-  }
-
-  static get availableSpaces(): string[] {
-    return Object.keys(Agora.MAPPING);
-  }
 }
