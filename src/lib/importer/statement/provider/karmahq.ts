@@ -63,7 +63,13 @@ export default class Karmahq extends Provider {
           field => field.label === 'statement'
         )?.value;
 
-        if (!statement || typeof statement !== 'string') return;
+        if (
+          !statement ||
+          typeof statement !== 'string' ||
+          delegate.publicAddress === '0x0000000000000000000000000000000000000000'
+        ) {
+          return;
+        }
 
         _delegates.push(
           this.formatDelegate({
