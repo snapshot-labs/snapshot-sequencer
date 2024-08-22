@@ -165,6 +165,7 @@ CREATE TABLE statements (
   INDEX network (network),
   INDEX created (created),
   INDEX updated (updated),
+  INDEX source (source),
   INDEX status (status)
 );
 
