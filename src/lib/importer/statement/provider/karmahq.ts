@@ -74,7 +74,7 @@ export default class Karmahq extends Provider {
         _delegates.push(
           this.formatDelegate({
             delegate: delegate.publicAddress,
-            statement
+            statement: statement.trim()
           })
         );
       });
