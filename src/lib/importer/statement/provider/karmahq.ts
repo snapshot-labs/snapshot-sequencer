@@ -3,7 +3,7 @@ import { Provider } from './Provider';
 import { Delegate } from '../';
 
 export default class Karmahq extends Provider {
-  static MAPPING = {
+  static readonly MAPPING = {
     's:aave.eth': 'aave',
     's:apecoin.eth': 'apecoin',
     's:arbitrumfoundation.eth': 'arbitrum',
@@ -14,7 +14,7 @@ export default class Karmahq extends Provider {
     'sn:0x009fedaf0d7a480d21a27683b0965c0f8ded35b3f1cac39827a25a06a8a682a4': 'starknet'
   };
 
-  static ID = 'karmahq';
+  static readonly ID = 'karmahq';
 
   async fetchWithRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
     while (retries > 0) {

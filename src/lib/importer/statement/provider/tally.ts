@@ -47,7 +47,7 @@ const ORGANIZATION_QUERY = {
 };
 
 export default class Tally extends Provider {
-  static MAPPING = {
+  static readonly MAPPING = {
     's:arbitrumfoundation.eth': 'arbitrum',
     's:uniswapgovernance.eth': 'uniswap',
     's:dopedao.eth': 'dopewars',
@@ -68,9 +68,9 @@ export default class Tally extends Provider {
     // 's:anglegovernance.eth': 'angle'
   };
 
-  static ID = 'tally';
+  static readonly ID = 'tally';
 
-  throttle_interval = 1000;
+  throttle_interval = 500;
 
   async _fetch() {
     const spaceMeta = await this.spaceMeta();

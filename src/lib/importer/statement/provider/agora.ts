@@ -43,7 +43,7 @@ const QUERY = {
 };
 
 export default class Agora extends Provider {
-  static MAPPING = {
+  static readonly MAPPING = {
     // NOTE: disabling pages not using graphql api
     // 's:ens.eth': 'https://agora.ensdao.org',
     // 's:opcollective.eth': 'https://vote.optimism.io',
@@ -51,7 +51,7 @@ export default class Agora extends Provider {
     's:lyra.eth': 'https://vote.lyra.finance'
   };
 
-  static ID = 'agora';
+  static readonly ID = 'agora';
 
   async _fetch() {
     const page = 0;
