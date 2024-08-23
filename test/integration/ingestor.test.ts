@@ -206,13 +206,6 @@ describe('ingestor', () => {
     await expect(ingestor(proposalRequest)).rejects.toEqual('duplicate message');
   });
 
-  it('rejects when the ENS name is not valid', () => {
-    const invalidRequest = cloneDeep(voteRequest);
-    // Special hidden char after the k
-    invalidRequest.body.data.message.space = 'elonmusk‍‍.eth';
-    expect(ingestor(invalidRequest)).rejects.toContain('Invalid space id');
-  });
-
   describe('on a valid transaction', () => {
     beforeEach(async () => {
       await db.queryAsync('DELETE from snapshot_sequencer_test.proposals');

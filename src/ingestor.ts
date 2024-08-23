@@ -1,4 +1,3 @@
-import { ensNormalize } from '@ethersproject/hash';
 import { pin } from '@snapshot-labs/pineapple';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
@@ -79,12 +78,6 @@ export default async function ingestor(req) {
     const hash = sha256(JSON.stringify(types));
     if (!Object.keys(hashTypes).includes(hash)) return Promise.reject('wrong types');
     type = hashTypes[hash];
-
-    try {
-      if (ensNormalize(message.space) !== message.space.toLowerCase()) throw new Error('');
-    } catch (e) {
-      return Promise.reject('Invalid space id');
-    }
 
     let aliased = false;
     if (!['settings', 'alias', 'profile'].includes(type)) {
