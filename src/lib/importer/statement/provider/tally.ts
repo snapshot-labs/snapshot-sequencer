@@ -70,7 +70,7 @@ export default class Tally extends Provider {
 
   static readonly ID = 'tally';
 
-  throttle_interval = 500;
+  throttle_interval = 750;
 
   async _fetch() {
     const spaceMeta = await this.spaceMeta();
