@@ -82,6 +82,7 @@ export default async function ingestor(req) {
 
     try {
       if (
+        message.space &&
         (message.space.startsWith('s:') || !message.space.includes(':')) &&
         ensNormalize(message.space) !== message.space.toLowerCase()
       )
