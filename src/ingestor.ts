@@ -81,7 +81,12 @@ export default async function ingestor(req) {
     type = hashTypes[hash];
 
     try {
-      if (ensNormalize(message.space) !== message.space.toLowerCase()) throw new Error('');
+      if (
+        message.space &&
+        (message.space.startsWith('s:') || !message.space.includes(':')) &&
+        ensNormalize(message.space) !== message.space.toLowerCase()
+      )
+        throw new Error('');
     } catch (e) {
       return Promise.reject('Invalid space id');
     }
