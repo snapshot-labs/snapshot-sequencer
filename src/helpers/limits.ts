@@ -1,7 +1,7 @@
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 
-export const FLAGGED_SPACE_PROPOSAL_DAY_LIMIT = 1;
-export const FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT = 5;
+export const FLAGGED_SPACE_PROPOSAL_DAY_LIMIT = 0;
+export const FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT = 0;
 
 export const SPACE_PROPOSAL_DAY_LIMIT = 3;
 export const SPACE_PROPOSAL_MONTH_LIMIT = 15;
