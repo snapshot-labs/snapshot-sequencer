@@ -1,6 +1,6 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import { Delegate } from '../';
-import { sequencerDB } from '../../../../helpers/mysql';
+import hubDB from '../../../../helpers/mysql';
 import { sha256 } from '../../../../helpers/utils';
 
 export class Provider {
@@ -67,7 +67,7 @@ export class Provider {
   async importDelegates(delegates: Delegate[]) {
     console.log(`[${this.getId()}] -- Importing ${delegates.length} delegate(s)`);
 
-    await sequencerDB.queryAsync(
+    await hubDB.queryAsync(
       `INSERT IGNORE INTO statements (id, delegate, statement, source, space, network, created, updated) VALUES ?`,
       [delegates.map(d => Object.values(d))]
     );
