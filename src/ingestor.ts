@@ -1,3 +1,4 @@
+import { verifyMessage } from '@ambire/signature-validator';
 import { ensNormalize } from '@ethersproject/hash';
 import { pin } from '@snapshot-labs/pineapple';
 import { capture } from '@snapshot-labs/snapshot-sentry';
@@ -117,10 +118,16 @@ export default async function ingestor(req) {
       if (!(await isValidAlias(message.from, body.address))) return Promise.reject('wrong alias');
     }
 
-    // Check if signature is valid
     try {
-      const isValidSig = await snapshot.utils.verify(body.address, body.sig, body.data, network, {
+      const provider = snapshot.utils.getProvider(network, {
         broviderUrl: networkMetadata.broviderUrl
+      });
+
+      const isValidSig = await verifyMessage({
+        signer: body.address,
+        provider,
+        typedData: body.data,
+        signature: body.sig
       });
       if (!isValidSig) throw new Error('invalid signature');
     } catch (e: any) {
