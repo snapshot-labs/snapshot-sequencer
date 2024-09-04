@@ -70,8 +70,8 @@ export async function sxSpaceExists(network: string, spaceId: string): Promise<b
     matic: 'https://api.studio.thegraph.com/query/23545/sx-polygon/version/latest',
     arb1: 'https://api.studio.thegraph.com/query/23545/sx-arbitrum/version/latest',
     oeth: 'https://api.studio.thegraph.com/query/23545/sx-optimism/version/latest',
-    sn: 'https://api-1.snapshotx.xyz',
-    'sn-sep': 'https://testnet-api-1.snapshotx.xyz',
+    sn: 'https://api.snapshot.box',
+    'sn-sep': 'https://testnet-api.snapshot.box',
     'linea-testnet':
       'https://thegraph.goerli.zkevm.consensys.net/subgraphs/name/snapshot-labs/sx-subgraph'
   };
