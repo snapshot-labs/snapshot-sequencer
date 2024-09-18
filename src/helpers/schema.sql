@@ -7,7 +7,7 @@ CREATE TABLE messages (
   timestamp BIGINT NOT NULL,
   space VARCHAR(100),
   type VARCHAR(24) NOT NULL,
-  sig VARCHAR(256) NOT NULL,
+  sig VARCHAR(3000) NOT NULL,
   receipt VARCHAR(256) NOT NULL,
   PRIMARY KEY (id),
   INDEX mci (mci),
