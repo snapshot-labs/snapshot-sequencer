@@ -39,7 +39,7 @@ describe('writer/profile', () => {
         '1'
       );
 
-      return expect(spy).toHaveBeenCalledTimes(1);
+      return expect(spy).toHaveBeenCalledTimes(2);
     });
 
     it('does not clear the stamp cache if the avatar has not changed', () => {
