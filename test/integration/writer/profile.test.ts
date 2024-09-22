@@ -1,4 +1,4 @@
-import db from '../../../src/helpers/mysql';
+import db, { sequencerDB } from '../../../src/helpers/mysql';
 import * as utils from '../../../src/helpers/utils';
 import { action } from '../../../src/writer/profile';
 
@@ -7,6 +7,12 @@ afterEach(() => {
 });
 
 describe('writer/profile', () => {
+  afterAll(async () => {
+    await db.queryAsync('DELETE FROM users');
+    await db.endAsync();
+    await sequencerDB.endAsync();
+  });
+
   describe('action()', () => {
     const userProfile = {
       name: 'Test name',
