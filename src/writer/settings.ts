@@ -83,7 +83,7 @@ export async function verify(body): Promise<any> {
   const newAdmins = (msg.payload.admins || []).map(admin => admin.toLowerCase());
 
   const anotherSpaceWithDomain = (
-    await db.queryAsync('SELECT 1 FROM spaces WHERE LOWER(domain) = LOWER(?) AND id != ? LIMIT 1', [
+    await db.queryAsync('SELECT 1 FROM spaces WHERE domain = ? AND id != ? LIMIT 1', [
       msg.payload.domain,
       msg.space
     ])
