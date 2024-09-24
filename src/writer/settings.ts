@@ -82,6 +82,17 @@ export async function verify(body): Promise<any> {
   const isAdmin = admins.includes(body.address.toLowerCase());
   const newAdmins = (msg.payload.admins || []).map(admin => admin.toLowerCase());
 
+  const existingSpaceWithDomain = (
+    await db.queryAsync('SELECT 1 FROM spaces where LOWER(domain) = LOWER(?) AND id != ? LIMIT 1', [
+      msg.payload.domain,
+      msg.space
+    ])
+  )[0];
+
+  if (msg.payload.domain && existingSpaceWithDomain) {
+    return Promise.reject('domain already taken');
+  }
+
   if (!isAdmin && !isController) return Promise.reject('not allowed');
 
   if (!isController && !isEqual(admins, newAdmins))
