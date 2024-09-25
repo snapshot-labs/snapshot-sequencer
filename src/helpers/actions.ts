@@ -7,7 +7,7 @@ export async function addOrUpdateSpace(space: string, settings: any) {
 
   const ts = (Date.now() / 1e3).toFixed();
   const query =
-    'INSERT INTO spaces SET ? ON DUPLICATE KEY UPDATE updated = ?, settings = ?, name = ?, hibernated = 0';
+    'INSERT INTO spaces SET ? ON DUPLICATE KEY UPDATE updated = ?, settings = ?, name = ?, hibernated = 0, domain = ?';
 
   await db.queryAsync(query, [
     {
@@ -15,11 +15,13 @@ export async function addOrUpdateSpace(space: string, settings: any) {
       name: settings.name,
       created: ts,
       updated: ts,
-      settings: JSON.stringify(settings)
+      settings: JSON.stringify(settings),
+      domain: settings.domain || null
     },
     ts,
     JSON.stringify(settings),
-    settings.name
+    settings.name,
+    settings.domain || null
   ]);
 }
 
