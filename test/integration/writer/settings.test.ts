@@ -25,7 +25,7 @@ jest.mock('@snapshot-labs/snapshot.js', () => {
 
 describe('writer/settings', () => {
   afterAll(async () => {
-    await db.queryAsync('DELETE FROM spaces');
+    await db.queryAsync('DELETE FROM snapshot_sequencer_test.spaces');
     await db.endAsync();
     await sequencerDB.endAsync();
   });
@@ -33,13 +33,13 @@ describe('writer/settings', () => {
   describe('verify()', () => {
     beforeAll(async () => {
       await db.queryAsync(
-        'INSERT INTO spaces (id, name, created, updated, domain) VALUES (?, ?, 0, 0, ?)',
+        'INSERT INTO snapshot_sequencer_test.spaces (id, name, created, updated, domain) VALUES (?, ?, 0, 0, ?)',
         ['test.eth', 'test.eth', 'vote.snapshot.org']
       );
     });
 
     afterAll(async () => {
-      await db.queryAsync('DELETE FROM spaces WHERE id = ?', ['test.eth']);
+      await db.queryAsync('DELETE FROM snapshot_sequencer_test.paces WHERE id = ?', ['test.eth']);
     });
 
     it('rejects when domain is used by another space', async () => {
@@ -73,7 +73,7 @@ describe('writer/settings', () => {
 
   describe('action', () => {
     afterEach(async () => {
-      await db.queryAsync('DELETE FROM spaces WHERE id = ?', spaceId);
+      await db.queryAsync('DELETE FROM snapshot_sequencer_test.spaces WHERE id = ?', spaceId);
     });
 
     describe('with a domain', () => {
