@@ -97,6 +97,24 @@ export async function verify(body): Promise<any> {
 
   if (!isController && !isEqual(admins, newAdmins))
     return Promise.reject('not allowed change admins');
+
+  const labels = msg.payload.labels || [];
+  if (labels.length) {
+    const uniqueLabelsIds = new Set<string>();
+    const uniqueLabelsNames = new Set<string>();
+    for (const { id, name } of labels) {
+      const labelId = id.toLowerCase();
+      const labelName = name.toLowerCase();
+      if (uniqueLabelsIds.has(labelId)) {
+        return Promise.reject('duplicate label id');
+      }
+      if (uniqueLabelsNames.has(labelName)) {
+        return Promise.reject('duplicate label name');
+      }
+      uniqueLabelsIds.add(labelId);
+      uniqueLabelsNames.add(labelName);
+    }
+  }
 }
 
 export async function action(body): Promise<void> {
