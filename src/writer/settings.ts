@@ -82,10 +82,39 @@ export async function verify(body): Promise<any> {
   const isAdmin = admins.includes(body.address.toLowerCase());
   const newAdmins = (msg.payload.admins || []).map(admin => admin.toLowerCase());
 
+  const anotherSpaceWithDomain = (
+    await db.queryAsync('SELECT 1 FROM spaces WHERE domain = ? AND id != ? LIMIT 1', [
+      msg.payload.domain,
+      msg.space
+    ])
+  )[0];
+
+  if (msg.payload.domain && anotherSpaceWithDomain) {
+    return Promise.reject('domain already taken');
+  }
+
   if (!isAdmin && !isController) return Promise.reject('not allowed');
 
   if (!isController && !isEqual(admins, newAdmins))
     return Promise.reject('not allowed change admins');
+
+  const labels = msg.payload.labels || [];
+  if (labels.length) {
+    const uniqueLabelsIds = new Set<string>();
+    const uniqueLabelsNames = new Set<string>();
+    for (const { id, name } of labels) {
+      const labelId = id.toLowerCase();
+      const labelName = name.toLowerCase();
+      if (uniqueLabelsIds.has(labelId)) {
+        return Promise.reject('duplicate label id');
+      }
+      if (uniqueLabelsNames.has(labelName)) {
+        return Promise.reject('duplicate label name');
+      }
+      uniqueLabelsIds.add(labelId);
+      uniqueLabelsNames.add(labelName);
+    }
+  }
 }
 
 export async function action(body): Promise<void> {
