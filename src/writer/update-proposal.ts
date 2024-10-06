@@ -73,7 +73,7 @@ export async function action(body, ipfs): Promise<void> {
     body: msg.payload.body,
     discussion: msg.payload.discussion,
     choices: JSON.stringify(msg.payload.choices),
-    labels: msg.payload.labels.length ? JSON.stringify(msg.payload.labels) : null,
+    labels: msg.payload.labels?.length ? JSON.stringify(msg.payload.labels) : null,
     scores: JSON.stringify([]),
     scores_by_strategy: JSON.stringify([]),
     flagged: +containsFlaggedLinks(msg.payload.body)
