@@ -233,6 +233,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     body: msg.payload.body,
     discussion: msg.payload.discussion || '',
     choices: JSON.stringify(msg.payload.choices),
+    labels: msg.payload.labels?.length ? JSON.stringify(msg.payload.labels) : null,
     start: parseInt(msg.payload.start || '0'),
     end: parseInt(msg.payload.end || '0'),
     quorum,
