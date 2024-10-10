@@ -50,13 +50,14 @@ export async function getSpace(id: string, includeDeleted = false, network = DEF
     };
   }
 
-  const query = `SELECT settings, deleted, flagged, verified, turbo, hibernated FROM spaces WHERE id = ? AND deleted in (?) LIMIT 1`;
+  const query = `SELECT settings, domain, deleted, flagged, verified, turbo, hibernated FROM spaces WHERE id = ? AND deleted in (?) LIMIT 1`;
   const spaces = await db.queryAsync(query, [id.toLowerCase(), includeDeleted ? [0, 1] : [0]]);
 
   if (!spaces[0]) return false;
 
   return {
     ...jsonParse(spaces[0].settings, {}),
+    domain: spaces[0].domain,
     deleted: spaces[0].deleted === 1,
     verified: spaces[0].verified === 1,
     flagged: spaces[0].flagged === 1,
