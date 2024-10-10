@@ -57,7 +57,7 @@ export async function getSpace(id: string, includeDeleted = false, network = DEF
 
   return {
     ...jsonParse(spaces[0].settings, {}),
-    domain: spaces[0].domain,
+    domain: spaces[0].domain || undefined,
     deleted: spaces[0].deleted === 1,
     verified: spaces[0].verified === 1,
     flagged: spaces[0].flagged === 1,
