@@ -6,7 +6,6 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { Response } from 'express';
-import isEqual from 'lodash/isEqual';
 import fetch from 'node-fetch';
 
 const MAINNET_NETWORK_ID_WHITELIST = ['s', 'eth', 'matic', 'arb1', 'oeth', 'sn'];
@@ -96,7 +95,7 @@ export function validateChoices({ type, choices }): boolean {
   if (type && choices.length > 0) {
     switch (type) {
       case 'basic':
-        return isEqual(['For', 'Against', 'Abstain'], choices);
+        return choices.length === 3;
       default:
         return true;
     }
