@@ -1,6 +1,9 @@
 import fetch, { Response } from 'node-fetch';
+import TurndownService from 'turndown';
 import { Provider } from './Provider';
 import { Delegate } from '../';
+
+const turndownService = new TurndownService();
 
 export default class Karmahq extends Provider {
   static readonly MAPPING = {
@@ -74,7 +77,10 @@ export default class Karmahq extends Provider {
         _delegates.push(
           this.formatDelegate({
             delegate: delegate.publicAddress,
-            statement: statement.trim()
+            statement: (statement.startsWith('<')
+              ? turndownService.turndown(statement)
+              : statement
+            ).trim()
           })
         );
       });
