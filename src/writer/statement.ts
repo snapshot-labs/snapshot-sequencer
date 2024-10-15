@@ -39,7 +39,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   };
 
   const query =
-    'INSERT INTO statements SET ? ON DUPLICATE KEY UPDATE ipfs = ?, about = ?, statement = ?, discourse = ?, status = ?, updated = ?';
+    'INSERT INTO statements SET ? ON DUPLICATE KEY UPDATE ipfs = ?, about = ?, statement = ?, discourse = ?, status = ?, updated = ?, source = NULL';
   const params = [
     item,
     item.ipfs,
