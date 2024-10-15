@@ -11,9 +11,9 @@ export default async function poke(id: string): Promise<Space> {
   const space = await getSpaceENS(id);
 
   try {
-    // if (snapshot.utils.validateSchema(snapshot.schemas.space, space) !== true) {
-    //   return Promise.reject('invalid space format');
-    // }
+    if (snapshot.utils.validateSchema(snapshot.schemas.space, space) !== true) {
+      return Promise.reject('invalid space format');
+    }
 
     await addOrUpdateSpace(id, space);
 
