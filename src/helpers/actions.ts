@@ -4,6 +4,15 @@ import { DEFAULT_NETWORK_ID, jsonParse, NETWORK_ID_WHITELIST } from './utils';
 
 export async function addOrUpdateSpace(space: string, settings: any) {
   if (!settings?.name) return false;
+  if (settings.domain) {
+    settings.domain = settings.domain?.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
+  }
+  if (settings.delegationPortal) {
+    settings.delegationPortal = {
+      ...settings.delegationPortal,
+      delegationNetwork: settings.delegationPortal.delegationNetwork ?? '1'
+    };
+  }
 
   const ts = (Date.now() / 1e3).toFixed();
   const query =
