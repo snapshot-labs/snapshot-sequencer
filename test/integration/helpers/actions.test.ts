@@ -1,4 +1,4 @@
-import { getSpace, sxSpaceExists } from '../../../src/helpers/actions';
+import { addOrUpdateSpace, getSpace, sxSpaceExists } from '../../../src/helpers/actions';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
 import { DEFAULT_NETWORK_ID } from '../../../src/helpers/utils';
 import { spacesSqlFixtures } from '../../fixtures/space';
@@ -116,6 +116,54 @@ describe('helpers/actions', () => {
 
     it('returns false when it does not exist', async () => {
       return expect(sxSpaceExists('sep', mapping['eth'])).resolves.toEqual(false);
+    });
+  });
+
+  describe('addOrUpdateSpace', () => {
+    const testId = 'test-add-or-update-space.eth';
+
+    afterEach(async () => {
+      await db.queryAsync('DELETE FROM snapshot_sequencer_test.spaces WHERE id = ?', [testId]);
+    });
+
+    describe('cleanup delegationPortal', () => {
+      it('set the given delegationNetwork', async () => {
+        const settings = {
+          ...spacesSqlFixtures[0].settings,
+          delegationPortal: { delegationNetwork: '1234' }
+        };
+        await addOrUpdateSpace(testId, settings);
+        const space = (await db.queryAsync('SELECT * FROM spaces WHERE id = ?', [testId]))[0];
+
+        expect(JSON.parse(space.settings).delegationPortal).toEqual(settings.delegationPortal);
+      });
+
+      it('set a default delegationNetwork when missing', async () => {
+        const settings = {
+          ...spacesSqlFixtures[0].settings,
+          delegationPortal: { delegationType: 'compound-governor' }
+        };
+        await addOrUpdateSpace(testId, settings);
+        const space = (await db.queryAsync('SELECT * FROM spaces WHERE id = ?', [testId]))[0];
+
+        expect(JSON.parse(space.settings).delegationPortal).toEqual({
+          ...settings.delegationPortal,
+          delegationNetwork: '1'
+        });
+      });
+    });
+
+    describe('cleanup domain', () => {
+      it('normalize the domain', async () => {
+        const settings = {
+          ...spacesSqlFixtures[0].settings,
+          domain: 'https://vote.snapshot.org/'
+        };
+        await addOrUpdateSpace(testId, settings);
+        const space = (await db.queryAsync('SELECT * FROM spaces WHERE id = ?', [testId]))[0];
+
+        expect(JSON.parse(space.settings).domain).toEqual('vote.snapshot.org');
+      });
     });
   });
 });
