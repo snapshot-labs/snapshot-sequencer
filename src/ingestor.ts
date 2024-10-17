@@ -4,7 +4,6 @@ import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import hashTypes from '@snapshot-labs/snapshot.js/src/sign/hashedTypes.json';
 import castArray from 'lodash/castArray';
-import kebabCase from 'lodash/kebabCase';
 import { getProposal, getSpace } from './helpers/actions';
 import { isValidAlias } from './helpers/alias';
 import envelope from './helpers/envelope.json';
@@ -13,7 +12,7 @@ import log from './helpers/log';
 import { timeIngestorProcess } from './helpers/metrics';
 import { flaggedIps } from './helpers/moderation';
 import relayer, { issueReceipt } from './helpers/relayer';
-import { getIp, jsonParse, sha256 } from './helpers/utils';
+import { formatApp, getIp, jsonParse, sha256 } from './helpers/utils';
 import writer from './writer';
 
 const NETWORK_METADATA = {
@@ -151,7 +150,7 @@ export default async function ingestor(req) {
           plugins: JSON.parse(message.plugins)
         },
         type: message.type,
-        app: kebabCase(message.app || '')
+        app: formatApp(message.app)
       };
     if (type === 'alias') payload = { alias: message.alias };
     if (type === 'statement')
@@ -200,7 +199,7 @@ export default async function ingestor(req) {
         proposal: message.proposal,
         choice,
         reason: message.reason || '',
-        app: kebabCase(message.app || ''),
+        app: formatApp(message.app),
         metadata: jsonParse(message.metadata, {})
       };
       type = 'vote';
