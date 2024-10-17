@@ -9,8 +9,8 @@ export async function addOrUpdateSpace(space: string, settings: any) {
   }
   if (settings.delegationPortal) {
     settings.delegationPortal = {
-      ...settings.delegationPortal,
-      delegationNetwork: settings.delegationPortal.delegationNetwork ?? '1'
+      delegationNetwork: '1',
+      ...settings.delegationPortal
     };
   }
 
