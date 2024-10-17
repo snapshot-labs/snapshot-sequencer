@@ -12,7 +12,7 @@ import log from './helpers/log';
 import { timeIngestorProcess } from './helpers/metrics';
 import { flaggedIps } from './helpers/moderation';
 import relayer, { issueReceipt } from './helpers/relayer';
-import { formatApp, getIp, jsonParse, sha256 } from './helpers/utils';
+import { getIp, jsonParse, sha256 } from './helpers/utils';
 import writer from './writer';
 
 const NETWORK_METADATA = {
@@ -150,7 +150,7 @@ export default async function ingestor(req) {
           plugins: JSON.parse(message.plugins)
         },
         type: message.type,
-        app: formatApp(message.app)
+        app: message.app || ''
       };
     if (type === 'alias') payload = { alias: message.alias };
     if (type === 'statement')
@@ -199,7 +199,7 @@ export default async function ingestor(req) {
         proposal: message.proposal,
         choice,
         reason: message.reason || '',
-        app: formatApp(message.app),
+        app: message.app || '',
         metadata: jsonParse(message.metadata, {})
       };
       type = 'vote';

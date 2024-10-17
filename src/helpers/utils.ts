@@ -208,9 +208,3 @@ export function captureError(e: any, context?: any, ignoredErrorCodes?: number[]
 export async function clearStampCache(type: string, id: string) {
   return fetch(`https://cdn.stamp.fyi/clear/${type}/${type === 'avatar' ? 'eth:' : ''}${id}`);
 }
-
-export function formatApp(app: string | undefined): string {
-  if (!app || app?.length > 128) return '';
-
-  return app;
-}
