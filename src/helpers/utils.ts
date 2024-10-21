@@ -92,16 +92,10 @@ export function hasStrategyOverride(strategies: any[]) {
 }
 
 export function validateChoices({ type, choices }): boolean {
-  if (type && choices.length > 0) {
-    switch (type) {
-      case 'basic':
-        return choices.length === 3;
-      default:
-        return true;
-    }
-  } else {
-    return false;
-  }
+  if (!type || !choices?.length) return false;
+  if (type === 'basic') return choices.length === 2 || choices.length === 3;
+
+  return true;
 }
 
 export function getIp(req) {
