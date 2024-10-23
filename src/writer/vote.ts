@@ -1,5 +1,4 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import kebabCase from 'lodash/kebabCase';
 import { getProposal } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
@@ -108,7 +107,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   const created = parseInt(msg.timestamp);
   const choice = JSON.stringify(msg.payload.choice);
   const metadata = JSON.stringify(msg.payload.metadata || {});
-  const app = kebabCase(msg.payload.app || '');
+  const app = msg.payload.app;
   const reason = msg.payload.reason || '';
   const proposalId = msg.payload.proposal;
 
