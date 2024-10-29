@@ -21,7 +21,7 @@ const NETWORK_METADATA = {
     name: 'snapshot',
     version: '0.1.4',
     broviderUrl: process.env.BROVIDER_URL ?? 'https://rpc.snapshot.org',
-    defaultNetwork: process.env.NETWORK === 'testnet' ? '11155111' : '1'
+    defaultNetwork: process.env.DEFAULT_NETWORK ?? '1'
   },
   starknet: {
     name: 'sx-starknet',
