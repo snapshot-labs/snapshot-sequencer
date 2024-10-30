@@ -49,6 +49,10 @@ export async function verify(body): Promise<any> {
 
   if (proposal.author !== body.address) return Promise.reject('Not the author');
 
+  if (space.voting?.privacy !== 'author-selection') {
+    if (msg.payload.privacy) return Promise.reject('not allowed to set privacy');
+  }
+
   const spaceUpdateError = getSpaceUpdateError({
     type: msg.payload.type,
     space
@@ -63,6 +67,11 @@ export async function action(body, ipfs): Promise<void> {
   const updated = parseInt(msg.timestamp);
   const metadata = msg.payload.metadata || {};
   const plugins = JSON.stringify(metadata.plugins || {});
+  const spaceSettings = await getSpace(msg.space);
+  let privacy = spaceSettings.voting?.privacy || '';
+  if (privacy === 'author-selection') {
+    privacy = msg.payload.privacy || '';
+  }
 
   const proposal = {
     ipfs,
@@ -74,6 +83,7 @@ export async function action(body, ipfs): Promise<void> {
     discussion: msg.payload.discussion,
     choices: JSON.stringify(msg.payload.choices),
     labels: msg.payload.labels?.length ? JSON.stringify(msg.payload.labels) : null,
+    privacy,
     scores: JSON.stringify([]),
     scores_by_strategy: JSON.stringify([]),
     flagged: +containsFlaggedLinks(msg.payload.body)
