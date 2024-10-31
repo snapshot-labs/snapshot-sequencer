@@ -103,7 +103,7 @@ export async function verify(body): Promise<any> {
     if (msg.payload.type !== space.voting.type) return Promise.reject('invalid voting type');
   }
 
-  if (space.voting?.privacy !== 'author-selection') {
+  if (space.voting?.privacy !== 'any') {
     if (msg.payload.privacy) return Promise.reject('not allowed to set privacy');
   }
 
@@ -212,7 +212,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const spaceNetwork = spaceSettings.network;
   const proposalSnapshot = parseInt(msg.payload.snapshot || '0');
   let privacy = spaceSettings.voting?.privacy || '';
-  if (privacy === 'author-selection') {
+  if (privacy === 'any') {
     privacy = msg.payload.privacy || '';
   }
 
