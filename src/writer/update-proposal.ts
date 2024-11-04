@@ -49,8 +49,8 @@ export async function verify(body): Promise<any> {
 
   if (proposal.author !== body.address) return Promise.reject('Not the author');
 
-  if (space.voting?.privacy !== 'any') {
-    if (msg.payload.privacy) return Promise.reject('not allowed to set privacy');
+  if (space.voting?.privacy !== 'any' && msg.payload.privacy) {
+    return Promise.reject('not allowed to set privacy');
   }
 
   const spaceUpdateError = getSpaceUpdateError({
