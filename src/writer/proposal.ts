@@ -254,6 +254,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     scores_state: 'pending',
     scores_total: 0,
     scores_updated: 0,
+    vp_value_by_strategy: JSON.stringify([]),
     votes: 0,
     validation,
     flagged: +containsFlaggedLinks(msg.payload.body)
