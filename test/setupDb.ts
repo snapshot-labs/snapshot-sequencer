@@ -1,9 +1,9 @@
-import mysql from 'mysql';
-import Pool from 'mysql/lib/Pool';
-import Connection from 'mysql/lib/Connection';
+import fs from 'fs';
 import bluebird from 'bluebird';
 import parse from 'connection-string';
-import fs from 'fs';
+import mysql from 'mysql';
+import Connection from 'mysql/lib/Connection';
+import Pool from 'mysql/lib/Pool';
 
 // @ts-ignore
 const config = parse(process.env.HUB_DATABASE_URL);
@@ -19,6 +19,8 @@ if (!dbName.endsWith('_test')) {
   process.exit(1);
 }
 
+const schemaFiles = ['./test/schema.sql', './test/schema_envelop.sql'];
+
 async function run() {
   const splitToken = ');';
 
@@ -30,8 +32,9 @@ async function run() {
   console.info(`- Creating new database: ${dbName}`);
   await db.queryAsync(`CREATE DATABASE ${dbName}`);
 
-  const schema = fs
-    .readFileSync('./test/schema.sql', 'utf8')
+  const schema = schemaFiles
+    .map(file => fs.readFileSync(file, 'utf8'))
+    .join(' ')
     .replaceAll('CREATE TABLE ', `CREATE TABLE ${dbName}.`)
     .split(splitToken)
     .filter(s => s.trim().length > 0);
