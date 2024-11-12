@@ -1,6 +1,7 @@
 import * as alias from './alias';
 import * as deleteProposal from './delete-proposal';
 import * as deleteSpace from './delete-space';
+import * as deleteSubscription from './delete-subscription';
 import * as flagProposal from './flag-proposal';
 import * as follow from './follow';
 import * as profile from './profile';
@@ -25,6 +26,7 @@ export default {
   unfollow,
   subscribe,
   unsubscribe,
+  'delete-subscription': deleteSubscription,
   alias,
   profile,
   statement
