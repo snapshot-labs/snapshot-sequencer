@@ -12,6 +12,7 @@ import * as subscribe from './subscribe';
 import * as unfollow from './unfollow';
 import * as unsubscribe from './unsubscribe';
 import * as updateProposal from './update-proposal';
+import * as updateSubscription from './update-subscription';
 import * as vote from './vote';
 
 export default {
@@ -26,6 +27,7 @@ export default {
   unfollow,
   subscribe,
   unsubscribe,
+  'update-subscription': updateSubscription,
   'delete-subscription': deleteSubscription,
   alias,
   profile,
