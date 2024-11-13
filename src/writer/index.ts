@@ -9,6 +9,7 @@ import * as proposal from './proposal';
 import * as settings from './settings';
 import * as statement from './statement';
 import * as subscribe from './subscribe';
+import * as subscription from './subscription';
 import * as unfollow from './unfollow';
 import * as unsubscribe from './unsubscribe';
 import * as updateProposal from './update-proposal';
@@ -27,6 +28,7 @@ export default {
   unfollow,
   subscribe,
   unsubscribe,
+  subscription,
   'update-subscription': updateSubscription,
   'delete-subscription': deleteSubscription,
   alias,
