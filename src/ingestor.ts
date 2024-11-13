@@ -106,7 +106,17 @@ export default async function ingestor(req) {
     }
 
     // Check if signing address is an alias
-    const aliasTypes = ['follow', 'unfollow', 'subscribe', 'unsubscribe', 'profile', 'statement'];
+    const aliasTypes = [
+      'follow',
+      'unfollow',
+      'subscribe',
+      'unsubscribe',
+      'profile',
+      'statement',
+      'subscription',
+      'update-subscription',
+      'delete-subscription'
+    ];
     const aliasOptionTypes = ['vote', 'vote-array', 'vote-string', 'proposal', 'delete-proposal'];
     if (body.address !== message.from) {
       if (!aliasTypes.includes(type) && !aliasOptionTypes.includes(type))
