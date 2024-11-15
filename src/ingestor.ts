@@ -31,6 +31,10 @@ const NETWORK_METADATA = {
   }
 };
 
+function shouldPinIpfs(type: string, message: any) {
+  return !(type === 'subscription' && message.type === 'email' && message.value !== '');
+}
+
 export default async function ingestor(req) {
   if (flaggedIps.includes(sha256(getIp(req)))) {
     return Promise.reject('unauthorized');
@@ -92,7 +96,7 @@ export default async function ingestor(req) {
     }
 
     let aliased = false;
-    if (!['settings', 'alias', 'profile'].includes(type)) {
+    if (!['settings', 'alias', 'profile', 'subscription', 'delete-subscription'].includes(type)) {
       if (!message.space) return Promise.reject('unknown space');
 
       try {
@@ -216,6 +220,18 @@ export default async function ingestor(req) {
       type = 'vote';
     }
 
+    if (type === 'subscription' || type === 'delete-subscription') {
+      if (message.type === 'email' && message.value === '') {
+        type = 'update-subscription';
+      }
+
+      payload = {
+        type: message.type,
+        value: message.value,
+        metadata: message.metadata
+      };
+    }
+
     let legacyBody: any = {
       address: message.from,
       msg: JSON.stringify({
@@ -255,7 +271,7 @@ export default async function ingestor(req) {
         ...restBody
       };
       [pinned, receipt] = await Promise.all([
-        pin(ipfsBody, process.env.PINEAPPLE_URL),
+        shouldPinIpfs(type, message) ? pin(ipfsBody, process.env.PINEAPPLE_URL) : { cid: '' },
         issueReceipt(formattedSignature)
       ]);
     } catch (e) {
