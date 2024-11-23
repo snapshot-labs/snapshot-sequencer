@@ -32,7 +32,7 @@ const NETWORK_METADATA = {
 };
 
 function shouldPinIpfs(type: string, message: any) {
-  return !(type === 'subscription' && message.type === 'email' && message.value !== '');
+  return !(type === 'email-subscription' && message.email);
 }
 
 export default async function ingestor(req) {
@@ -96,7 +96,11 @@ export default async function ingestor(req) {
     }
 
     let aliased = false;
-    if (!['settings', 'alias', 'profile', 'subscription', 'delete-subscription'].includes(type)) {
+    if (
+      !['settings', 'alias', 'profile', 'email-subscription', 'delete-email-subscription'].includes(
+        type
+      )
+    ) {
       if (!message.space) return Promise.reject('unknown space');
 
       try {
@@ -117,9 +121,8 @@ export default async function ingestor(req) {
       'unsubscribe',
       'profile',
       'statement',
-      'subscription',
-      'update-subscription',
-      'delete-subscription'
+      'email-subscription',
+      'delete-email-subscription'
     ];
     const aliasOptionTypes = ['vote', 'vote-array', 'vote-string', 'proposal', 'delete-proposal'];
     if (body.address !== message.from) {
@@ -220,15 +223,10 @@ export default async function ingestor(req) {
       type = 'vote';
     }
 
-    if (type === 'subscription' || type === 'delete-subscription') {
-      if (message.type === 'email' && message.value === '') {
-        type = 'update-subscription';
-      }
-
+    if (type === 'email-subscription') {
       payload = {
-        type: message.type,
-        value: message.value,
-        metadata: message.metadata
+        email: message.email,
+        subscriptions: message.subscriptions
       };
     }
 

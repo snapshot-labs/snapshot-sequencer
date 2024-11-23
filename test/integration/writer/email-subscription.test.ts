@@ -1,9 +1,9 @@
 import db, { envelopDB, sequencerDB } from '../../../src/helpers/mysql';
-import { action, verify } from '../../../src/writer/subscription';
+import { action, verify } from '../../../src/writer/email-subscription';
 
 describe('writer/subscription', () => {
   const TEST_PREFIX = 'test-subscription';
-  const msg = JSON.stringify({ payload: { value: 'test@snapshot.org', type: 'email' } });
+  const msg = JSON.stringify({ payload: { email: 'test@snapshot.org', subscriptions: [] } });
 
   afterAll(async () => {
     await envelopDB.queryAsync('DELETE FROM subscribers');
@@ -15,7 +15,7 @@ describe('writer/subscription', () => {
   describe('verify()', () => {
     const address = `${TEST_PREFIX}-0x0`;
     const invalidMsg = JSON.stringify({
-      payload: { type: 'hello', value: 'test@snapshot.org' }
+      payload: { email: 'not an email' }
     });
 
     beforeAll(async () => {
@@ -26,11 +26,13 @@ describe('writer/subscription', () => {
     });
 
     it('rejects when the address is already subscribed', () => {
-      return expect(verify({ address: address, msg })).rejects.toEqual(`user already subscribed`);
+      return expect(verify({ address: address, msg })).rejects.toEqual('email already subscribed');
     });
 
     it('rejects when the subscription type is not valid', () => {
-      return expect(verify({ address: address, msg: invalidMsg })).rejects.toEqual('invalid type');
+      return expect(verify({ address: address, msg: invalidMsg })).rejects.toEqual(
+        'wrong email subscription format'
+      );
     });
 
     it('resolves when all args are valid', () => {

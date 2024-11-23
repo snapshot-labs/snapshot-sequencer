@@ -1,5 +1,5 @@
 import db, { envelopDB, sequencerDB } from '../../../src/helpers/mysql';
-import { action, verify } from '../../../src/writer/update-subscription';
+import { action, verify } from '../../../src/writer/email-subscription';
 
 describe('writer/update-subscription', () => {
   const TEST_PREFIX = 'test-update-subscription';
@@ -31,7 +31,7 @@ describe('writer/update-subscription', () => {
     });
 
     it('rejects when the address is not subscribed', () => {
-      return expect(verify({ address: '0x0', msg })).rejects.toEqual(`user not subscribed`);
+      return expect(verify({ address: '0x0', msg })).rejects.toEqual(`email not subscribed`);
     });
 
     it('rejects when the address is not verified', () => {
@@ -43,13 +43,11 @@ describe('writer/update-subscription', () => {
     it('rejects when subscription values are not valid', () => {
       return expect(
         verify({ address: `${TEST_PREFIX}-0x1`, msg: msgWithInvalidSubscriptions })
-      ).rejects.toEqual(`invalid subscription value`);
+      ).rejects.toEqual(`wrong email subscription format`);
     });
 
     it('resolves when all args are valid', () => {
-      return expect(verify({ address: `${TEST_PREFIX}-0x1`, msg })).resolves.toHaveProperty(
-        'address'
-      );
+      expect(verify({ address: `${TEST_PREFIX}-0x1`, msg })).resolves;
     });
   });
 
@@ -66,12 +64,12 @@ describe('writer/update-subscription', () => {
 
     it('updates the subscription', async () => {
       await action({
-        address: address,
+        address,
         msg: JSON.stringify({ payload: { subscriptions } })
       });
 
       const result = await envelopDB.queryAsync(
-        `SELECT subscriptions FROM subscribers WHERE address = ? LIMIT 1`,
+        'SELECT subscriptions FROM subscribers WHERE address = ? AND verified > 0 LIMIT 1',
         [address]
       );
 

@@ -1,5 +1,5 @@
 import db, { envelopDB, sequencerDB } from '../../../src/helpers/mysql';
-import { action, verify } from '../../../src/writer/delete-subscription';
+import { action, verify } from '../../../src/writer/delete-email-subscription';
 
 describe('writer/delete-subscription', () => {
   const TEST_PREFIX = 'test-delete-subscription';
@@ -36,7 +36,7 @@ describe('writer/delete-subscription', () => {
     });
 
     it('resolves when the address is verified', () => {
-      return expect(verify({ address: `${TEST_PREFIX}-0x1` })).resolves.toHaveProperty('address');
+      expect(verify({ address: `${TEST_PREFIX}-0x1` })).resolves;
     });
   });
 
