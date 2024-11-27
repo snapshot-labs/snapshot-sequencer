@@ -70,7 +70,7 @@ export async function action(body, ipfs): Promise<void> {
   const spaceSettings = await getSpace(msg.space);
   let privacy = spaceSettings.voting?.privacy || '';
   if (privacy === 'any') {
-    privacy = msg.payload.privacy || '';
+    privacy = msg.payload.privacy;
   }
 
   const proposal = {

@@ -213,7 +213,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const proposalSnapshot = parseInt(msg.payload.snapshot || '0');
   let privacy = spaceSettings.voting?.privacy || '';
   if (privacy === 'any') {
-    privacy = msg.payload.privacy || '';
+    privacy = msg.payload.privacy;
   }
 
   let quorum = spaceSettings.voting?.quorum || 0;
