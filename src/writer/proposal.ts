@@ -103,6 +103,10 @@ export async function verify(body): Promise<any> {
     if (msg.payload.type !== space.voting.type) return Promise.reject('invalid voting type');
   }
 
+  if (space.voting?.privacy !== 'any' && msg.payload.privacy) {
+    return Promise.reject('not allowed to set privacy');
+  }
+
   try {
     if (await isMalicious(msg.payload, space.id)) {
       return Promise.reject('invalid proposal content');
@@ -207,6 +211,10 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const plugins = JSON.stringify(metadata.plugins || {});
   const spaceNetwork = spaceSettings.network;
   const proposalSnapshot = parseInt(msg.payload.snapshot || '0');
+  let privacy = spaceSettings.voting?.privacy || '';
+  if (privacy === 'any') {
+    privacy = msg.payload.privacy;
+  }
 
   let quorum = spaceSettings.voting?.quorum || 0;
   if (!quorum && spaceSettings.plugins?.quorum) {
@@ -238,7 +246,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     end: parseInt(msg.payload.end || '0'),
     quorum,
     quorum_type: (quorum && spaceSettings.voting?.quorumType) || '',
-    privacy: spaceSettings.voting?.privacy || '',
+    privacy,
     snapshot: proposalSnapshot || 0,
     app: kebabCase(msg.payload.app || ''),
     scores: JSON.stringify([]),
