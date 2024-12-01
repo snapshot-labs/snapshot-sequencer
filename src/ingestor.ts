@@ -143,6 +143,7 @@ export default async function ingestor(req) {
         body: message.body,
         discussion: message.discussion || '',
         choices: message.choices,
+        privacy: message.privacy || '',
         labels: message.labels || [],
         start: message.start,
         end: message.end,
@@ -169,6 +170,7 @@ export default async function ingestor(req) {
         name: message.title,
         body: message.body,
         discussion: message.discussion || '',
+        privacy: message.privacy || '',
         choices: message.choices,
         labels: message.labels || [],
         metadata: {
