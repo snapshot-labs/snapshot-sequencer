@@ -29,15 +29,15 @@ CREATE TABLE spaces (
 );
 
 CREATE TABLE proposals (
-  id VARCHAR(66) NOT NULL,
-  ipfs VARCHAR(64) NOT NULL,
+  id VARCHAR(66) NOT NULL DEFAULT '',
+  ipfs VARCHAR(64) NOT NULL DEFAULT '',
   author VARCHAR(100) NOT NULL,
   created INT(11) NOT NULL,
   updated INT(11) DEFAULT NULL,
   space VARCHAR(64) NOT NULL,
   network VARCHAR(12) NOT NULL,
-  symbol VARCHAR(16) NOT NULL,
-  type VARCHAR(24) NOT NULL,
+  symbol VARCHAR(16) NOT NULL DEFAULT '',
+  type VARCHAR(24) NOT NULL DEFAULT '',
   strategies JSON NOT NULL,
   validation JSON NOT NULL,
   plugins JSON NOT NULL,
@@ -49,20 +49,20 @@ CREATE TABLE proposals (
   start INT(11) NOT NULL,
   end INT(11) NOT NULL,
   quorum DECIMAL(64,30) NOT NULL,
-  quorum_type VARCHAR(24) NOT NULL DEFAULT '',
+  quorum_type VARCHAR(24) DEFAULT '',
   privacy VARCHAR(24) NOT NULL,
   snapshot INT(24) NOT NULL,
   app VARCHAR(24) NOT NULL,
   scores JSON NOT NULL,
   scores_by_strategy JSON NOT NULL,
-  scores_state VARCHAR(24) NOT NULL,
+  scores_state VARCHAR(24) NOT NULL DEFAULT '',
   scores_total DECIMAL(64,30) NOT NULL,
   scores_updated INT(11) NOT NULL,
-  vp_usd decimal(64,30) NOT NULL DEFAULT '0.000000000000000000000000000000',
-  vp_eth decimal(64,30) NOT NULL DEFAULT '0.000000000000000000000000000000',
+  scores_total_value DECIMAL(64,30) NOT NULL DEFAULT '0.000000000000000000000000000000',
   vp_value_by_strategy json NOT NULL,
   votes INT(12) NOT NULL,
   flagged INT NOT NULL DEFAULT 0,
+  cb INT NOT NULL DEFAULT 0,
   PRIMARY KEY (id),
   INDEX ipfs (ipfs),
   INDEX author (author),
@@ -76,7 +76,8 @@ CREATE TABLE proposals (
   INDEX scores_state (scores_state),
   INDEX scores_updated (scores_updated),
   INDEX votes (votes),
-  INDEX flagged (flagged)
+  INDEX flagged (flagged),
+  INDEX cb (cb)
 );
 
 CREATE TABLE votes (
