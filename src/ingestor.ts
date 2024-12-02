@@ -31,6 +31,10 @@ const NETWORK_METADATA = {
   }
 };
 
+function shouldPinIpfs(type: string, message: any) {
+  return !(type === 'email-subscription' && message.email);
+}
+
 export default async function ingestor(req) {
   if (flaggedIps.includes(sha256(getIp(req)))) {
     return Promise.reject('unauthorized');
@@ -92,7 +96,11 @@ export default async function ingestor(req) {
     }
 
     let aliased = false;
-    if (!['settings', 'alias', 'profile'].includes(type)) {
+    if (
+      !['settings', 'alias', 'profile', 'email-subscription', 'delete-email-subscription'].includes(
+        type
+      )
+    ) {
       if (!message.space) return Promise.reject('unknown space');
 
       try {
@@ -106,7 +114,16 @@ export default async function ingestor(req) {
     }
 
     // Check if signing address is an alias
-    const aliasTypes = ['follow', 'unfollow', 'subscribe', 'unsubscribe', 'profile', 'statement'];
+    const aliasTypes = [
+      'follow',
+      'unfollow',
+      'subscribe',
+      'unsubscribe',
+      'profile',
+      'statement',
+      'email-subscription',
+      'delete-email-subscription'
+    ];
     const aliasOptionTypes = ['vote', 'vote-array', 'vote-string', 'proposal', 'delete-proposal'];
     if (body.address !== message.from) {
       if (!aliasTypes.includes(type) && !aliasOptionTypes.includes(type))
@@ -208,6 +225,13 @@ export default async function ingestor(req) {
       type = 'vote';
     }
 
+    if (type === 'email-subscription') {
+      payload = {
+        email: message.email,
+        subscriptions: message.subscriptions
+      };
+    }
+
     let legacyBody: any = {
       address: message.from,
       msg: JSON.stringify({
@@ -247,7 +271,7 @@ export default async function ingestor(req) {
         ...restBody
       };
       [pinned, receipt] = await Promise.all([
-        pin(ipfsBody, process.env.PINEAPPLE_URL),
+        shouldPinIpfs(type, message) ? pin(ipfsBody, process.env.PINEAPPLE_URL) : { cid: '' },
         issueReceipt(formattedSignature)
       ]);
     } catch (e) {

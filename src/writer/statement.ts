@@ -5,6 +5,7 @@ import { DEFAULT_NETWORK_ID, jsonParse, NETWORK_IDS } from '../helpers/utils';
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg, {});
+
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.statement, msg.payload);
   if (schemaIsValid !== true) {
     log.warn(`[writer] Wrong statement format ${JSON.stringify(schemaIsValid)}`);
