@@ -91,7 +91,6 @@ export async function verify(body): Promise<any> {
 
   if (space.voting?.delay) {
     const isValidDelay = msg.payload.start === created + space.voting.delay;
-    console.log('isValidDelay', isValidDelay, msg.payload.start, created, space.voting.delay);
     if (!isValidDelay) return Promise.reject('invalid voting delay');
   }
 
