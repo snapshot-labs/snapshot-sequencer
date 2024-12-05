@@ -91,6 +91,7 @@ export async function verify(body): Promise<any> {
 
   if (space.voting?.delay) {
     const isValidDelay = msg.payload.start === created + space.voting.delay;
+    console.log('isValidDelay', isValidDelay, msg.payload.start, created, space.voting.delay);
     if (!isValidDelay) return Promise.reject('invalid voting delay');
   }
 
@@ -103,7 +104,9 @@ export async function verify(body): Promise<any> {
     if (msg.payload.type !== space.voting.type) return Promise.reject('invalid voting type');
   }
 
-  if (space.voting?.privacy !== 'any' && msg.payload.privacy) {
+  // Allows any value if space's privacy is set to `shutter` (for backward compatibility)
+  // In this case, we still store `shutter` on proposal's privacy field
+  if (!space.voting.privacy && msg.payload.privacy) {
     return Promise.reject('not allowed to set privacy');
   }
 

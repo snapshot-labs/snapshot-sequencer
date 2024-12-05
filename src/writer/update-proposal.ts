@@ -49,7 +49,9 @@ export async function verify(body): Promise<any> {
 
   if (proposal.author !== body.address) return Promise.reject('Not the author');
 
-  if (space.voting?.privacy !== 'any' && msg.payload.privacy) {
+  // Allows any value if space's privacy is set to `shutter` (for backward compatibility)
+  // In this case, we still store `shutter` on proposal's privacy field
+  if (!space.voting.privacy && msg.payload.privacy) {
     return Promise.reject('not allowed to set privacy');
   }
 
