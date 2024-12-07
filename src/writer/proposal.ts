@@ -1,7 +1,6 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
-import kebabCase from 'lodash/kebabCase';
 import { validateSpaceSettings } from './settings';
 import { getSpace } from '../helpers/actions';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
@@ -252,7 +251,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     quorum_type: (quorum && spaceSettings.voting?.quorumType) || '',
     privacy,
     snapshot: proposalSnapshot || 0,
-    app: kebabCase(msg.payload.app || ''),
+    app: msg.payload.app,
     scores: JSON.stringify([]),
     scores_by_strategy: JSON.stringify([]),
     scores_state: 'pending',
