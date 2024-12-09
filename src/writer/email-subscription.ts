@@ -14,6 +14,10 @@ function extractPayload(message: Message): Payload {
 }
 
 export async function verify(message: Message): Promise<boolean> {
+  if (!envelopDB) {
+    return Promise.reject('not supported');
+  }
+
   const payload = extractPayload(message);
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.emailSubscription, payload);
@@ -30,6 +34,10 @@ export async function verify(message: Message): Promise<boolean> {
 }
 
 export async function action(message: Message): Promise<void> {
+  if (!envelopDB) {
+    return Promise.reject('not supported');
+  }
+
   const payload = extractPayload(message);
 
   if (payload.email?.length) {
