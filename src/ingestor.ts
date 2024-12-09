@@ -31,8 +31,8 @@ const NETWORK_METADATA = {
   }
 };
 
-function shouldPinIpfs(type: string, message: any) {
-  return !(type === 'email-subscription' && message.email);
+function shouldPinIpfs(type: string) {
+  return type !== 'email-subscription' && type !== 'delete-email-subscription';
 }
 
 export default async function ingestor(req) {
@@ -269,7 +269,7 @@ export default async function ingestor(req) {
         ...restBody
       };
       [pinned, receipt] = await Promise.all([
-        shouldPinIpfs(type, message) ? pin(ipfsBody, process.env.PINEAPPLE_URL) : { cid: '' },
+        shouldPinIpfs(type) ? pin(ipfsBody, process.env.PINEAPPLE_URL) : { cid: '' },
         issueReceipt(formattedSignature)
       ]);
     } catch (e) {
