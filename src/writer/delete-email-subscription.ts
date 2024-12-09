@@ -24,7 +24,7 @@ export async function action(message: Message): Promise<void> {
     return Promise.reject('not supported');
   }
 
-  await envelopDB.queryAsync('DELETE FROM subscribers WHERE address = ? AND verified > 0 LIMIT 1', [
+  await envelopDB.queryAsync('DELETE FROM subscribers WHERE address = ? LIMIT 1', [
     message.address
   ]);
 }

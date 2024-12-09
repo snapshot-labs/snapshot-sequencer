@@ -56,16 +56,14 @@ describe('writer/delete-subscription', () => {
       ]);
     });
 
-    it('deletes the subscription', async () => {
+    it('deletes all the subscriptions associated to the address', async () => {
       await action({ address: address });
 
       const results = await envelopDB.queryAsync('SELECT * FROM subscribers WHERE address = ?', [
         address
       ]);
 
-      // Only delete the verified subscription
-      expect(results.length).toBe(1);
-      expect(results[0].email).toEqual('test@snapshot.org');
+      expect(results.length).toBe(0);
     });
   });
 });
