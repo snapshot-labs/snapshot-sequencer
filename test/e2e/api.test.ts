@@ -1,8 +1,8 @@
 import fetch from 'node-fetch';
-import proposalInput from '../fixtures/ingestor-payload/proposal.json';
-import { spacesSqlFixtures } from '../fixtures/space';
-import proposalsFixtures from '../fixtures/proposal';
 import db from '../../src/helpers/mysql';
+import proposalInput from '../fixtures/ingestor-payload/proposal.json';
+import proposalsFixtures from '../fixtures/proposal';
+import { spacesSqlFixtures } from '../fixtures/space';
 
 const HOST = `http://localhost:${process.env.PORT || 3003}`;
 const SPACE_PREFIX = 'e2e-';
@@ -71,7 +71,8 @@ describe('POST /flag', () => {
           plugins: JSON.stringify(proposal.plugins),
           choices: JSON.stringify(proposal.choices),
           scores: JSON.stringify(proposal.scores),
-          scores_by_strategy: JSON.stringify(proposal.scores_by_strategy)
+          scores_by_strategy: JSON.stringify(proposal.scores_by_strategy),
+          vp_value_by_strategy: JSON.stringify(proposal.vp_value_by_strategy || [])
         }))
         .map(async proposal => {
           db.queryAsync('INSERT INTO snapshot_sequencer_test.proposals SET ?', proposal);
