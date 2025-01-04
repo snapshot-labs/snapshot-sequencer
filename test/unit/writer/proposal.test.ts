@@ -425,11 +425,11 @@ describe('writer/proposal', () => {
           expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
 
-        it('rejects a proposal with no privacy', async () => {
+        it('accepts a proposal with empty string in privacy', async () => {
           expect.assertions(2);
-          await expect(writer.verify(updateInputPayload(input, { privacy: '' }))).rejects.toMatch(
-            'not allowed to set privacy'
-          );
+          await expect(
+            writer.verify(updateInputPayload(input, { privacy: '' }))
+          ).resolves.toBeUndefined();
           expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
       });

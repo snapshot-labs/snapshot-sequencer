@@ -58,6 +58,7 @@ CREATE TABLE proposals (
   scores_state VARCHAR(24) NOT NULL,
   scores_total DECIMAL(64,30) NOT NULL,
   scores_updated INT(11) NOT NULL,
+  vp_value_by_strategy JSON DEFAULT NULL,
   votes INT(12) NOT NULL,
   flagged INT NOT NULL DEFAULT 0,
   PRIMARY KEY (id),

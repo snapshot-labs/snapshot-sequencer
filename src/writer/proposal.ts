@@ -105,7 +105,7 @@ export async function verify(body): Promise<any> {
   if (
     space.voting?.privacy !== 'any' &&
     msg.payload.privacy &&
-    !(space.voting.privacy === 'shutter' && msg.payload.privacy === 'shutter')
+    !(space.voting?.privacy === 'shutter' && msg.payload.privacy === 'shutter')
   ) {
     return Promise.reject('not allowed to set privacy');
   }
