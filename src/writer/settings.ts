@@ -4,7 +4,13 @@ import isEqual from 'lodash/isEqual';
 import { addOrUpdateSpace, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
-import { clearStampCache, DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
+import {
+  addToWalletConnectWhitelist,
+  clearStampCache,
+  DEFAULT_NETWORK,
+  jsonParse,
+  removeFromWalletConnectWhitelist
+} from '../helpers/utils';
 
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
@@ -120,9 +126,10 @@ export async function verify(body): Promise<any> {
 export async function action(body): Promise<void> {
   const msg = jsonParse(body.msg);
   const space = msg.space.toLowerCase();
-  const existingSettings = JSON.parse(
-    (await db.queryAsync('SELECT settings FROM spaces WHERE id = ?', [space])?.[0]) || '{}'
-  );
+  const existingSpace = (
+    await db.queryAsync('SELECT domain, settings FROM spaces WHERE id = ? LIMIT 1', [space])
+  )?.[0];
+  const existingSettings = JSON.parse(existingSpace?.settings || '{}');
 
   try {
     await addOrUpdateSpace(space, msg.payload);
@@ -133,4 +140,9 @@ export async function action(body): Promise<void> {
   }
 
   if (existingSettings.avatar !== msg.payload.avatar) await clearStampCache('space', space);
+
+  if (existingSpace?.domain != msg.payload.domain) {
+    await addToWalletConnectWhitelist(msg.payload.domain);
+    await removeFromWalletConnectWhitelist(existingSpace?.domain);
+  }
 }
