@@ -49,11 +49,10 @@ export async function verify(body): Promise<any> {
 
   if (proposal.author !== body.address) return Promise.reject('Not the author');
 
-  if (
-    space.voting?.privacy !== 'any' &&
-    msg.payload.privacy &&
-    !(space.voting.privacy === 'shutter' && msg.payload.privacy === 'shutter')
-  ) {
+  const spacePrivacy = space.voting?.privacy ?? 'any';
+  const proposalPrivacy = msg.payload.privacy;
+
+  if (proposalPrivacy !== undefined && spacePrivacy !== 'any' && spacePrivacy !== proposalPrivacy) {
     return Promise.reject('not allowed to set privacy');
   }
 
@@ -72,9 +71,9 @@ export async function action(body, ipfs): Promise<void> {
   const metadata = msg.payload.metadata || {};
   const plugins = JSON.stringify(metadata.plugins || {});
   const spaceSettings = await getSpace(msg.space);
-  let privacy = spaceSettings.voting?.privacy || '';
+  let privacy = spaceSettings.voting?.privacy ?? 'any';
   if (privacy === 'any') {
-    privacy = msg.payload.privacy;
+    privacy = msg.payload.privacy ?? '';
   }
 
   const proposal = {

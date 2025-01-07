@@ -402,6 +402,13 @@ describe('writer/proposal', () => {
             writer.verify(updateInputPayload(input, { privacy: undefined }))
           ).resolves.toBeUndefined();
         });
+
+        it('rejects a proposal with privacy empty string', async () => {
+          expect.assertions(1);
+          await expect(writer.verify(updateInputPayload(input, { privacy: '' }))).rejects.toMatch(
+            'not allowed to set privacy'
+          );
+        });
       });
     });
 
