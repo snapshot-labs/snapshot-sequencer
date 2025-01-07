@@ -337,10 +337,10 @@ describe('writer/proposal', () => {
           });
         });
 
-        it('rejects a proposal with shutter privacy', () => {
+        it('accepts a proposal with shutter privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: 'shutter' }))
-          ).rejects.toMatch('not allowed to set privacy');
+          ).resolves.toBeUndefined();
         });
 
         it('accepts a proposal with undefined privacy', () => {
@@ -401,6 +401,13 @@ describe('writer/proposal', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: undefined }))
           ).resolves.toBeUndefined();
+        });
+
+        it('rejects a proposal with privacy empty string', async () => {
+          expect.assertions(1);
+          await expect(writer.verify(updateInputPayload(input, { privacy: '' }))).rejects.toMatch(
+            'not allowed to set privacy'
+          );
         });
       });
     });
