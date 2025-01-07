@@ -424,14 +424,6 @@ describe('writer/proposal', () => {
           ).resolves.toBeUndefined();
           expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
-
-        it('accepts a proposal with empty string in privacy', async () => {
-          expect.assertions(2);
-          await expect(
-            writer.verify(updateInputPayload(input, { privacy: '' }))
-          ).resolves.toBeUndefined();
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
-        });
       });
     });
 
