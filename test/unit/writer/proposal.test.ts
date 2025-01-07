@@ -328,7 +328,7 @@ describe('writer/proposal', () => {
         });
       });
 
-      // Fallback as if { privacy: '' } (privacy disabled)
+      // Fallback as if { privacy: 'any' }
       describe('when the space is missing the privacy settings', () => {
         beforeEach(() => {
           mockGetSpace.mockResolvedValueOnce({
@@ -337,10 +337,10 @@ describe('writer/proposal', () => {
           });
         });
 
-        it('rejects a proposal with shutter privacy', () => {
+        it('accepts a proposal with shutter privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: 'shutter' }))
-          ).rejects.toMatch('not allowed to set privacy');
+          ).resolves.toBeUndefined();
         });
 
         it('accepts a proposal with undefined privacy', () => {
