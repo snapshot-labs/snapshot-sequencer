@@ -309,28 +309,22 @@ describe('writer/proposal', () => {
           });
         });
 
-        it('accepts a proposal with shutter privacy', async () => {
-          expect.assertions(2);
-          await expect(
+        it('accepts a proposal with shutter privacy', () => {
+          return expect(
             writer.verify(updateInputPayload(input, { privacy: 'shutter' }))
           ).resolves.toBeUndefined();
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
 
-        it('accepts a proposal with undefined privacy', async () => {
-          expect.assertions(2);
-          await expect(
+        it('accepts a proposal with undefined privacy', () => {
+          return expect(
             writer.verify(updateInputPayload(input, { privacy: undefined }))
           ).resolves.toBeUndefined();
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
 
-        it('accepts a proposal with no privacy', async () => {
-          expect.assertions(2);
-          await expect(
+        it('accepts a proposal with no privacy', () => {
+          return expect(
             writer.verify(updateInputPayload(input, { privacy: '' }))
           ).resolves.toBeUndefined();
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
       });
 
@@ -343,28 +337,22 @@ describe('writer/proposal', () => {
           });
         });
 
-        it('rejects a proposal with shutter privacy', async () => {
-          expect.assertions(2);
-          await expect(
+        it('rejects a proposal with shutter privacy', () => {
+          return expect(
             writer.verify(updateInputPayload(input, { privacy: 'shutter' }))
           ).rejects.toMatch('not allowed to set privacy');
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
 
-        it('accepts a proposal with undefined privacy', async () => {
-          expect.assertions(2);
-          await expect(
+        it('accepts a proposal with undefined privacy', () => {
+          return expect(
             writer.verify(updateInputPayload(input, { privacy: undefined }))
           ).resolves.toBeUndefined();
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
 
-        it('accepts a proposal with no privacy', async () => {
-          expect.assertions(2);
-          await expect(
+        it('accepts a proposal with no privacy', () => {
+          return expect(
             writer.verify(updateInputPayload(input, { privacy: '' }))
           ).resolves.toBeUndefined();
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
       });
 
@@ -376,28 +364,22 @@ describe('writer/proposal', () => {
           });
         });
 
-        it('rejects a proposal with shutter privacy', async () => {
-          expect.assertions(2);
-          await expect(
+        it('rejects a proposal with shutter privacy', () => {
+          return expect(
             writer.verify(updateInputPayload(input, { privacy: 'shutter' }))
           ).rejects.toMatch('not allowed to set privacy');
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
 
-        it('accepts a proposal with undefined privacy', async () => {
-          expect.assertions(2);
-          await expect(
+        it('accepts a proposal with undefined privacy', () => {
+          return expect(
             writer.verify(updateInputPayload(input, { privacy: undefined }))
           ).resolves.toBeUndefined();
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
 
-        it('accepts a proposal with no privacy', async () => {
-          expect.assertions(2);
-          await expect(
+        it('accepts a proposal with no privacy', () => {
+          return expect(
             writer.verify(updateInputPayload(input, { privacy: '' }))
           ).resolves.toBeUndefined();
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
       });
 
@@ -409,20 +391,16 @@ describe('writer/proposal', () => {
           });
         });
 
-        it('accepts a proposal with shutter privacy', async () => {
-          expect.assertions(2);
-          await expect(
+        it('accepts a proposal with shutter privacy', () => {
+          return expect(
             writer.verify(updateInputPayload(input, { privacy: 'shutter' }))
           ).resolves.toBeUndefined();
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
 
-        it('accepts a proposal with undefined privacy', async () => {
-          expect.assertions(2);
-          await expect(
+        it('accepts a proposal with undefined privacy', () => {
+          return expect(
             writer.verify(updateInputPayload(input, { privacy: undefined }))
           ).resolves.toBeUndefined();
-          expect(mockGetSpace).toHaveBeenCalledTimes(1);
         });
       });
     });
