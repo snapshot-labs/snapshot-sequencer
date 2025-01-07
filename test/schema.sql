@@ -31,6 +31,7 @@ CREATE TABLE spaces (
 -- Note: The `proposals` table schema might have some discrepancies
 -- compared to the production database. This is due to legacy reasons
 -- and the challenges associated with updating the schema because of its size.
+-- `id` and `ipfs` columns should not have any default values.
 CREATE TABLE proposals (
   id VARCHAR(66) NOT NULL,
   ipfs VARCHAR(64) NOT NULL,
