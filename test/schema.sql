@@ -28,9 +28,12 @@ CREATE TABLE spaces (
   INDEX updated (updated)
 );
 
+-- Note: The `proposals` table schema might have some discrepancies
+-- compared to the production database. This is due to legacy reasons
+-- and the challenges associated with updating the schema because of its size.
 CREATE TABLE proposals (
-  id VARCHAR(66) NOT NULL DEFAULT '',
-  ipfs VARCHAR(64) NOT NULL DEFAULT '',
+  id VARCHAR(66) NOT NULL,
+  ipfs VARCHAR(64) NOT NULL,
   author VARCHAR(100) NOT NULL,
   created INT(11) NOT NULL,
   updated INT(11) DEFAULT NULL,
