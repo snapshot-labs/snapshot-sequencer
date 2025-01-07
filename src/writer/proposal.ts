@@ -1,7 +1,6 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
-import kebabCase from 'lodash/kebabCase';
 import { validateSpaceSettings } from './settings';
 import { getSpace } from '../helpers/actions';
 import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
@@ -101,6 +100,10 @@ export async function verify(body): Promise<any> {
 
   if (space.voting?.type) {
     if (msg.payload.type !== space.voting.type) return Promise.reject('invalid voting type');
+  }
+
+  if (space.voting?.privacy !== 'any' && msg.payload.privacy) {
+    return Promise.reject('not allowed to set privacy');
   }
 
   try {
@@ -207,6 +210,10 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const plugins = JSON.stringify(metadata.plugins || {});
   const spaceNetwork = spaceSettings.network;
   const proposalSnapshot = parseInt(msg.payload.snapshot || '0');
+  let privacy = spaceSettings.voting?.privacy || '';
+  if (privacy === 'any') {
+    privacy = msg.payload.privacy;
+  }
 
   let quorum = spaceSettings.voting?.quorum || 0;
   if (!quorum && spaceSettings.plugins?.quorum) {
@@ -238,9 +245,9 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     end: parseInt(msg.payload.end || '0'),
     quorum,
     quorum_type: (quorum && spaceSettings.voting?.quorumType) || '',
-    privacy: spaceSettings.voting?.privacy || '',
+    privacy,
     snapshot: proposalSnapshot || 0,
-    app: kebabCase(msg.payload.app || ''),
+    app: msg.payload.app,
     scores: JSON.stringify([]),
     scores_by_strategy: JSON.stringify([]),
     scores_state: 'pending',

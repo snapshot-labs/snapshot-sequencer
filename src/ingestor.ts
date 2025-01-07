@@ -4,7 +4,6 @@ import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import hashTypes from '@snapshot-labs/snapshot.js/src/sign/hashedTypes.json';
 import castArray from 'lodash/castArray';
-import kebabCase from 'lodash/kebabCase';
 import { getProposal, getSpace } from './helpers/actions';
 import { isValidAlias } from './helpers/alias';
 import envelope from './helpers/envelope.json';
@@ -60,7 +59,7 @@ export default async function ingestor(req) {
     const formattedSignature = castArray(body.sig).join(',');
     const ts = Date.now() / 1e3;
     const over = 300;
-    const under = 60 * 60 * 24 * 3; // 3 days
+    const under = 60 * 60 * 24 * 6; // 6 days
     const overTs = (ts + over).toFixed();
     const underTs = (ts - under).toFixed();
     const { domain, message, types } = body.data;
@@ -160,6 +159,7 @@ export default async function ingestor(req) {
         body: message.body,
         discussion: message.discussion || '',
         choices: message.choices,
+        privacy: message.privacy || '',
         labels: message.labels || [],
         start: message.start,
         end: message.end,
@@ -168,7 +168,7 @@ export default async function ingestor(req) {
           plugins: JSON.parse(message.plugins)
         },
         type: message.type,
-        app: kebabCase(message.app || '')
+        app: message.app || ''
       };
     if (type === 'alias') payload = { alias: message.alias };
     if (type === 'statement')
@@ -186,6 +186,7 @@ export default async function ingestor(req) {
         name: message.title,
         body: message.body,
         discussion: message.discussion || '',
+        privacy: message.privacy || '',
         choices: message.choices,
         labels: message.labels || [],
         metadata: {
@@ -217,7 +218,7 @@ export default async function ingestor(req) {
         proposal: message.proposal,
         choice,
         reason: message.reason || '',
-        app: kebabCase(message.app || ''),
+        app: message.app || '',
         metadata: jsonParse(message.metadata, {})
       };
       type = 'vote';
