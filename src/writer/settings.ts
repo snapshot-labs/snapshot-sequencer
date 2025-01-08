@@ -82,6 +82,10 @@ export async function verify(body): Promise<any> {
   const isAdmin = admins.includes(body.address.toLowerCase());
   const newAdmins = (msg.payload.admins || []).map(admin => admin.toLowerCase());
 
+  if (msg.payload.domain && (!space || (!space.turbo && !space.domain))) {
+    return Promise.reject('domain is a turbo feature only');
+  }
+
   const anotherSpaceWithDomain = (
     await db.queryAsync('SELECT 1 FROM spaces WHERE domain = ? AND id != ? LIMIT 1', [
       msg.payload.domain,
