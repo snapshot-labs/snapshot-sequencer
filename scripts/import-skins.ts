@@ -233,6 +233,14 @@ async function loadAndConvertSkin(skin: string) {
       colors[`${key}_color`] = color;
     });
 
+    if (colors['text_color']) {
+      colors['content_color'] = colors['text_color'];
+      const textRgba = hexToRgba(colors['text_color']);
+      textRgba[3] = 0.85;
+
+      colors['text_color'] = opacifyColor(textRgba, hexToRgba(colors['bg_color'] || 'ffffff'));
+    }
+
     skins[skin] = colors;
   } catch (e) {
     console.log(e);
@@ -272,8 +280,8 @@ async function main() {
 
       return db.queryAsync(
         `
-          INSERT INTO skins (id, bg_color, link_color, text_color, border_color, heading_color, primary_color, header_color)
-          VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO skins (id, bg_color, link_color, text_color, content_color, border_color, heading_color, primary_color, header_color)
+          VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON DUPLICATE KEY UPDATE id=id
         `,
         [
@@ -281,6 +289,7 @@ async function main() {
           skin.bg_color,
           skin.link_color,
           skin.text_color,
+          skin.content_color,
           skin.border_color,
           skin.heading_color,
           skin.primary_color,
