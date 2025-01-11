@@ -3,7 +3,12 @@ import db from '../helpers/mysql';
 import { DEFAULT_NETWORK_ID, NETWORK_IDS } from '../helpers/utils';
 
 export const getFollowsCount = async (follower: string): Promise<number> => {
-  const query = `SELECT COUNT(*) AS count FROM follows WHERE follower = ?`;
+  const query = `
+    SELECT COUNT(*) AS count
+    FROM follows
+    JOIN spaces ON spaces.id = follows.space
+    WHERE follower = ? AND spaces.deleted = 0
+  `;
 
   const [{ count }] = await db.queryAsync(query, [follower]);
 
