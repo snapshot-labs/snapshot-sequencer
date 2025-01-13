@@ -215,7 +215,7 @@ async function updateWalletConnectWhitelist(
   domain: string,
   method: 'POST' | 'DELETE'
 ): Promise<boolean> {
-  if (!domain || !process.env.REOWN_SECRET || !process.env.WALLET_CONNECT_PROJECT_ID) return false;
+  if (!domain || !process.env.REOWN_SECRET || !process.env.WALLETCONNECT_PROJECT_ID) return false;
 
   try {
     await fetch(`https://cloud.reown.com/api/set-allowed-domains`, {
@@ -226,7 +226,7 @@ async function updateWalletConnectWhitelist(
         Authorization: process.env.REOWN_SECRET
       },
       body: JSON.stringify({
-        projectId: process.env.WALLET_CONNECT_PROJECT_ID,
+        projectId: process.env.WALLETCONNECT_PROJECT_ID,
         origins: [`https://${domain}`]
       })
     });
