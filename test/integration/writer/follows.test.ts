@@ -1,6 +1,6 @@
-import { verify, action } from '../../../src/writer/follow';
 import { FOLLOWS_LIMIT_PER_USER } from '../../../src/helpers/limits';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
+import { action, verify } from '../../../src/writer/follow';
 import { spacesSqlFixtures } from '../../fixtures/space';
 
 describe('writer/follow', () => {
@@ -9,7 +9,7 @@ describe('writer/follow', () => {
 
   afterAll(async () => {
     await db.queryAsync('DELETE FROM follows');
-    await db.queryAsync('DELETE FROM spaces WHERE id = ?', [`${TEST_PREFIX}-${space.id}`]);
+    await db.queryAsync('DELETE FROM spaces WHERE id LIKE ?', [`${TEST_PREFIX}%`]);
     await db.endAsync();
     await sequencerDB.endAsync();
   });
@@ -18,14 +18,22 @@ describe('writer/follow', () => {
     const followerId = '0x0';
 
     beforeAll(async () => {
-      let i = 0;
+      let i = 1;
       const promises: Promise<any>[] = [];
 
       while (i <= FOLLOWS_LIMIT_PER_USER) {
         promises.push(
+          db.queryAsync('INSERT INTO snapshot_sequencer_test.spaces SET ?', {
+            ...space,
+            id: `${TEST_PREFIX}${i}.eth`,
+            deleted: 0,
+            settings: JSON.stringify(space.settings)
+          })
+        );
+        promises.push(
           db.queryAsync(
             'INSERT INTO follows SET id = ?, ipfs = ?, follower = ?, space = ?, created = ?',
-            [i, i, followerId, `test-${i}.eth`, i]
+            [i, i, followerId, `${TEST_PREFIX}${i}.eth`, i]
           )
         );
 
@@ -39,6 +47,18 @@ describe('writer/follow', () => {
       return expect(verify({ from: followerId })).rejects.toEqual(
         `you can join max ${FOLLOWS_LIMIT_PER_USER} spaces`
       );
+    });
+
+    it('ignores deleted spaces from the limit', async () => {
+      await db.queryAsync('UPDATE snapshot_sequencer_test.spaces SET deleted = 1 WHERE id = ?', [
+        `${TEST_PREFIX}1.eth`
+      ]);
+
+      await expect(verify({ from: followerId })).resolves.toEqual(true);
+
+      return db.queryAsync('UPDATE snapshot_sequencer_test.spaces SET deleted = 0 WHERE id = ?', [
+        `${TEST_PREFIX}1.eth`
+      ]);
     });
 
     it('returns true when the user has not reached the limit', () => {
@@ -111,7 +131,7 @@ describe('writer/follow', () => {
     it('should increment the follower count of the space', async () => {
       await db.queryAsync('INSERT INTO spaces SET ?', {
         ...space,
-        id: `${TEST_PREFIX}-${space.id}`,
+        id: `${TEST_PREFIX}${space.id}`,
         settings: JSON.stringify(space.settings)
       });
 
@@ -119,7 +139,7 @@ describe('writer/follow', () => {
       const ipfs = '4';
       const message = {
         from: '0x4',
-        space: `${TEST_PREFIX}-${space.id}`,
+        space: `${TEST_PREFIX}${space.id}`,
         timestamp: 1
       };
 

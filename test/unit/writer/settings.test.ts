@@ -1,7 +1,7 @@
+import SpaceSchema from '@snapshot-labs/snapshot.js/src/schemas/space.json';
 import { verify } from '../../../src/writer/settings';
 import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/space.json';
-import SpaceSchema from '@snapshot-labs/snapshot.js/src/schemas/space.json';
 
 function editedInput(payload = {}) {
   const result = { ...input, msg: JSON.parse(input.msg) };
@@ -104,6 +104,70 @@ describe('writer/settings', () => {
             })
           )
         ).rejects.toContain('wrong space format');
+      });
+
+      describe('when the space has an existing custom domain', () => {
+        it('accepts a new domain for non-turbo spaces', () => {
+          mockGetSpace.mockResolvedValueOnce({
+            ...spacesGetSpaceFixtures,
+            turbo: false,
+            domain: 'test.com'
+          });
+          return expect(
+            verify(
+              editedInput({
+                domain: 'test2.com'
+              })
+            )
+          ).resolves.toBeUndefined();
+        });
+
+        it('accepts a new domain for turbo spaces', () => {
+          mockGetSpace.mockResolvedValueOnce({
+            ...spacesGetSpaceFixtures,
+            turbo: true,
+            domain: 'test.com'
+          });
+          return expect(
+            verify(
+              editedInput({
+                domain: 'test2.com'
+              })
+            )
+          ).resolves.toBeUndefined();
+        });
+      });
+
+      describe('when the space does not have an existing custom domain', () => {
+        it('rejects a new domain for non-turbo spaces', () => {
+          mockGetSpace.mockResolvedValueOnce({
+            ...spacesGetSpaceFixtures,
+            turbo: false,
+            domain: undefined
+          });
+          return expect(
+            verify(
+              editedInput({
+                domain: 'test2.com'
+              })
+            )
+          ).rejects.toContain('domain is a turbo feature only');
+        });
+
+        it('accepts a new domain for turbo spaces', () => {
+          mockGetSpace.mockResolvedValueOnce({
+            ...spacesGetSpaceFixtures,
+            turbo: true,
+            domain: undefined
+          });
+          return expect(
+            verify(
+              editedInput({
+                domain: 'test2.com'
+              })
+            )
+          ).resolves.toBeUndefined();
+        });
       });
     });
 
