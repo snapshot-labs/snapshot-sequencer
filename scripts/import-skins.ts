@@ -40,6 +40,26 @@ const SKIN_COLORS = ['primary', 'bg', 'text', 'link', 'border', 'header', 'headi
 const skins = {};
 
 /**
+ * Get brightness from a RGB color
+ *
+ * @param r
+ * @param g
+ * @param b
+ * @returns brightness value between 0 (black) and 1 (white)
+ */
+function getBrightness(r: number, g: number, b: number): number {
+  // Normalize RGB values to 0-1 range
+  const rNorm = r / 255;
+  const gNorm = g / 255;
+  const bNorm = b / 255;
+
+  // Apply luminance formula
+  const luminance = 0.2126 * rNorm + 0.7152 * gNorm + 0.0722 * bNorm;
+
+  return luminance;
+}
+
+/**
  * Convert HEX color to RGBA
  *
  * @param color hex color, 6 or 8 characters (ffffff or ffffff22)
@@ -177,7 +197,7 @@ async function loadAndConvertSkin(skin: string) {
     const skinName = /[A-Z]/.test(skin) ? kebabCase(skin) : skin;
     const response = await fetch(`${SKINS_ROOT_PATH}${skinName}.scss`);
     const body = await response.text();
-    const colors = {};
+    const settings = { theme: 'light' };
 
     if (response.status !== 200) {
       return;
@@ -192,22 +212,27 @@ async function loadAndConvertSkin(skin: string) {
 
       const color = translateCssColor(
         matches.groups.color.replace('#', '').trim().toLowerCase(),
-        colors['bg_color']
+        settings['bg_color']
       );
       if (!color) return;
 
-      colors[`${key}_color`] = color;
+      settings[`${key}_color`] = color;
     });
 
-    if (colors['text_color']) {
-      colors['content_color'] = colors['text_color'];
-      const textRgba = hexToRgba(colors['text_color']);
+    if (settings['text_color']) {
+      settings['content_color'] = settings['text_color'];
+      const textRgba = hexToRgba(settings['text_color']);
       textRgba[3] = 0.85;
 
-      colors['text_color'] = opacifyColor(textRgba, hexToRgba(colors['bg_color'] || 'ffffff'));
+      settings['text_color'] = opacifyColor(textRgba, hexToRgba(settings['bg_color'] || 'ffffff'));
     }
 
-    skins[skin] = colors;
+    if (settings['bg_color']) {
+      const [r, g, b] = hexToRgba(settings['bg_color']);
+      settings['theme'] = getBrightness(r, g, b) > 0.5 ? 'light' : 'dark';
+    }
+
+    skins[skin] = settings;
   } catch (e) {
     console.log(e);
   }
@@ -246,8 +271,11 @@ async function main() {
 
       return db.queryAsync(
         `
-          INSERT INTO skins (id, bg_color, link_color, text_color, content_color, border_color, heading_color, primary_color, header_color)
-          VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO skins (
+            id, bg_color, link_color, text_color, content_color,
+            border_color, heading_color, primary_color, header_color, theme
+          )
+          VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON DUPLICATE KEY UPDATE id=id
         `,
         [
@@ -259,7 +287,8 @@ async function main() {
           skin.border_color,
           skin.heading_color,
           skin.primary_color,
-          skin.header_color
+          skin.header_color,
+          skin.theme
         ]
       );
     })
