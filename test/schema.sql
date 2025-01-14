@@ -193,6 +193,12 @@ CREATE TABLE leaderboard (
   INDEX last_vote (last_vote)
 );
 
+CREATE TABLE options (
+  name VARCHAR(100) NOT NULL,
+  value VARCHAR(100) NOT NULL,
+  PRIMARY KEY (name)
+);
+
 CREATE TABLE messages (
   mci INT NOT NULL AUTO_INCREMENT,
   id VARCHAR(66) NOT NULL,
