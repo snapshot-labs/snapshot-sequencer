@@ -206,6 +206,12 @@ CREATE TABLE skins (
   theme VARCHAR(5) NOT NULL DEFAULT 'light',
   PRIMARY KEY (id)
 );
+  
+CREATE TABLE options (
+  name VARCHAR(100) NOT NULL,
+  value VARCHAR(100) NOT NULL,
+  PRIMARY KEY (name)
+);
 
 CREATE TABLE messages (
   mci INT NOT NULL AUTO_INCREMENT,
