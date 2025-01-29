@@ -1,7 +1,18 @@
-import { FOLLOWS_LIMIT_PER_USER } from '../../../src/helpers/limits';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
 import { action, verify } from '../../../src/writer/follow';
 import { spacesSqlFixtures } from '../../fixtures/space';
+
+const LIMIT = 25;
+
+jest.mock('../../../src/helpers/options', () => {
+  const originalModule = jest.requireActual('../../../src/helpers/options');
+
+  return {
+    __esModule: true,
+    ...originalModule,
+    getLimits: () => LIMIT
+  };
+});
 
 describe('writer/follow', () => {
   const TEST_PREFIX = 'test-follow-';
@@ -21,7 +32,7 @@ describe('writer/follow', () => {
       let i = 1;
       const promises: Promise<any>[] = [];
 
-      while (i <= FOLLOWS_LIMIT_PER_USER) {
+      while (i <= LIMIT) {
         promises.push(
           db.queryAsync('INSERT INTO snapshot_sequencer_test.spaces SET ?', {
             ...space,
@@ -45,7 +56,7 @@ describe('writer/follow', () => {
 
     it('rejects when the user has followed too much spaces', () => {
       return expect(verify({ from: followerId })).rejects.toEqual(
-        `you can join max ${FOLLOWS_LIMIT_PER_USER} spaces`
+        `you can join max ${LIMIT} spaces`
       );
     });
 

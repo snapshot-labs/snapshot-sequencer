@@ -3,11 +3,11 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import { validateSpaceSettings } from './settings';
 import { getSpace } from '../helpers/actions';
-import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 import log from '../helpers/log';
 import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
+import { getLimits, getSpaceProposalsLimits } from '../helpers/options';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
@@ -186,11 +186,13 @@ export async function verify(body): Promise<any> {
       space.id,
       body.address
     );
-    const [dayLimit, monthLimit] = getSpaceLimits(space);
 
-    if (dayCount >= dayLimit || monthCount >= monthLimit)
+    if (
+      dayCount >= getSpaceProposalsLimits(space, 'day') ||
+      monthCount >= getSpaceProposalsLimits(space, 'month')
+    )
       return Promise.reject('proposal limit reached');
-    if (!isAuthorized && activeProposalsByAuthor >= ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT)
+    if (!isAuthorized && activeProposalsByAuthor >= getLimits('limit.active_proposals_per_author'))
       return Promise.reject('active proposal limit reached for author');
   } catch (e) {
     capture(e);

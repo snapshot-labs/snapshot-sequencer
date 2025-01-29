@@ -1,23 +1,44 @@
 import omit from 'lodash/omit';
-import {
-  ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT,
-  ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT,
-  ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT,
-  FLAGGED_SPACE_PROPOSAL_DAY_LIMIT,
-  FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT,
-  MAINNET_ECOSYSTEM_SPACES,
-  SPACE_PROPOSAL_DAY_LIMIT,
-  SPACE_PROPOSAL_MONTH_LIMIT,
-  TURBO_SPACE_PROPOSAL_DAY_LIMIT,
-  TURBO_SPACE_PROPOSAL_MONTH_LIMIT,
-  VERIFIED_SPACE_PROPOSAL_DAY_LIMIT,
-  VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT
-} from '../../../src/helpers/limits';
 import * as writer from '../../../src/writer/proposal';
 import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/proposal.json';
 
 const FLAGGED_ADDRESSES = ['0x0'];
+
+const LIMITS = {
+  'limit.active_proposals_per_author': 20,
+  'limit.ecosystem_space.proposal.day': 150,
+  'limit.ecosystem_space.proposal.month': 750,
+  'limit.flagged_space.proposal.day': 5,
+  'limit.flagged_space.proposal.month': 7,
+  'limit.space.proposal.day': 10,
+  'limit.space.proposal.month': 150,
+  'limit.turbo_space.proposal.day': 40,
+  'limit.turbo_space.proposal.month': 200,
+  'limit.verified_space.proposal.day': 20,
+  'limit.verified_space.proposal.month': 100,
+  limit_follows_per_user: 25
+};
+const ECOSYSTEM_LIST = ['test.eth', 'snapshot.eth'];
+
+const mockGetSpaceProposalsLimits = jest.fn((): any => {
+  return 1;
+});
+jest.mock('../../../src/helpers/options', () => {
+  const originalModule = jest.requireActual('../../../src/helpers/options');
+
+  return {
+    __esModule: true,
+    ...originalModule,
+    getLists: () => {
+      return ECOSYSTEM_LIST;
+    },
+    getLimits: (key: string) => {
+      return LIMITS[key];
+    },
+    getSpaceProposalsLimits: () => mockGetSpaceProposalsLimits()
+  };
+});
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockGetSpace = jest.fn((_): any => {
@@ -443,15 +464,16 @@ describe('writer/proposal', () => {
     });
 
     it.each([
-      ['flagged', FLAGGED_SPACE_PROPOSAL_DAY_LIMIT, 'flagged', true],
-      ['verified', VERIFIED_SPACE_PROPOSAL_DAY_LIMIT, 'verified', true],
-      ['ecosystem', ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT, 'id', MAINNET_ECOSYSTEM_SPACES[0]],
-      ['turbo', TURBO_SPACE_PROPOSAL_DAY_LIMIT, 'turbo', true],
-      ['normal', SPACE_PROPOSAL_DAY_LIMIT, null, null]
+      ['flagged', LIMITS['limit.flagged_space.proposal.day'], 'flagged', true],
+      ['verified', LIMITS['limit.verified_space.proposal.day'], 'verified', true],
+      ['ecosystem', LIMITS['limit.ecosystem_space.proposal.day'], 'id', ECOSYSTEM_LIST[0]],
+      ['turbo', LIMITS['limit.turbo_space.proposal.day'], 'turbo', true],
+      ['normal', LIMITS['limit.space.proposal.day'], null, null]
     ])(
       'rejects if the %s space has exceeded the proposal daily post limit',
       async (category, limit, key, value) => {
         expect.assertions(3);
+        mockGetSpaceProposalsLimits.mockReturnValueOnce(limit);
         mockGetProposalsCount.mockResolvedValueOnce([
           { dayCount: limit + 1, monthCount: 0, activeProposalsByAuthor: 1 }
         ]);
@@ -468,15 +490,16 @@ describe('writer/proposal', () => {
     );
 
     it.each([
-      ['flagged', FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT, 'flagged', true],
-      ['verified', VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT, 'verified', true],
-      ['ecosystem', ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT, 'id', MAINNET_ECOSYSTEM_SPACES[0]],
-      ['turbo', TURBO_SPACE_PROPOSAL_MONTH_LIMIT, 'turbo', true],
-      ['normal', SPACE_PROPOSAL_MONTH_LIMIT, null, null]
+      ['flagged', LIMITS['limit.flagged_space.proposal.month'], 'flagged', true],
+      ['verified', LIMITS['limit.verified_space.proposal.month'], 'verified', true],
+      ['ecosystem', LIMITS['limit.ecosystem_space.proposal.month'], 'id', ECOSYSTEM_LIST[0]],
+      ['turbo', LIMITS['limit.turbo_space.proposal.month'], 'turbo', true],
+      ['normal', LIMITS['limit.space.proposal.month'], null, null]
     ])(
       'rejects if the %s space has exceeded the proposal monthly post limit',
       async (category, limit, key, value) => {
         expect.assertions(3);
+        mockGetSpaceProposalsLimits.mockReturnValueOnce(limit);
         mockGetProposalsCount.mockResolvedValueOnce([
           { dayCount: 0, monthCount: limit + 1, activeProposalsByAuthor: 1 }
         ]);
@@ -498,7 +521,7 @@ describe('writer/proposal', () => {
         {
           dayCount: 0,
           monthCount: 0,
-          activeProposalsByAuthor: ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT + 1
+          activeProposalsByAuthor: LIMITS['limit.active_proposals_per_author'] + 1
         }
       ]);
 
