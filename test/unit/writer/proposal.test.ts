@@ -6,18 +6,18 @@ import input from '../../fixtures/writer-payload/proposal.json';
 const FLAGGED_ADDRESSES = ['0x0'];
 
 const LIMITS = {
-  'limit.active_proposals_per_author': 20,
-  'limit.ecosystem_space.proposal.day': 150,
-  'limit.ecosystem_space.proposal.month': 750,
-  'limit.flagged_space.proposal.day': 5,
-  'limit.flagged_space.proposal.month': 7,
-  'limit.space.proposal.day': 10,
-  'limit.space.proposal.month': 150,
-  'limit.turbo_space.proposal.day': 40,
-  'limit.turbo_space.proposal.month': 200,
-  'limit.verified_space.proposal.day': 20,
-  'limit.verified_space.proposal.month': 100,
-  limit_follows_per_user: 25
+  'space.active_proposal_limit_per_author': 20,
+  'space.ecosystem.proposal_limit_per_day': 150,
+  'space.ecosystem.proposal_limit_per_month': 750,
+  'space.flagged.proposal_limit_per_day': 5,
+  'space.flagged.proposal_limit_per_month': 7,
+  'space.default.proposal_limit_per_day': 10,
+  'space.default.proposal_limit_per_month': 150,
+  'space.turbo.proposal_limit_per_day': 40,
+  'space.turbo.proposal_limit_per_month': 200,
+  'space.verified.proposal_limit_per_day': 20,
+  'space.verified.proposal_limit_per_month': 100,
+  'user.default.follow.limit': 25
 };
 const ECOSYSTEM_LIST = ['test.eth', 'snapshot.eth'];
 
@@ -460,11 +460,11 @@ describe('writer/proposal', () => {
     });
 
     it.each([
-      ['flagged', LIMITS['limit.flagged_space.proposal.day'], 'flagged', true],
-      ['verified', LIMITS['limit.verified_space.proposal.day'], 'verified', true],
-      ['ecosystem', LIMITS['limit.ecosystem_space.proposal.day'], 'id', ECOSYSTEM_LIST[0]],
-      ['turbo', LIMITS['limit.turbo_space.proposal.day'], 'turbo', true],
-      ['normal', LIMITS['limit.space.proposal.day'], null, null]
+      ['flagged', LIMITS['space.flagged.proposal_limit_per_day'], 'flagged', true],
+      ['verified', LIMITS['space.verified.proposal_limit_per_day'], 'verified', true],
+      ['ecosystem', LIMITS['space.ecosystem.proposal_limit_per_day'], 'id', ECOSYSTEM_LIST[0]],
+      ['turbo', LIMITS['space.turbo.proposal_limit_per_day'], 'turbo', true],
+      ['normal', LIMITS['space.default.proposal_limit_per_day'], null, null]
     ])(
       'rejects if the %s space has exceeded the proposal daily post limit',
       async (category, limit, key, value) => {
@@ -485,11 +485,11 @@ describe('writer/proposal', () => {
     );
 
     it.each([
-      ['flagged', LIMITS['limit.flagged_space.proposal.month'], 'flagged', true],
-      ['verified', LIMITS['limit.verified_space.proposal.month'], 'verified', true],
-      ['ecosystem', LIMITS['limit.ecosystem_space.proposal.month'], 'id', ECOSYSTEM_LIST[0]],
-      ['turbo', LIMITS['limit.turbo_space.proposal.month'], 'turbo', true],
-      ['normal', LIMITS['limit.space.proposal.month'], null, null]
+      ['flagged', LIMITS['space.flagged.proposal_limit_per_month'], 'flagged', true],
+      ['verified', LIMITS['space.verified.proposal_limit_per_month'], 'verified', true],
+      ['ecosystem', LIMITS['space.ecosystem.proposal_limit_per_month'], 'id', ECOSYSTEM_LIST[0]],
+      ['turbo', LIMITS['space.turbo.proposal_limit_per_month'], 'turbo', true],
+      ['normal', LIMITS['space.default.proposal_limit_per_month'], null, null]
     ])(
       'rejects if the %s space has exceeded the proposal monthly post limit',
       async (category, limit, key, value) => {
@@ -515,7 +515,7 @@ describe('writer/proposal', () => {
         {
           dayCount: 0,
           monthCount: 0,
-          activeProposalsByAuthor: LIMITS['limit.active_proposals_per_author'] + 1
+          activeProposalsByAuthor: LIMITS['space.active_proposal_limit_per_author'] + 1
         }
       ]);
 

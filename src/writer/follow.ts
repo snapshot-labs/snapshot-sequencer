@@ -22,7 +22,7 @@ export async function verify(message): Promise<any> {
   if (follows.length !== 0) return Promise.reject('you are already following this space');
 
   const count = await getFollowsCount(message.from);
-  const limit = await getLimit('limit.follows_per_user');
+  const limit = await getLimit('user.default.follow_limit');
 
   if (count >= limit) {
     return Promise.reject(`you can join max ${limit} spaces`);

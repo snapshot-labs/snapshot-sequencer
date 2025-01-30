@@ -17,18 +17,16 @@ export async function getSpaceProposalsLimits(
   space: { verified: boolean; turbo: boolean; flagged: boolean; id: string },
   interval: 'day' | 'month'
 ): Promise<number> {
-  let type: null | string = null;
+  let type = 'default';
 
-  if ((await getList('ecosystem_spaces')).includes(space.id)) {
+  if ((await getList('space.ecosystem.list')).includes(space.id)) {
     type = 'ecosystem';
   }
   if (space.flagged) type = 'flagged';
   if (space.verified) type = 'verified';
   if (space.turbo) type = 'turbo';
 
-  const spaceType = [type, 'space'].filter(Boolean).join('_');
-
-  return getLimit(`limit.${spaceType}.proposal.${interval}`);
+  return getLimit(`space.${type}.proposal_limit_per_${interval}`);
 }
 
 export const getProposalsCount = async (space, author) => {
@@ -212,7 +210,7 @@ export async function verify(body): Promise<any> {
       return Promise.reject('proposal limit reached');
     if (
       !isAuthorized &&
-      activeProposalsByAuthor >= (await getLimit('limit.active_proposals_per_author'))
+      activeProposalsByAuthor >= (await getLimit('space.active_proposal_limit_per_author'))
     )
       return Promise.reject('active proposal limit reached for author');
   } catch (e) {
