@@ -21,22 +21,18 @@ const LIMITS = {
 };
 const ECOSYSTEM_LIST = ['test.eth', 'snapshot.eth'];
 
-const mockGetSpaceProposalsLimits = jest.fn((): any => {
-  return 1;
-});
 jest.mock('../../../src/helpers/options', () => {
   const originalModule = jest.requireActual('../../../src/helpers/options');
 
   return {
     __esModule: true,
     ...originalModule,
-    getLists: () => {
+    getList: () => {
       return ECOSYSTEM_LIST;
     },
-    getLimits: (key: string) => {
+    getLimit: (key: string) => {
       return LIMITS[key];
-    },
-    getSpaceProposalsLimits: () => mockGetSpaceProposalsLimits()
+    }
   };
 });
 
@@ -473,7 +469,6 @@ describe('writer/proposal', () => {
       'rejects if the %s space has exceeded the proposal daily post limit',
       async (category, limit, key, value) => {
         expect.assertions(3);
-        mockGetSpaceProposalsLimits.mockReturnValueOnce(limit);
         mockGetProposalsCount.mockResolvedValueOnce([
           { dayCount: limit + 1, monthCount: 0, activeProposalsByAuthor: 1 }
         ]);
@@ -499,7 +494,6 @@ describe('writer/proposal', () => {
       'rejects if the %s space has exceeded the proposal monthly post limit',
       async (category, limit, key, value) => {
         expect.assertions(3);
-        mockGetSpaceProposalsLimits.mockReturnValueOnce(limit);
         mockGetProposalsCount.mockResolvedValueOnce([
           { dayCount: 0, monthCount: limit + 1, activeProposalsByAuthor: 1 }
         ]);

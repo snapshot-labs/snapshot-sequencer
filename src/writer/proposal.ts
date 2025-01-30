@@ -7,11 +7,29 @@ import log from '../helpers/log';
 import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
-import { getLimits, getSpaceProposalsLimits } from '../helpers/options';
+import { getLimit, getList } from '../helpers/options';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
+
+export async function getSpaceProposalsLimits(
+  space: { verified: boolean; turbo: boolean; flagged: boolean; id: string },
+  interval: 'day' | 'month'
+): Promise<number> {
+  let type: null | string = null;
+
+  if ((await getList('ecosystem_spaces')).includes(space.id)) {
+    type = 'ecosystem';
+  }
+  if (space.flagged) type = 'flagged';
+  if (space.verified) type = 'verified';
+  if (space.turbo) type = 'turbo';
+
+  const spaceType = [type, 'space'].filter(Boolean).join('_');
+
+  return getLimit(`limit.${spaceType}.proposal.${interval}`);
+}
 
 export const getProposalsCount = async (space, author) => {
   const query = `
@@ -188,11 +206,11 @@ export async function verify(body): Promise<any> {
     );
 
     if (
-      dayCount >= getSpaceProposalsLimits(space, 'day') ||
-      monthCount >= getSpaceProposalsLimits(space, 'month')
+      dayCount >= (await getSpaceProposalsLimits(space, 'day')) ||
+      monthCount >= (await getSpaceProposalsLimits(space, 'month'))
     )
       return Promise.reject('proposal limit reached');
-    if (!isAuthorized && activeProposalsByAuthor >= getLimits('limit.active_proposals_per_author'))
+    if (!isAuthorized && activeProposalsByAuthor >= getLimit('limit.active_proposals_per_author'))
       return Promise.reject('active proposal limit reached for author');
   } catch (e) {
     capture(e);

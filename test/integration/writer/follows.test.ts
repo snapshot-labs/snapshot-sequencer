@@ -2,7 +2,7 @@ import db, { sequencerDB } from '../../../src/helpers/mysql';
 import { action, verify } from '../../../src/writer/follow';
 import { spacesSqlFixtures } from '../../fixtures/space';
 
-const LIMIT = 25;
+const LIMIT = 10;
 
 jest.mock('../../../src/helpers/options', () => {
   const originalModule = jest.requireActual('../../../src/helpers/options');
@@ -10,7 +10,7 @@ jest.mock('../../../src/helpers/options', () => {
   return {
     __esModule: true,
     ...originalModule,
-    getLimits: () => LIMIT
+    getLimit: () => LIMIT
   };
 });
 

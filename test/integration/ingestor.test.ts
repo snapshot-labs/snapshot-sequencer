@@ -13,8 +13,7 @@ jest.mock('../../src/helpers/options', () => {
   return {
     __esModule: true,
     ...originalModule,
-    getSpaceProposalsLimits: () => 100,
-    getLimits: () => 100
+    getLimit: () => 100
   };
 });
 
