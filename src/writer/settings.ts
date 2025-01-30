@@ -4,6 +4,7 @@ import isEqual from 'lodash/isEqual';
 import { addOrUpdateSpace, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
+import { getLimit } from '../helpers/options';
 import { clearStampCache, DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
 
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
@@ -71,6 +72,14 @@ export async function verify(body): Promise<any> {
     });
   } catch (e) {
     return Promise.reject(e);
+  }
+
+  const strategiesLimit = await getLimit(
+    `space.${space.turbo ? 'turbo' : 'default'}.strategies_limit`
+  );
+
+  if (msg.payload.strategies.length > strategiesLimit) {
+    return Promise.reject(`max number of strategies is ${strategiesLimit}`);
   }
 
   const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
