@@ -210,7 +210,10 @@ export async function verify(body): Promise<any> {
       monthCount >= (await getSpaceProposalsLimits(space, 'month'))
     )
       return Promise.reject('proposal limit reached');
-    if (!isAuthorized && activeProposalsByAuthor >= getLimit('limit.active_proposals_per_author'))
+    if (
+      !isAuthorized &&
+      activeProposalsByAuthor >= (await getLimit('limit.active_proposals_per_author'))
+    )
       return Promise.reject('active proposal limit reached for author');
   } catch (e) {
     capture(e);
