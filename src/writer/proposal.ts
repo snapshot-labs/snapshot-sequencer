@@ -7,7 +7,7 @@ import log from '../helpers/log';
 import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
-import { getLimit, getList } from '../helpers/options';
+import { getLimit, getSpaceType } from '../helpers/options';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
@@ -17,16 +17,7 @@ export async function getSpaceProposalsLimits(
   space: { verified: boolean; turbo: boolean; flagged: boolean; id: string },
   interval: 'day' | 'month'
 ): Promise<number> {
-  let type = 'default';
-
-  if ((await getList('space.ecosystem.list')).includes(space.id)) {
-    type = 'ecosystem';
-  }
-  if (space.flagged) type = 'flagged';
-  if (space.verified) type = 'verified';
-  if (space.turbo) type = 'turbo';
-
-  return getLimit(`space.${type}.proposal_limit_per_${interval}`);
+  return getLimit(`space.${await getSpaceType(space, true)}.proposal_limit_per_${interval}`);
 }
 
 export const getProposalsCount = async (space, author) => {
@@ -216,6 +207,16 @@ export async function verify(body): Promise<any> {
   } catch (e) {
     capture(e);
     return Promise.reject('failed to check proposals limit');
+  }
+
+  const bodyLengthLimit = await getLimit(`space.${await getSpaceType(space)}.body_limit`);
+  if (msg.payload.body.length > bodyLengthLimit) {
+    return Promise.reject(`proposal body length can not exceed ${bodyLengthLimit} characters`);
+  }
+
+  const choicesLimit = await getLimit(`space.${await getSpaceType(space)}.choices_limit`);
+  if (msg.payload.choices.length > choicesLimit) {
+    return Promise.reject(`number of choices can not exceed ${choicesLimit}`);
   }
 }
 
