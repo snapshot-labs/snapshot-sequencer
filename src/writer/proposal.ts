@@ -14,10 +14,10 @@ const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export async function getSpaceProposalsLimits(
-  space: { verified: boolean; turbo: boolean; flagged: boolean; id: string },
+  spaceType: string,
   interval: 'day' | 'month'
 ): Promise<number> {
-  return getLimit(`space.${await getSpaceType(space, true)}.proposal_limit_per_${interval}`);
+  return getLimit(`space.${spaceType}.proposal_limit_per_${interval}`);
 }
 
 export const getProposalsCount = async (space, author) => {
@@ -194,9 +194,10 @@ export async function verify(body): Promise<any> {
       body.address
     );
 
+    const spaceTypeWithEcosystem = await getSpaceType(space, true);
     if (
-      dayCount >= (await getSpaceProposalsLimits(space, 'day')) ||
-      monthCount >= (await getSpaceProposalsLimits(space, 'month'))
+      dayCount >= (await getSpaceProposalsLimits(spaceTypeWithEcosystem, 'day')) ||
+      monthCount >= (await getSpaceProposalsLimits(spaceTypeWithEcosystem, 'month'))
     )
       return Promise.reject('proposal limit reached');
     if (
@@ -209,12 +210,13 @@ export async function verify(body): Promise<any> {
     return Promise.reject('failed to check proposals limit');
   }
 
-  const bodyLengthLimit = await getLimit(`space.${await getSpaceType(space)}.body_limit`);
+  const spaceType = await getSpaceType(space);
+  const bodyLengthLimit = await getLimit(`space.${spaceType}.body_limit`);
   if (msg.payload.body.length > bodyLengthLimit) {
     return Promise.reject(`proposal body length can not exceed ${bodyLengthLimit} characters`);
   }
 
-  const choicesLimit = await getLimit(`space.${await getSpaceType(space)}.choices_limit`);
+  const choicesLimit = await getLimit(`space.${spaceType}.choices_limit`);
   if (msg.payload.choices.length > choicesLimit) {
     return Promise.reject(`number of choices can not exceed ${choicesLimit}`);
   }
