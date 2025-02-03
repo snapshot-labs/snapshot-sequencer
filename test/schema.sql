@@ -193,6 +193,26 @@ CREATE TABLE leaderboard (
   INDEX last_vote (last_vote)
 );
 
+CREATE TABLE skins (
+  id VARCHAR(100) NOT NULL,
+  bg_color VARCHAR(6) DEFAULT NULL,
+  link_color VARCHAR(6) DEFAULT NULL,
+  text_color VARCHAR(6) DEFAULT NULL,
+  content_color VARCHAR(6) DEFAULT NULL,
+  border_color VARCHAR(6) DEFAULT NULL,
+  heading_color VARCHAR(6) DEFAULT NULL,
+  primary_color VARCHAR(6) DEFAULT NULL,
+  header_color VARCHAR(6) DEFAULT NULL,
+  theme VARCHAR(5) NOT NULL DEFAULT 'light',
+  PRIMARY KEY (id)
+);
+  
+CREATE TABLE options (
+  name VARCHAR(100) NOT NULL,
+  value VARCHAR(100) NOT NULL,
+  PRIMARY KEY (name)
+);
+
 CREATE TABLE messages (
   mci INT NOT NULL AUTO_INCREMENT,
   id VARCHAR(66) NOT NULL,
