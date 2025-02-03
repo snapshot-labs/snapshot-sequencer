@@ -2,17 +2,28 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import db from './mysql';
 import { DEFAULT_NETWORK_ID, jsonParse, NETWORK_ID_WHITELIST } from './utils';
 
-export async function addOrUpdateSpace(space: string, settings: any) {
-  if (!settings?.name) return false;
-  if (settings.domain) {
-    settings.domain = settings.domain?.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
+function normalizeSettings(settings: any) {
+  const _settings = snapshot.utils.clone(settings);
+
+  if (_settings.domain) {
+    _settings.domain = _settings.domain?.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
   }
-  if (settings.delegationPortal) {
-    settings.delegationPortal = {
+  if (_settings.delegationPortal) {
+    _settings.delegationPortal = {
       delegationNetwork: '1',
-      ...settings.delegationPortal
+      ..._settings.delegationPortal
     };
   }
+
+  delete _settings.skinParams;
+
+  return _settings;
+}
+
+export async function addOrUpdateSpace(id: string, settings: any) {
+  if (!settings?.name) return false;
+
+  const normalizedSettings = normalizeSettings(settings);
 
   const ts = (Date.now() / 1e3).toFixed();
   const query =
@@ -20,18 +31,62 @@ export async function addOrUpdateSpace(space: string, settings: any) {
 
   await db.queryAsync(query, [
     {
-      id: space,
+      id,
       name: settings.name,
       created: ts,
       updated: ts,
-      settings: JSON.stringify(settings),
+      settings: JSON.stringify(normalizedSettings),
       domain: settings.domain || null
     },
     ts,
-    JSON.stringify(settings),
+    JSON.stringify(normalizedSettings),
     settings.name,
-    settings.domain || null
+    normalizedSettings.domain || null
   ]);
+
+  await addOrUpdateSkin(id, settings.skinParams);
+}
+
+export async function addOrUpdateSkin(id: string, skinParams: Record<string, string>) {
+  if (!skinParams) return false;
+
+  const COLORS = [
+    'bg_color',
+    'link_color',
+    'text_color',
+    'content_color',
+    'border_color',
+    'heading_color',
+    'primary_color',
+    'header_color'
+  ];
+
+  const _params = snapshot.utils.clone(skinParams);
+  COLORS.forEach(color => {
+    if (_params[color]) {
+      _params[color] = _params[color].replace('#', '');
+    }
+  });
+  const existingTheme = (
+    await db.queryAsync('SELECT theme FROM skins WHERE id = ? LIMIT 1', [id])
+  )[0]?.theme;
+
+  await db.queryAsync(
+    `INSERT INTO skins
+      SET ?
+      ON DUPLICATE KEY UPDATE
+        ${COLORS.map(color => `${color} = ?`).join(',')},
+        theme = ?
+    `,
+    [
+      {
+        id,
+        ..._params
+      },
+      ...COLORS.map(color => _params[color]),
+      _params.theme || existingTheme
+    ]
+  );
 }
 
 export async function getProposal(space, id) {
