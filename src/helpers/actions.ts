@@ -2,6 +2,8 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import db from './mysql';
 import { DEFAULT_NETWORK_ID, jsonParse, NETWORK_ID_WHITELIST } from './utils';
 
+const DEFAULT_SKIN = 'light';
+
 function normalizeSettings(settings: any) {
   const _settings = snapshot.utils.clone(settings);
 
@@ -67,16 +69,17 @@ export async function addOrUpdateSkin(id: string, skinParams: Record<string, str
       _params[color] = _params[color].replace('#', '');
     }
   });
-  const existingTheme = (
-    await db.queryAsync('SELECT theme FROM skins WHERE id = ? LIMIT 1', [id])
-  )[0]?.theme;
+  const existingSkin = (
+    await db.queryAsync('SELECT theme, logo FROM skins WHERE id = ? LIMIT 1', [id])
+  )[0];
 
   await db.queryAsync(
     `INSERT INTO skins
       SET ?
       ON DUPLICATE KEY UPDATE
         ${COLORS.map(color => `${color} = ?`).join(',')},
-        theme = ?
+        theme = ?,
+        logo = ?
     `,
     [
       {
@@ -84,7 +87,8 @@ export async function addOrUpdateSkin(id: string, skinParams: Record<string, str
         ..._params
       },
       ...COLORS.map(color => _params[color]),
-      _params.theme || existingTheme
+      _params.theme || existingSkin?.theme || DEFAULT_SKIN,
+      _params.logo || existingSkin?.logo || null
     ]
   );
 }
