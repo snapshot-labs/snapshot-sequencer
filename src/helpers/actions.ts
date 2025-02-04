@@ -15,7 +15,7 @@ function normalizeSettings(settings: any) {
     };
   }
 
-  delete _settings.skinParams;
+  delete _settings.skinSettings;
 
   return _settings;
 }
@@ -44,11 +44,11 @@ export async function addOrUpdateSpace(id: string, settings: any) {
     normalizedSettings.domain || null
   ]);
 
-  await addOrUpdateSkin(id, settings.skinParams);
+  await addOrUpdateSkin(id, settings.skinSettings);
 }
 
-export async function addOrUpdateSkin(id: string, skinParams: Record<string, string>) {
-  if (!skinParams) return false;
+export async function addOrUpdateSkin(id: string, skinSettings: Record<string, string>) {
+  if (!skinSettings) return false;
 
   const COLORS = [
     'bg_color',
@@ -61,7 +61,7 @@ export async function addOrUpdateSkin(id: string, skinParams: Record<string, str
     'header_color'
   ];
 
-  const _params = snapshot.utils.clone(skinParams);
+  const _params = snapshot.utils.clone(skinSettings);
   COLORS.forEach(color => {
     if (_params[color]) {
       _params[color] = _params[color].replace('#', '');

@@ -84,7 +84,7 @@ export async function verify(body): Promise<any> {
 
   if (!space?.turbo && !space?.domain) {
     if (msg.payload.domain) return Promise.reject('domain is a turbo feature only');
-    if (msg.payload.skinParams) return Promise.reject('skin is a turbo feature only');
+    if (msg.payload.skinSettings) return Promise.reject('skin is a turbo feature only');
   }
 
   const anotherSpaceWithDomain = (

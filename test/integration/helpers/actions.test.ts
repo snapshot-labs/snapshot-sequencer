@@ -179,7 +179,7 @@ describe('helpers/actions', () => {
 
     it('adds a new skin when it does not exist', async () => {
       const testId = 'test-new-skin-ids';
-      const skinParams = {
+      const skinSettings = {
         bg_color: '#000000',
         link_color: '#ffffff',
         text_color: '#000000',
@@ -188,7 +188,7 @@ describe('helpers/actions', () => {
         heading_color: '#ffffff',
         primary_color: '#ffffff'
       };
-      await addOrUpdateSkin(testId, skinParams);
+      await addOrUpdateSkin(testId, skinSettings);
       const skin = (await db.queryAsync('SELECT * FROM skins WHERE id = ?', [testId]))[0];
       expect(skin).toEqual({
         id: testId,
@@ -206,7 +206,7 @@ describe('helpers/actions', () => {
 
     it('updates an existing skin', async () => {
       const testId = 'test-update-skin-id';
-      const skinParams = {
+      const skinSettings = {
         bg_color: '#FFFF00',
         link_color: '#FFFFFF'
       };
@@ -225,7 +225,7 @@ describe('helpers/actions', () => {
           'light'
         ]
       );
-      await addOrUpdateSkin(testId, skinParams);
+      await addOrUpdateSkin(testId, skinSettings);
       const skin = (await db.queryAsync('SELECT * FROM skins WHERE id = ?', [testId]))[0];
       expect(skin).toEqual({
         id: testId,
