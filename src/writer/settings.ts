@@ -82,8 +82,9 @@ export async function verify(body): Promise<any> {
   const isAdmin = admins.includes(body.address.toLowerCase());
   const newAdmins = (msg.payload.admins || []).map(admin => admin.toLowerCase());
 
-  if (msg.payload.domain && !space?.turbo && !space?.domain) {
-    return Promise.reject('domain is a turbo feature only');
+  if (!space?.turbo && !space?.domain) {
+    if (msg.payload.domain) return Promise.reject('domain is a turbo feature only');
+    if (msg.payload.skinParams) return Promise.reject('skin is a turbo feature only');
   }
 
   const anotherSpaceWithDomain = (
