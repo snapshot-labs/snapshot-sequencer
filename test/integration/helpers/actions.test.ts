@@ -192,13 +192,13 @@ describe('helpers/actions', () => {
       const skin = (await db.queryAsync('SELECT * FROM skins WHERE id = ?', [testId]))[0];
       expect(skin).toEqual({
         id: testId,
-        bg_color: '000000',
-        link_color: 'ffffff',
-        text_color: '000000',
-        content_color: 'ffffff',
-        border_color: 'ffffff',
-        heading_color: 'ffffff',
-        primary_color: 'ffffff',
+        bg_color: '#000000',
+        link_color: '#ffffff',
+        text_color: '#000000',
+        content_color: '#ffffff',
+        border_color: '#ffffff',
+        heading_color: '#ffffff',
+        primary_color: '#ffffff',
         header_color: null,
         theme: 'light'
       });
@@ -214,14 +214,14 @@ describe('helpers/actions', () => {
         'INSERT INTO skins (id, bg_color, link_color, text_color, content_color, border_color, heading_color, primary_color, header_color, theme) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
           testId,
-          '000000',
-          '000000',
-          '000000',
-          '000000',
-          '000000',
-          '000000',
-          '000000',
-          '000000',
+          '#000000',
+          '#000000',
+          '#000000',
+          '#000000',
+          '#000000',
+          '#000000',
+          '#000000',
+          '#000000',
           'light'
         ]
       );
@@ -229,8 +229,8 @@ describe('helpers/actions', () => {
       const skin = (await db.queryAsync('SELECT * FROM skins WHERE id = ?', [testId]))[0];
       expect(skin).toEqual({
         id: testId,
-        bg_color: 'FFFF00',
-        link_color: 'FFFFFF',
+        bg_color: '#FFFF00',
+        link_color: '#FFFFFF',
         text_color: null,
         content_color: null,
         border_color: null,

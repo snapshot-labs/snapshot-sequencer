@@ -61,30 +61,20 @@ export async function addOrUpdateSkin(id: string, skinSettings: Record<string, s
     'header_color'
   ];
 
-  const _params = snapshot.utils.clone(skinSettings);
-  COLORS.forEach(color => {
-    if (_params[color]) {
-      _params[color] = _params[color].replace('#', '');
-    }
-  });
-  const existingTheme = (
-    await db.queryAsync('SELECT theme FROM skins WHERE id = ? LIMIT 1', [id])
-  )[0]?.theme;
-
   await db.queryAsync(
     `INSERT INTO skins
       SET ?
       ON DUPLICATE KEY UPDATE
         ${COLORS.map(color => `${color} = ?`).join(',')},
-        theme = ?
+        theme = COALESCE(VALUES(theme), theme)
     `,
     [
       {
         id,
-        ..._params
+        ...skinSettings
       },
-      ...COLORS.map(color => _params[color]),
-      _params.theme || existingTheme
+      ...COLORS.map(color => skinSettings[color]),
+      skinSettings.theme
     ]
   );
 }
