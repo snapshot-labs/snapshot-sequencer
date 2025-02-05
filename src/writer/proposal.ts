@@ -200,9 +200,10 @@ export async function verify(body): Promise<any> {
       monthCount >= (await getSpaceProposalsLimits(spaceTypeWithEcosystem, 'month'))
     )
       return Promise.reject('proposal limit reached');
+    const activeProposalLimitPerAuthor = await getLimit('space.active_proposal_limit_per_author');
     if (
       !isAuthorized &&
-      activeProposalsByAuthor >= (await getLimit('space.active_proposal_limit_per_author'))
+      activeProposalsByAuthor >= activeProposalLimitPerAuthor)
     )
       return Promise.reject('active proposal limit reached for author');
   } catch (e) {
