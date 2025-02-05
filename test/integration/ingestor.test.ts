@@ -1,11 +1,21 @@
-import ingestor from '../../src/ingestor';
-import proposalInput from '../fixtures/ingestor-payload/proposal.json';
-import { spacesGetSpaceFixtures } from '../fixtures/space';
-import voteInput from '../fixtures/ingestor-payload/vote.json';
 import cloneDeep from 'lodash/cloneDeep';
 import omit from 'lodash/omit';
 import db, { sequencerDB } from '../../src/helpers/mysql';
 import relayer from '../../src/helpers/relayer';
+import ingestor from '../../src/ingestor';
+import proposalInput from '../fixtures/ingestor-payload/proposal.json';
+import voteInput from '../fixtures/ingestor-payload/vote.json';
+import { spacesGetSpaceFixtures } from '../fixtures/space';
+
+jest.mock('../../src/helpers/options', () => {
+  const originalModule = jest.requireActual('../../src/helpers/options');
+
+  return {
+    __esModule: true,
+    ...originalModule,
+    getLimit: () => 100
+  };
+});
 
 jest.mock('../../src/helpers/moderation', () => {
   const originalModule = jest.requireActual('../../src/helpers/moderation');

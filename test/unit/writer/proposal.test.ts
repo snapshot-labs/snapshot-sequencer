@@ -1,23 +1,55 @@
 import omit from 'lodash/omit';
-import {
-  ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT,
-  ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT,
-  ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT,
-  FLAGGED_SPACE_PROPOSAL_DAY_LIMIT,
-  FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT,
-  MAINNET_ECOSYSTEM_SPACES,
-  SPACE_PROPOSAL_DAY_LIMIT,
-  SPACE_PROPOSAL_MONTH_LIMIT,
-  TURBO_SPACE_PROPOSAL_DAY_LIMIT,
-  TURBO_SPACE_PROPOSAL_MONTH_LIMIT,
-  VERIFIED_SPACE_PROPOSAL_DAY_LIMIT,
-  VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT
-} from '../../../src/helpers/limits';
 import * as writer from '../../../src/writer/proposal';
 import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/proposal.json';
 
 const FLAGGED_ADDRESSES = ['0x0'];
+
+const LIMITS = {
+  'space.active_proposal_limit_per_author': 20,
+  'space.ecosystem.proposal_limit_per_day': 150,
+  'space.ecosystem.proposal_limit_per_month': 750,
+  'space.ecosystem.choices_limit': 20,
+  'space.ecosystem.body_length': 10000,
+  'space.ecosystem.strategies_limit': 8,
+  'space.flagged.proposal_limit_per_day': 5,
+  'space.flagged.proposal_limit_per_month': 7,
+  'space.flagged.choices_limit': 20,
+  'space.flagged.body_length': 10000,
+  'space.flagged.strategies_limit': 8,
+  'space.default.proposal_limit_per_day': 10,
+  'space.default.proposal_limit_per_month': 150,
+  'space.default.choices_limit': 20,
+  'space.default.body_length': 10000,
+  'space.default.strategies_limit': 8,
+  'space.turbo.proposal_limit_per_day': 40,
+  'space.turbo.proposal_limit_per_month': 200,
+  'space.turbo.choices_limit': 1000,
+  'space.turbo.body_length': 40000,
+  'space.turbo.strategies_limit': 8,
+  'space.verified.proposal_limit_per_day': 20,
+  'space.verified.proposal_limit_per_month': 100,
+  'space.verified.choices_limit': 20,
+  'space.verified.body_length': 10000,
+  'space.verified.strategies_limit': 6,
+  'user.default.follow.limit': 25
+};
+const ECOSYSTEM_LIST = ['test.eth', 'snapshot.eth'];
+
+jest.mock('../../../src/helpers/options', () => {
+  const originalModule = jest.requireActual('../../../src/helpers/options');
+
+  return {
+    __esModule: true,
+    ...originalModule,
+    getList: () => {
+      return ECOSYSTEM_LIST;
+    },
+    getLimit: (key: string) => {
+      return LIMITS[key];
+    }
+  };
+});
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockGetSpace = jest.fn((_): any => {
@@ -443,11 +475,11 @@ describe('writer/proposal', () => {
     });
 
     it.each([
-      ['flagged', FLAGGED_SPACE_PROPOSAL_DAY_LIMIT, 'flagged', true],
-      ['verified', VERIFIED_SPACE_PROPOSAL_DAY_LIMIT, 'verified', true],
-      ['ecosystem', ECOSYSTEM_SPACE_PROPOSAL_DAY_LIMIT, 'id', MAINNET_ECOSYSTEM_SPACES[0]],
-      ['turbo', TURBO_SPACE_PROPOSAL_DAY_LIMIT, 'turbo', true],
-      ['normal', SPACE_PROPOSAL_DAY_LIMIT, null, null]
+      ['flagged', LIMITS['space.flagged.proposal_limit_per_day'], 'flagged', true],
+      ['verified', LIMITS['space.verified.proposal_limit_per_day'], 'verified', true],
+      ['ecosystem', LIMITS['space.ecosystem.proposal_limit_per_day'], 'id', ECOSYSTEM_LIST[0]],
+      ['turbo', LIMITS['space.turbo.proposal_limit_per_day'], 'turbo', true],
+      ['normal', LIMITS['space.default.proposal_limit_per_day'], null, null]
     ])(
       'rejects if the %s space has exceeded the proposal daily post limit',
       async (category, limit, key, value) => {
@@ -468,11 +500,11 @@ describe('writer/proposal', () => {
     );
 
     it.each([
-      ['flagged', FLAGGED_SPACE_PROPOSAL_MONTH_LIMIT, 'flagged', true],
-      ['verified', VERIFIED_SPACE_PROPOSAL_MONTH_LIMIT, 'verified', true],
-      ['ecosystem', ECOSYSTEM_SPACE_PROPOSAL_MONTH_LIMIT, 'id', MAINNET_ECOSYSTEM_SPACES[0]],
-      ['turbo', TURBO_SPACE_PROPOSAL_MONTH_LIMIT, 'turbo', true],
-      ['normal', SPACE_PROPOSAL_MONTH_LIMIT, null, null]
+      ['flagged', LIMITS['space.flagged.proposal_limit_per_month'], 'flagged', true],
+      ['verified', LIMITS['space.verified.proposal_limit_per_month'], 'verified', true],
+      ['ecosystem', LIMITS['space.ecosystem.proposal_limit_per_month'], 'id', ECOSYSTEM_LIST[0]],
+      ['turbo', LIMITS['space.turbo.proposal_limit_per_month'], 'turbo', true],
+      ['normal', LIMITS['space.default.proposal_limit_per_month'], null, null]
     ])(
       'rejects if the %s space has exceeded the proposal monthly post limit',
       async (category, limit, key, value) => {
@@ -498,7 +530,7 @@ describe('writer/proposal', () => {
         {
           dayCount: 0,
           monthCount: 0,
-          activeProposalsByAuthor: ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT + 1
+          activeProposalsByAuthor: LIMITS['space.active_proposal_limit_per_author'] + 1
         }
       ]);
 
