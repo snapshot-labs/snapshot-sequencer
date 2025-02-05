@@ -195,10 +195,9 @@ export async function verify(body): Promise<any> {
     );
 
     const spaceTypeWithEcosystem = await getSpaceType(space, true);
-    if (
-      dayCount >= (await getSpaceProposalsLimits(spaceTypeWithEcosystem, 'day')) ||
-      monthCount >= (await getSpaceProposalsLimits(spaceTypeWithEcosystem, 'month'))
-    )
+    const dayLimit = await getSpaceProposalsLimits(spaceTypeWithEcosystem, 'day');
+    const monthLimit = await getSpaceProposalsLimits(spaceTypeWithEcosystem, 'month');
+    if (dayCount >= dayLimit || monthCount >= monthLimit)
       return Promise.reject('proposal limit reached');
     const activeProposalLimitPerAuthor = await getLimit('space.active_proposal_limit_per_author');
     if (!isAuthorized && activeProposalsByAuthor >= activeProposalLimitPerAuthor)
