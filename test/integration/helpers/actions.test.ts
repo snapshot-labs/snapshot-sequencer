@@ -206,10 +206,6 @@ describe('helpers/actions', () => {
 
     it('updates an existing skin', async () => {
       const testId = 'test-update-skin-id';
-      const skinSettings = {
-        bg_color: '#FFFF00',
-        link_color: '#FFFFFF'
-      };
       await db.queryAsync(
         'INSERT INTO skins (id, bg_color, link_color, text_color, content_color, border_color, heading_color, primary_color, header_color, theme) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
@@ -225,7 +221,10 @@ describe('helpers/actions', () => {
           'light'
         ]
       );
-      await addOrUpdateSkin(testId, skinSettings);
+      await addOrUpdateSkin(testId, {
+        bg_color: '#FFFF00',
+        link_color: '#FFFFFF'
+      });
       const skin = (await db.queryAsync('SELECT * FROM skins WHERE id = ?', [testId]))[0];
       expect(skin).toEqual({
         id: testId,
