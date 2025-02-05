@@ -201,10 +201,7 @@ export async function verify(body): Promise<any> {
     )
       return Promise.reject('proposal limit reached');
     const activeProposalLimitPerAuthor = await getLimit('space.active_proposal_limit_per_author');
-    if (
-      !isAuthorized &&
-      activeProposalsByAuthor >= activeProposalLimitPerAuthor)
-    )
+    if (!isAuthorized && activeProposalsByAuthor >= activeProposalLimitPerAuthor)
       return Promise.reject('active proposal limit reached for author');
   } catch (e) {
     capture(e);
