@@ -2,8 +2,6 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import db from './mysql';
 import { DEFAULT_NETWORK_ID, jsonParse, NETWORK_ID_WHITELIST } from './utils';
 
-const DEFAULT_SKIN = 'light';
-
 function normalizeSettings(settings: any) {
   const _settings = snapshot.utils.clone(settings);
 
@@ -17,7 +15,7 @@ function normalizeSettings(settings: any) {
     };
   }
 
-  delete _settings.skinParams;
+  delete _settings.skinSettings;
 
   return _settings;
 }
@@ -46,11 +44,11 @@ export async function addOrUpdateSpace(id: string, settings: any) {
     normalizedSettings.domain || null
   ]);
 
-  await addOrUpdateSkin(id, settings.skinParams);
+  await addOrUpdateSkin(id, settings.skinSettings);
 }
 
-export async function addOrUpdateSkin(id: string, skinParams: Record<string, string>) {
-  if (!skinParams) return false;
+export async function addOrUpdateSkin(id: string, skinSettings: Record<string, string>) {
+  if (!skinSettings) return false;
 
   const COLORS = [
     'bg_color',
@@ -63,32 +61,22 @@ export async function addOrUpdateSkin(id: string, skinParams: Record<string, str
     'header_color'
   ];
 
-  const _params = snapshot.utils.clone(skinParams);
-  COLORS.forEach(color => {
-    if (_params[color]) {
-      _params[color] = _params[color].replace('#', '');
-    }
-  });
-  const existingSkin = (
-    await db.queryAsync('SELECT theme, logo FROM skins WHERE id = ? LIMIT 1', [id])
-  )[0];
-
   await db.queryAsync(
     `INSERT INTO skins
       SET ?
       ON DUPLICATE KEY UPDATE
         ${COLORS.map(color => `${color} = ?`).join(',')},
-        theme = ?,
+        theme = COALESCE(VALUES(theme), theme),
         logo = ?
     `,
     [
       {
         id,
-        ..._params
+        ...skinSettings
       },
-      ...COLORS.map(color => _params[color]),
-      _params.theme || existingSkin?.theme || DEFAULT_SKIN,
-      _params.logo || existingSkin?.logo || null
+      ...COLORS.map(color => skinSettings[color]),
+      skinSettings.theme,
+      skinSettings.logo
     ]
   );
 }
