@@ -1,4 +1,3 @@
-import SpaceSchema from '@snapshot-labs/snapshot.js/src/schemas/space.json';
 import { verify } from '../../../src/writer/settings';
 import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/space.json';
@@ -49,6 +48,9 @@ const LIMITS = {
 };
 const ECOSYSTEM_LIST = ['test.eth', 'snapshot.eth'];
 
+const mockGetSpaceType = jest.fn((): any => {
+  return 'default';
+});
 jest.mock('../../../src/helpers/options', () => {
   const originalModule = jest.requireActual('../../../src/helpers/options');
 
@@ -58,8 +60,11 @@ jest.mock('../../../src/helpers/options', () => {
     getList: () => {
       return ECOSYSTEM_LIST;
     },
-    getLimit: (key: string) => {
+    getLimit: async (key: string) => {
       return LIMITS[key];
+    },
+    getSpaceType: () => {
+      return mockGetSpaceType();
     }
   };
 });
@@ -140,6 +145,7 @@ describe('writer/settings', () => {
       });
 
       it(`rejects if passing more than ${maxStrategiesForTurboSpace} strategies for turbo space`, async () => {
+        mockGetSpaceType.mockResolvedValueOnce('turbo');
         mockGetSpace.mockResolvedValueOnce({ ...spacesGetSpaceFixtures, turbo: true });
         return expect(
           verify(
@@ -264,6 +270,7 @@ describe('writer/settings', () => {
 
       describe('with correct number of strategies for turbo spaces', () => {
         it('returns a Promise resolve', async () => {
+          mockGetSpaceType.mockResolvedValueOnce('turbo');
           mockGetSpace.mockResolvedValueOnce({ ...spacesGetSpaceFixtures, turbo: true });
           return expect(
             verify(

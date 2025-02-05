@@ -45,8 +45,8 @@ jest.mock('../../../src/helpers/options', () => {
     getList: () => {
       return ECOSYSTEM_LIST;
     },
-    getLimit: (key: string) => {
-      return LIMITS[key];
+    getLimits: () => {
+      return LIMITS;
     }
   };
 });

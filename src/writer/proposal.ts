@@ -7,18 +7,11 @@ import log from '../helpers/log';
 import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
-import { getLimit, getSpaceType } from '../helpers/options';
+import { getLimits, getSpaceType } from '../helpers/options';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
-
-export async function getSpaceProposalsLimits(
-  spaceType: string,
-  interval: 'day' | 'month'
-): Promise<number> {
-  return getLimit(`space.${spaceType}.proposal_limit_per_${interval}`);
-}
 
 export const getProposalsCount = async (space, author) => {
   const query = `
@@ -64,6 +57,15 @@ export async function verify(body): Promise<any> {
   const created = parseInt(msg.timestamp);
   const addressLC = body.address.toLowerCase();
   const space = await getSpace(msg.space);
+  const spaceType = await getSpaceType(space);
+  const spaceTypeWithEcosystem = await getSpaceType(space, true);
+  const limits = await getLimits([
+    `space.${spaceType}.body_limit`,
+    `space.${spaceType}.choices_limit`,
+    'space.active_proposal_limit_per_author',
+    `space.${spaceTypeWithEcosystem}.proposal_limit_per_day`,
+    `space.${spaceTypeWithEcosystem}.proposal_limit_per_month`
+  ]);
 
   try {
     await validateSpace(space);
@@ -194,12 +196,12 @@ export async function verify(body): Promise<any> {
       body.address
     );
 
-    const spaceTypeWithEcosystem = await getSpaceType(space, true);
-    const dayLimit = await getSpaceProposalsLimits(spaceTypeWithEcosystem, 'day');
-    const monthLimit = await getSpaceProposalsLimits(spaceTypeWithEcosystem, 'month');
+    const dayLimit = limits[`space.${spaceTypeWithEcosystem}.proposal_limit_per_day`];
+    const monthLimit = limits[`space.${spaceTypeWithEcosystem}.proposal_limit_per_month`];
+
     if (dayCount >= dayLimit || monthCount >= monthLimit)
       return Promise.reject('proposal limit reached');
-    const activeProposalLimitPerAuthor = await getLimit('space.active_proposal_limit_per_author');
+    const activeProposalLimitPerAuthor = limits['space.active_proposal_limit_per_author'];
     if (!isAuthorized && activeProposalsByAuthor >= activeProposalLimitPerAuthor)
       return Promise.reject('active proposal limit reached for author');
   } catch (e) {
@@ -207,13 +209,12 @@ export async function verify(body): Promise<any> {
     return Promise.reject('failed to check proposals limit');
   }
 
-  const spaceType = await getSpaceType(space);
-  const bodyLengthLimit = await getLimit(`space.${spaceType}.body_limit`);
+  const bodyLengthLimit = limits[`space.${spaceType}.body_limit`];
   if (msg.payload.body.length > bodyLengthLimit) {
     return Promise.reject(`proposal body length can not exceed ${bodyLengthLimit} characters`);
   }
 
-  const choicesLimit = await getLimit(`space.${spaceType}.choices_limit`);
+  const choicesLimit = limits[`space.${spaceType}.choices_limit`];
   if (msg.payload.choices.length > choicesLimit) {
     return Promise.reject(`number of choices can not exceed ${choicesLimit}`);
   }
