@@ -127,10 +127,8 @@ describe('writer/settings', () => {
       });
       it.todo('rejects if the submitter does not have permission');
       it.todo('rejects if the submitter does not have permission to change admin');
-      const maxStrategiesWithSpaceType =
-        SpaceSchema.definitions.Space.properties.strategies.maxItemsWithSpaceType;
-      const maxStrategiesForNormalSpace = maxStrategiesWithSpaceType['default'];
-      const maxStrategiesForTurboSpace = maxStrategiesWithSpaceType['turbo'];
+      const maxStrategiesForNormalSpace = LIMITS['space.default.strategies_limit'];
+      const maxStrategiesForTurboSpace = LIMITS['space.turbo.strategies_limit'];
       it(`rejects if passing more than ${maxStrategiesForNormalSpace} strategies for normal space`, async () => {
         return expect(
           verify(
@@ -138,7 +136,7 @@ describe('writer/settings', () => {
               strategies: randomStrategies(maxStrategiesForNormalSpace + 2)
             })
           )
-        ).rejects.toContain('wrong space format');
+        ).rejects.toContain(`max number of strategies is ${maxStrategiesForNormalSpace}`);
       });
 
       it(`rejects if passing more than ${maxStrategiesForTurboSpace} strategies for turbo space`, async () => {
@@ -149,7 +147,7 @@ describe('writer/settings', () => {
               strategies: randomStrategies(maxStrategiesForTurboSpace + 2)
             })
           )
-        ).rejects.toContain('wrong space format');
+        ).rejects.toContain(`max number of strategies is ${maxStrategiesForTurboSpace}`);
       });
 
       describe('when the space has an existing custom domain', () => {
