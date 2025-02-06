@@ -1,4 +1,3 @@
-import SpaceSchema from '@snapshot-labs/snapshot.js/src/schemas/space.json';
 import { verify } from '../../../src/writer/settings';
 import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/space.json';
@@ -17,6 +16,58 @@ function randomStrategies(count = 1) {
       name: `strategy-${Math.floor(Math.random() * 1000)}`
     }));
 }
+
+const LIMITS = {
+  'space.active_proposal_limit_per_author': 20,
+  'space.ecosystem.proposal_limit_per_day': 150,
+  'space.ecosystem.proposal_limit_per_month': 750,
+  'space.ecosystem.choices_limit': 20,
+  'space.ecosystem.body_length': 10000,
+  'space.ecosystem.strategies_limit': 8,
+  'space.flagged.proposal_limit_per_day': 5,
+  'space.flagged.proposal_limit_per_month': 7,
+  'space.flagged.choices_limit': 20,
+  'space.flagged.body_length': 10000,
+  'space.flagged.strategies_limit': 8,
+  'space.default.proposal_limit_per_day': 10,
+  'space.default.proposal_limit_per_month': 150,
+  'space.default.choices_limit': 20,
+  'space.default.body_length': 10000,
+  'space.default.strategies_limit': 8,
+  'space.turbo.proposal_limit_per_day': 40,
+  'space.turbo.proposal_limit_per_month': 200,
+  'space.turbo.choices_limit': 1000,
+  'space.turbo.body_length': 40000,
+  'space.turbo.strategies_limit': 10,
+  'space.verified.proposal_limit_per_day': 20,
+  'space.verified.proposal_limit_per_month': 100,
+  'space.verified.choices_limit': 20,
+  'space.verified.body_length': 10000,
+  'space.verified.strategies_limit': 6,
+  'user.default.follow.limit': 25
+};
+const ECOSYSTEM_LIST = ['test.eth', 'snapshot.eth'];
+
+const mockGetSpaceType = jest.fn((): any => {
+  return 'default';
+});
+jest.mock('../../../src/helpers/options', () => {
+  const originalModule = jest.requireActual('../../../src/helpers/options');
+
+  return {
+    __esModule: true,
+    ...originalModule,
+    getList: () => {
+      return ECOSYSTEM_LIST;
+    },
+    getLimit: async (key: string) => {
+      return LIMITS[key];
+    },
+    getSpaceType: () => {
+      return mockGetSpaceType();
+    }
+  };
+});
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockGetSpace = jest.fn((_): any => {
@@ -81,10 +132,8 @@ describe('writer/settings', () => {
       });
       it.todo('rejects if the submitter does not have permission');
       it.todo('rejects if the submitter does not have permission to change admin');
-      const maxStrategiesWithSpaceType =
-        SpaceSchema.definitions.Space.properties.strategies.maxItemsWithSpaceType;
-      const maxStrategiesForNormalSpace = maxStrategiesWithSpaceType['default'];
-      const maxStrategiesForTurboSpace = maxStrategiesWithSpaceType['turbo'];
+      const maxStrategiesForNormalSpace = LIMITS['space.default.strategies_limit'];
+      const maxStrategiesForTurboSpace = LIMITS['space.turbo.strategies_limit'];
       it(`rejects if passing more than ${maxStrategiesForNormalSpace} strategies for normal space`, async () => {
         return expect(
           verify(
@@ -92,10 +141,11 @@ describe('writer/settings', () => {
               strategies: randomStrategies(maxStrategiesForNormalSpace + 2)
             })
           )
-        ).rejects.toContain('wrong space format');
+        ).rejects.toContain(`max number of strategies is ${maxStrategiesForNormalSpace}`);
       });
 
       it(`rejects if passing more than ${maxStrategiesForTurboSpace} strategies for turbo space`, async () => {
+        mockGetSpaceType.mockResolvedValueOnce('turbo');
         mockGetSpace.mockResolvedValueOnce({ ...spacesGetSpaceFixtures, turbo: true });
         return expect(
           verify(
@@ -103,7 +153,7 @@ describe('writer/settings', () => {
               strategies: randomStrategies(maxStrategiesForTurboSpace + 2)
             })
           )
-        ).rejects.toContain('wrong space format');
+        ).rejects.toContain(`max number of strategies is ${maxStrategiesForTurboSpace}`);
       });
 
       describe('when the space has an existing custom domain', () => {
@@ -220,6 +270,7 @@ describe('writer/settings', () => {
 
       describe('with correct number of strategies for turbo spaces', () => {
         it('returns a Promise resolve', async () => {
+          mockGetSpaceType.mockResolvedValueOnce('turbo');
           mockGetSpace.mockResolvedValueOnce({ ...spacesGetSpaceFixtures, turbo: true });
           return expect(
             verify(
