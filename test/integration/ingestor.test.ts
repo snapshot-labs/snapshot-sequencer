@@ -1,11 +1,62 @@
-import ingestor from '../../src/ingestor';
-import proposalInput from '../fixtures/ingestor-payload/proposal.json';
-import { spacesGetSpaceFixtures } from '../fixtures/space';
-import voteInput from '../fixtures/ingestor-payload/vote.json';
 import cloneDeep from 'lodash/cloneDeep';
 import omit from 'lodash/omit';
 import db, { sequencerDB } from '../../src/helpers/mysql';
 import relayer from '../../src/helpers/relayer';
+import ingestor from '../../src/ingestor';
+import proposalInput from '../fixtures/ingestor-payload/proposal.json';
+import voteInput from '../fixtures/ingestor-payload/vote.json';
+import { spacesGetSpaceFixtures } from '../fixtures/space';
+
+const LIMITS = {
+  'space.active_proposal_limit_per_author': 20,
+  'space.ecosystem.proposal_limit_per_day': 150,
+  'space.ecosystem.proposal_limit_per_month': 750,
+  'space.ecosystem.choices_limit': 20,
+  'space.ecosystem.body_length': 10000,
+  'space.ecosystem.strategies_limit': 8,
+  'space.flagged.proposal_limit_per_day': 5,
+  'space.flagged.proposal_limit_per_month': 7,
+  'space.flagged.choices_limit': 20,
+  'space.flagged.body_length': 10000,
+  'space.flagged.strategies_limit': 8,
+  'space.default.proposal_limit_per_day': 10,
+  'space.default.proposal_limit_per_month': 150,
+  'space.default.choices_limit': 20,
+  'space.default.body_length': 10000,
+  'space.default.strategies_limit': 8,
+  'space.turbo.proposal_limit_per_day': 40,
+  'space.turbo.proposal_limit_per_month': 200,
+  'space.turbo.choices_limit': 1000,
+  'space.turbo.body_length': 40000,
+  'space.turbo.strategies_limit': 10,
+  'space.verified.proposal_limit_per_day': 20,
+  'space.verified.proposal_limit_per_month': 100,
+  'space.verified.choices_limit': 20,
+  'space.verified.body_length': 10000,
+  'space.verified.strategies_limit': 6,
+  'user.default.follow.limit': 25
+};
+const ECOSYSTEM_LIST = ['test.eth', 'snapshot.eth'];
+jest.mock('../../src/helpers/options', () => {
+  const originalModule = jest.requireActual('../../src/helpers/options');
+
+  return {
+    __esModule: true,
+    ...originalModule,
+    getList: () => {
+      return ECOSYSTEM_LIST;
+    },
+    getLimit: async (key: string) => {
+      return LIMITS[key];
+    },
+    getLimits: () => {
+      return LIMITS;
+    },
+    getSpaceType: () => {
+      return 'default';
+    }
+  };
+});
 
 jest.mock('../../src/helpers/moderation', () => {
   const originalModule = jest.requireActual('../../src/helpers/moderation');
