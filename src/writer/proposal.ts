@@ -57,16 +57,6 @@ export async function verify(body): Promise<any> {
   const created = parseInt(msg.timestamp);
   const addressLC = body.address.toLowerCase();
   const space = await getSpace(msg.space);
-  const spaceType = await getSpaceType(space);
-  const spaceTypeWithEcosystem = await getSpaceType(space, true);
-  const limits = await getLimits([
-    `space.${spaceType}.body_limit`,
-    `space.${spaceType}.choices_limit`,
-    'space.active_proposal_limit_per_author',
-    `space.${spaceTypeWithEcosystem}.proposal_limit_per_day`,
-    `space.${spaceTypeWithEcosystem}.proposal_limit_per_month`
-  ]);
-
   try {
     await validateSpace(space);
   } catch (e) {
@@ -74,6 +64,17 @@ export async function verify(body): Promise<any> {
   }
 
   space.id = msg.space;
+
+  const spaceType = await getSpaceType(space);
+  const spaceTypeWithEcosystem = await getSpaceType(space, true);
+
+  const limits = await getLimits([
+    `space.${spaceType}.body_limit`,
+    `space.${spaceType}.choices_limit`,
+    'space.active_proposal_limit_per_author',
+    `space.${spaceTypeWithEcosystem}.proposal_limit_per_day`,
+    `space.${spaceTypeWithEcosystem}.proposal_limit_per_month`
+  ]);
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload, {
     spaceType: space.turbo ? 'turbo' : 'default'
