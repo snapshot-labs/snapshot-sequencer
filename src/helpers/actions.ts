@@ -36,7 +36,7 @@ export async function addOrUpdateSpace(id: string, settings: any) {
       created: ts,
       updated: ts,
       settings: JSON.stringify(normalizedSettings),
-      domain: settings.domain || null
+      domain: normalizedSettings.domain || null
     },
     ts,
     JSON.stringify(normalizedSettings),
