@@ -1,4 +1,9 @@
-import { addOrUpdateSpace, getSpace, sxSpaceExists } from '../../../src/helpers/actions';
+import {
+  addOrUpdateSkin,
+  addOrUpdateSpace,
+  getSpace,
+  sxSpaceExists
+} from '../../../src/helpers/actions';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
 import { DEFAULT_NETWORK_ID } from '../../../src/helpers/utils';
 import { spacesSqlFixtures } from '../../fixtures/space';
@@ -163,6 +168,90 @@ describe('helpers/actions', () => {
         const space = (await db.queryAsync('SELECT * FROM spaces WHERE id = ?', [testId]))[0];
 
         expect(JSON.parse(space.settings).domain).toEqual('vote.snapshot.org');
+      });
+    });
+  });
+
+  describe('addOrUpdateSkin', () => {
+    afterAll(async () => {
+      await db.queryAsync('DELETE FROM snapshot_sequencer_test.skins');
+    });
+
+    it('adds a new skin when it does not exist', async () => {
+      const testId = 'test-new-skin-ids';
+      const skinSettings = {
+        bg_color: '#000000',
+        link_color: '#ffffff',
+        text_color: '#000000',
+        content_color: '#ffffff',
+        border_color: '#ffffff',
+        heading_color: '#ffffff',
+        primary_color: '#ffffff'
+      };
+      await addOrUpdateSkin(testId, skinSettings);
+      const skin = (await db.queryAsync('SELECT * FROM skins WHERE id = ?', [testId]))[0];
+      expect(skin).toEqual({
+        id: testId,
+        bg_color: '#000000',
+        link_color: '#ffffff',
+        text_color: '#000000',
+        content_color: '#ffffff',
+        border_color: '#ffffff',
+        heading_color: '#ffffff',
+        primary_color: '#ffffff',
+        header_color: null,
+        theme: 'light'
+      });
+    });
+
+    it('updates an existing skin', async () => {
+      const testId = 'test-update-skin-id';
+      await db.queryAsync(
+        'INSERT INTO skins (id, bg_color, link_color, text_color, content_color, border_color, heading_color, primary_color, header_color, theme) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          testId,
+          '#000000',
+          '#000000',
+          '#000000',
+          '#000000',
+          '#000000',
+          '#000000',
+          '#000000',
+          '#000000',
+          'light'
+        ]
+      );
+      await addOrUpdateSkin(testId, {
+        bg_color: '#FFFF00',
+        link_color: '#FFFFFF'
+      });
+      const skin = (await db.queryAsync('SELECT * FROM skins WHERE id = ?', [testId]))[0];
+      expect(skin).toEqual({
+        id: testId,
+        bg_color: '#FFFF00',
+        link_color: '#FFFFFF',
+        text_color: null,
+        content_color: null,
+        border_color: null,
+        heading_color: null,
+        primary_color: null,
+        header_color: null,
+        theme: 'light'
+      });
+
+      await addOrUpdateSkin(testId, { theme: 'dark' });
+      const skin2 = (await db.queryAsync('SELECT * FROM skins WHERE id = ?', [testId]))[0];
+      expect(skin2).toEqual({
+        id: testId,
+        bg_color: null,
+        link_color: null,
+        text_color: null,
+        content_color: null,
+        border_color: null,
+        heading_color: null,
+        primary_color: null,
+        header_color: null,
+        theme: 'dark'
       });
     });
   });
