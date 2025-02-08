@@ -200,7 +200,8 @@ describe('helpers/actions', () => {
         heading_color: '#ffffff',
         primary_color: '#ffffff',
         header_color: null,
-        theme: 'light'
+        theme: 'light',
+        logo: null
       });
     });
 
@@ -236,7 +237,8 @@ describe('helpers/actions', () => {
         heading_color: null,
         primary_color: null,
         header_color: null,
-        theme: 'light'
+        theme: 'light',
+        logo: null
       });
 
       await addOrUpdateSkin(testId, { theme: 'dark' });
@@ -251,7 +253,8 @@ describe('helpers/actions', () => {
         heading_color: null,
         primary_color: null,
         header_color: null,
-        theme: 'dark'
+        theme: 'dark',
+        logo: null
       });
     });
   });

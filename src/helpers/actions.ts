@@ -66,7 +66,8 @@ export async function addOrUpdateSkin(id: string, skinSettings: Record<string, s
       SET ?
       ON DUPLICATE KEY UPDATE
         ${COLORS.map(color => `${color} = ?`).join(',')},
-        theme = COALESCE(VALUES(theme), theme)
+        theme = COALESCE(VALUES(theme), ?),
+        logo = ?
     `,
     [
       {
@@ -74,7 +75,8 @@ export async function addOrUpdateSkin(id: string, skinSettings: Record<string, s
         ...skinSettings
       },
       ...COLORS.map(color => skinSettings[color]),
-      skinSettings.theme
+      skinSettings.theme,
+      skinSettings.logo
     ]
   );
 }

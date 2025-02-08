@@ -204,6 +204,7 @@ CREATE TABLE skins (
   primary_color VARCHAR(7) DEFAULT NULL,
   header_color VARCHAR(7) DEFAULT NULL,
   theme VARCHAR(5) NOT NULL DEFAULT 'light',
+  logo VARCHAR(256) DEFAULT NULL,
   PRIMARY KEY (id)
 );
 
