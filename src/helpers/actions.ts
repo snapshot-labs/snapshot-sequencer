@@ -130,6 +130,7 @@ export async function sxSpaceExists(network: string, spaceId: string): Promise<b
     arb1: 'https://api.studio.thegraph.com/query/23545/sx-arbitrum/version/latest',
     oeth: 'https://api.studio.thegraph.com/query/23545/sx-optimism/version/latest',
     base: 'https://api.studio.thegraph.com/query/23545/sx-base/version/latest',
+    mantle: 'https://mantle-api.snapshot.box',
     sn: 'https://api.snapshot.box',
     'sn-sep': 'https://testnet-api.snapshot.box',
     'linea-testnet':
