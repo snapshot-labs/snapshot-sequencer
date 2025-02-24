@@ -4,6 +4,7 @@ import isEqual from 'lodash/isEqual';
 import { addOrUpdateSpace, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
+import { getLimit, getSpaceType } from '../helpers/options';
 import {
   addToWalletConnectWhitelist,
   clearStampCache,
@@ -79,6 +80,12 @@ export async function verify(body): Promise<any> {
     return Promise.reject(e);
   }
 
+  const strategiesLimit = await getLimit(`space.${await getSpaceType(space)}.strategies_limit`);
+
+  if (msg.payload.strategies.length > strategiesLimit) {
+    return Promise.reject(`max number of strategies is ${strategiesLimit}`);
+  }
+
   const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
     broviderUrl
   });
@@ -88,8 +95,9 @@ export async function verify(body): Promise<any> {
   const isAdmin = admins.includes(body.address.toLowerCase());
   const newAdmins = (msg.payload.admins || []).map(admin => admin.toLowerCase());
 
-  if (msg.payload.domain && !space?.turbo && !space?.domain) {
-    return Promise.reject('domain is a turbo feature only');
+  if (!space?.turbo && !space?.domain) {
+    if (msg.payload.domain) return Promise.reject('domain is a turbo feature only');
+    if (msg.payload.skinSettings) return Promise.reject('skin is a turbo feature only');
   }
 
   const anotherSpaceWithDomain = (

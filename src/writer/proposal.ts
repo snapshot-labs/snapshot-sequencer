@@ -3,11 +3,11 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import { validateSpaceSettings } from './settings';
 import { getSpace } from '../helpers/actions';
-import { ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT, getSpaceLimits } from '../helpers/limits';
 import log from '../helpers/log';
 import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
+import { getLimits, getSpaceType } from '../helpers/options';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
@@ -57,7 +57,6 @@ export async function verify(body): Promise<any> {
   const created = parseInt(msg.timestamp);
   const addressLC = body.address.toLowerCase();
   const space = await getSpace(msg.space);
-
   try {
     await validateSpace(space);
   } catch (e) {
@@ -65,6 +64,17 @@ export async function verify(body): Promise<any> {
   }
 
   space.id = msg.space;
+
+  const spaceType = await getSpaceType(space);
+  const spaceTypeWithEcosystem = await getSpaceType(space, true);
+
+  const limits = await getLimits([
+    `space.${spaceType}.body_limit`,
+    `space.${spaceType}.choices_limit`,
+    'space.active_proposal_limit_per_author',
+    `space.${spaceTypeWithEcosystem}.proposal_limit_per_day`,
+    `space.${spaceTypeWithEcosystem}.proposal_limit_per_month`
+  ]);
 
   const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload, {
     spaceType: space.turbo ? 'turbo' : 'default'
@@ -186,15 +196,28 @@ export async function verify(body): Promise<any> {
       space.id,
       body.address
     );
-    const [dayLimit, monthLimit] = getSpaceLimits(space);
+
+    const dayLimit = limits[`space.${spaceTypeWithEcosystem}.proposal_limit_per_day`];
+    const monthLimit = limits[`space.${spaceTypeWithEcosystem}.proposal_limit_per_month`];
 
     if (dayCount >= dayLimit || monthCount >= monthLimit)
       return Promise.reject('proposal limit reached');
-    if (!isAuthorized && activeProposalsByAuthor >= ACTIVE_PROPOSAL_BY_AUTHOR_LIMIT)
+    const activeProposalLimitPerAuthor = limits['space.active_proposal_limit_per_author'];
+    if (!isAuthorized && activeProposalsByAuthor >= activeProposalLimitPerAuthor)
       return Promise.reject('active proposal limit reached for author');
   } catch (e) {
     capture(e);
     return Promise.reject('failed to check proposals limit');
+  }
+
+  const bodyLengthLimit = limits[`space.${spaceType}.body_limit`];
+  if (msg.payload.body.length > bodyLengthLimit) {
+    return Promise.reject(`proposal body length can not exceed ${bodyLengthLimit} characters`);
+  }
+
+  const choicesLimit = limits[`space.${spaceType}.choices_limit`];
+  if (msg.payload.choices.length > choicesLimit) {
+    return Promise.reject(`number of choices can not exceed ${choicesLimit}`);
   }
 }
 

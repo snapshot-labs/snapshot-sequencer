@@ -2,17 +2,28 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import db from './mysql';
 import { DEFAULT_NETWORK_ID, jsonParse, NETWORK_ID_WHITELIST } from './utils';
 
-export async function addOrUpdateSpace(space: string, settings: any) {
-  if (!settings?.name) return false;
-  if (settings.domain) {
-    settings.domain = settings.domain?.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
+function normalizeSettings(settings: any) {
+  const _settings = snapshot.utils.clone(settings);
+
+  if (_settings.domain) {
+    _settings.domain = _settings.domain?.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
   }
-  if (settings.delegationPortal) {
-    settings.delegationPortal = {
+  if (_settings.delegationPortal) {
+    _settings.delegationPortal = {
       delegationNetwork: '1',
-      ...settings.delegationPortal
+      ..._settings.delegationPortal
     };
   }
+
+  delete _settings.skinSettings;
+
+  return _settings;
+}
+
+export async function addOrUpdateSpace(id: string, settings: any) {
+  if (!settings?.name) return false;
+
+  const normalizedSettings = normalizeSettings(settings);
 
   const ts = (Date.now() / 1e3).toFixed();
   const query =
@@ -20,18 +31,54 @@ export async function addOrUpdateSpace(space: string, settings: any) {
 
   await db.queryAsync(query, [
     {
-      id: space,
+      id,
       name: settings.name,
       created: ts,
       updated: ts,
-      settings: JSON.stringify(settings),
-      domain: settings.domain || null
+      settings: JSON.stringify(normalizedSettings),
+      domain: normalizedSettings.domain || null
     },
     ts,
-    JSON.stringify(settings),
+    JSON.stringify(normalizedSettings),
     settings.name,
-    settings.domain || null
+    normalizedSettings.domain || null
   ]);
+
+  await addOrUpdateSkin(id, settings.skinSettings);
+}
+
+export async function addOrUpdateSkin(id: string, skinSettings: Record<string, string>) {
+  if (!skinSettings) return false;
+
+  const COLORS = [
+    'bg_color',
+    'link_color',
+    'text_color',
+    'content_color',
+    'border_color',
+    'heading_color',
+    'primary_color',
+    'header_color'
+  ];
+
+  await db.queryAsync(
+    `INSERT INTO skins
+      SET ?
+      ON DUPLICATE KEY UPDATE
+        ${COLORS.map(color => `${color} = ?`).join(',')},
+        theme = COALESCE(VALUES(theme), ?),
+        logo = ?
+    `,
+    [
+      {
+        id,
+        ...skinSettings
+      },
+      ...COLORS.map(color => skinSettings[color]),
+      skinSettings.theme,
+      skinSettings.logo
+    ]
+  );
 }
 
 export async function getProposal(space, id) {
@@ -83,6 +130,7 @@ export async function sxSpaceExists(network: string, spaceId: string): Promise<b
     arb1: 'https://api.studio.thegraph.com/query/23545/sx-arbitrum/version/latest',
     oeth: 'https://api.studio.thegraph.com/query/23545/sx-optimism/version/latest',
     base: 'https://api.studio.thegraph.com/query/23545/sx-base/version/latest',
+    mantle: 'https://mantle-api.snapshot.box',
     sn: 'https://api.snapshot.box',
     'sn-sep': 'https://testnet-api.snapshot.box',
     'linea-testnet':
