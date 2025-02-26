@@ -91,7 +91,7 @@ export default async function ingestor(req) {
     }
 
     let aliased = false;
-    if (!['settings', 'alias', 'profile'].includes(type)) {
+    if (!['settings', 'alias', 'profile', 'delete-space'].includes(type)) {
       if (!message.space) return Promise.reject('unknown space');
 
       try {
