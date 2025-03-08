@@ -148,7 +148,7 @@ export default async function ingestor(req) {
         end: message.end,
         snapshot: message.snapshot,
         metadata: {
-          plugins: JSON.parse(message.plugins)
+          plugins: jsonParse(message.plugins, {})
         },
         type: message.type,
         app: message.app || ''
@@ -173,7 +173,7 @@ export default async function ingestor(req) {
         choices: message.choices,
         labels: message.labels || [],
         metadata: {
-          plugins: JSON.parse(message.plugins)
+          plugins: jsonParse(message.plugins, {})
         },
         type: message.type
       };
