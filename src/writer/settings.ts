@@ -5,10 +5,11 @@ import { addOrUpdateSpace, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
 import { getLimit, getSpaceType } from '../helpers/options';
-import { clearStampCache, DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
+import { clearStampCache, DEFAULT_NETWORK, fetchWithKeepAlive, jsonParse } from '../helpers/utils';
 
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
+const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
 export async function validateSpaceSettings(originalSpace: any) {
   const spaceType = originalSpace.turbo ? 'turbo' : 'default';
@@ -78,6 +79,26 @@ export async function verify(body): Promise<any> {
 
   if (msg.payload.strategies.length > strategiesLimit) {
     return Promise.reject(`max number of strategies is ${strategiesLimit}`);
+  }
+
+  try {
+    const strategiesList = await (await fetchWithKeepAlive(`${scoreAPIUrl}/api/strategies`)).json();
+
+    msg.payload.strategies
+      .map(strategy => strategy.name)
+      .forEach(strategyName => {
+        const strategy = strategiesList[strategyName];
+
+        if (!strategy) {
+          return Promise.reject(`strategy "${strategyName}" is not a valid strategy`);
+        }
+
+        if (strategy.disabled) {
+          return Promise.reject(`strategy "${strategyName}" has been deprecated`);
+        }
+      });
+  } catch (e) {
+    return Promise.reject('failed to validate strategies');
   }
 
   const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
