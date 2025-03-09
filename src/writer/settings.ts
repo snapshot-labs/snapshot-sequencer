@@ -11,6 +11,7 @@ import {
   fetchWithKeepAlive,
   getSpaceController,
   jsonParse,
+  fetchWithKeepAlive,
   removeFromWalletConnectWhitelist
 } from '../helpers/utils';
 
