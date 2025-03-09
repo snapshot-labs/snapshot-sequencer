@@ -10,6 +10,7 @@ import {
   clearStampCache,
   getSpaceController,
   jsonParse,
+  fetchWithKeepAlive,
   removeFromWalletConnectWhitelist
 } from '../helpers/utils';
 
