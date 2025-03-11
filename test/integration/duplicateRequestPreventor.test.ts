@@ -1,8 +1,9 @@
-import request from 'supertest';
 import express from 'express';
+import request from 'supertest';
 import api from '../../src/api';
-import proposalInput from '../fixtures/ingestor-payload/proposal.json';
 import { ERROR_MESSAGE, queue } from '../../src/helpers/duplicateRequestPreventor';
+import { sha256 } from '../../src/helpers/utils';
+import proposalInput from '../fixtures/ingestor-payload/proposal.json';
 
 const app = new express();
 app.use(express.json({ limit: '20mb' }));
@@ -19,7 +20,7 @@ async function send(payload) {
 describe('POST /', () => {
   describe('when the same request is already being processed', () => {
     const payload = { sig: 'test' };
-    const hash = JSON.stringify(payload.sig);
+    const hash = sha256(JSON.stringify(payload));
 
     beforeAll(() => {
       queue.add(hash);
