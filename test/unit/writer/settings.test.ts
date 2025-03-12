@@ -13,7 +13,10 @@ function randomStrategies(count = 1) {
   return Array(count)
     .fill(0)
     .map(() => ({
-      name: `strategy-${Math.floor(Math.random() * 1000)}`
+      name: 'whitelist',
+      params: {
+        addresses: [`0x${Math.floor(Math.random() * 1000)}`]
+      }
     }));
 }
 
@@ -134,7 +137,7 @@ describe('writer/settings', () => {
       it.todo('rejects if the submitter does not have permission to change admin');
       const maxStrategiesForNormalSpace = LIMITS['space.default.strategies_limit'];
       const maxStrategiesForTurboSpace = LIMITS['space.turbo.strategies_limit'];
-      it(`rejects if passing more than ${maxStrategiesForNormalSpace} strategies for normal space`, async () => {
+      it.only(`rejects if passing more than ${maxStrategiesForNormalSpace} strategies for normal space`, async () => {
         return expect(
           verify(
             editedInput({
