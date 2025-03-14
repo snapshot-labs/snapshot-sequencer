@@ -10,9 +10,6 @@ import db from '../helpers/mysql';
 import { getLimits, getSpaceType } from '../helpers/options';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 
-const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
-const TESTNET_ONLY_VOTING_TYPES = ['copeland'];
-
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
@@ -91,10 +88,6 @@ export async function verify(body): Promise<any> {
   const tsInt = (Date.now() / 1e3).toFixed();
   if (msg.payload.end <= tsInt) {
     return Promise.reject('proposal end date must be in the future');
-  }
-
-  if (SNAPSHOT_ENV !== 'testnet' && TESTNET_ONLY_VOTING_TYPES.includes(msg.payload.type)) {
-    return Promise.reject('voting type allowed only on testnet');
   }
 
   const isChoicesValid = validateChoices({
