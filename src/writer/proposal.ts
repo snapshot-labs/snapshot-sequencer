@@ -10,8 +10,6 @@ import db from '../helpers/mysql';
 import { getLimits, getSpaceType } from '../helpers/options';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 
-const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
-
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
