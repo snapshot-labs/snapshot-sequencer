@@ -24,8 +24,9 @@ router.post(
     try {
       const result = await typedData(req);
       res.json(result);
-    } catch (e) {
-      log.warn(`[ingestor] msg validation failed (typed data): ${JSON.stringify(e)}`);
+    } catch (e: any) {
+      const errorMessage = typeof e === 'object' ? e.message || JSON.stringify(e) : String(e);
+      log.warn(`[ingestor] msg validation failed (typed data): ${errorMessage}`);
       sendError(res, e);
     }
 
