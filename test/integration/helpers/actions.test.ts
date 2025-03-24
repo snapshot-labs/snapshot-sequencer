@@ -112,7 +112,14 @@ describe('helpers/actions', () => {
       arb1: '0xFd36252770642Ac48FC3A06d7A1D00be8946dd18',
       oeth: '0x82572911308D2579f15e3cF21402Dcf1D5408300',
       matic: '0x80D0Ffd8739eABF16436074fF64DC081c60C833A',
-      eth: '0xaeee929Ca508Dd1F185a8E74F4a9c37c25595c25'
+      eth: '0xaeee929Ca508Dd1F185a8E74F4a9c37c25595c25',
+      base: '0x9f0c8eB80FC802f2466f44539919975443934f4B',
+      mnt: '0x8a4E34e2658566DD01978557367F5361552CaFC8',
+      ape: '0x1e5Fe72BD3e3E9eecE2a575937173b1AD4a134Ed',
+      // Testnets
+      sep: '0xf4b413A7778C099a3dB61F620b805005B2186B05',
+      'sn-sep': '0x015cce180cfd6d588f1e7b8dc53108556d8e871400294d0cf6382e77b0553818',
+      curtis: '0xf6238F73A87D390CB00b2B380D2B777E13Fe2725'
     };
 
     it.each(Object.entries(mapping))('returns true when it exists for %s', async (network, id) => {
