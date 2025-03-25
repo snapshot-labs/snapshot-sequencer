@@ -2,12 +2,14 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import fetch from 'node-fetch';
 import db from './mysql';
 
-const SCHNAPS_API_URL = process.env.SCHNAPS_API_URL;
+const SCHNAPS_API_URL = process.env.SCHNAPS_API_URL || 'https://schnaps.snapshot.box';
+const NO_SCHNAPS = process.env.NO_SCHNAPS === 'true';
 
 const RUN_INTERVAL = 10 * 1e3; // 10 seconds
 
 // Periodically sync the turbo status of spaces with the schnaps-api
 export async function trackTurboStatuses() {
+  if (NO_SCHNAPS) return;
   while (true) {
     // Step 1: Query all the spaces from the schnaps-api
     const spaces = await getSpacesExpirationDates();
