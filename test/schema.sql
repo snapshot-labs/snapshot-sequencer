@@ -214,6 +214,15 @@ CREATE TABLE options (
   PRIMARY KEY (name)
 );
 
+CREATE TABLE networks (
+  id VARCHAR(64) NOT NULL,
+  name VARCHAR(32) NOT NULL,
+  testnet TINYINT UNSIGNED NOT NULL DEFAULT '0',
+  premium TINYINT UNSIGNED NOT NULL DEFAULT '0',
+  PRIMARY KEY (id),
+  INDEX premium (premium)
+);
+
 CREATE TABLE messages (
   mci INT NOT NULL AUTO_INCREMENT,
   id VARCHAR(66) NOT NULL,

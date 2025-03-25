@@ -61,7 +61,8 @@ jest.mock('../../../src/helpers/actions', () => {
   return {
     __esModule: true,
     ...originalModule,
-    getSpace: (id: string) => mockGetSpace(id)
+    getSpace: (id: string) => mockGetSpace(id),
+    getPremiumNetworkIds: () => ['1', '10', '137', '250']
   };
 });
 
@@ -188,7 +189,7 @@ describe('writer/proposal', () => {
         expect.assertions(3);
         mockGetSpace.mockResolvedValueOnce({
           ...spacesGetSpaceFixtures,
-          strategies: [{ name: 'ticket' }],
+          strategies: [{ name: 'ticket', network: '1' }],
           voteValidation: { name: 'gitcoin' }
         });
 
