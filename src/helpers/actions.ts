@@ -123,31 +123,27 @@ export async function getSpace(id: string, includeDeleted = false, network = DEF
 }
 
 export async function sxSpaceExists(network: string, spaceId: string): Promise<boolean> {
-  const urls = {
-    eth: 'https://api.studio.thegraph.com/query/23545/sx/version/latest',
-    sep: 'https://api.studio.thegraph.com/query/23545/sx-sepolia/version/latest',
-    matic: 'https://api.studio.thegraph.com/query/23545/sx-polygon/version/latest',
-    arb1: 'https://api.studio.thegraph.com/query/23545/sx-arbitrum/version/latest',
-    oeth: 'https://api.studio.thegraph.com/query/23545/sx-optimism/version/latest',
-    base: 'https://api.studio.thegraph.com/query/23545/sx-base/version/latest',
-    mantle: 'https://mantle-api.snapshot.box',
-    sn: 'https://api.snapshot.box',
-    'sn-sep': 'https://testnet-api.snapshot.box',
-    'linea-testnet':
-      'https://thegraph.goerli.zkevm.consensys.net/subgraphs/name/snapshot-labs/sx-subgraph'
-  };
+  const testnetNetworks = ['sn-sep', 'sep', 'curtis'];
 
-  if (!urls[network]) throw new Error(`network ${network} is not allowed`);
+  const apiUrl = testnetNetworks.includes(network)
+    ? 'https://testnet-api.snapshot.box'
+    : 'https://api.snapshot.box';
 
-  const { space } = await snapshot.utils.subgraphRequest(urls[network], {
-    space: {
-      __args: {
-        id: spaceId
-      },
-      id: true
-    }
-  });
-  return !!space?.id;
+  try {
+    const { space } = await snapshot.utils.subgraphRequest(apiUrl, {
+      space: {
+        __args: {
+          indexer: network,
+          id: spaceId
+        },
+        id: true
+      }
+    });
+
+    return !!space?.id;
+  } catch (e) {
+    return false;
+  }
 }
 
 export async function getPremiumNetworkIds(): Promise<string[]> {
