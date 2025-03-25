@@ -56,7 +56,7 @@ async function updateTurboStatuses(spaces: { id: string; turbo_expiration_timest
 
 async function getSpacesExpirationDates() {
   const query = `
-    query GetSpaces() {
+    query GetSpaces {
       spaces {
         id
         turbo_expiration_timestamp
