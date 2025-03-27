@@ -2,23 +2,24 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import fetch from 'node-fetch';
 import db from './mysql';
 
-const SCHNAPS_API_URL = process.env.SCHNAPS_API_URL || 'https://schnaps.snapshot.box';
-const NO_SCHNAPS = process.env.NO_SCHNAPS === 'true';
+const SCHNAPS_API_URL = process.env.SCHNAPS_API_URL;
 
 const RUN_INTERVAL = 10 * 1e3; // 10 seconds
 
 // Periodically sync the turbo status of spaces with the schnaps-api
 export async function trackTurboStatuses() {
-  if (NO_SCHNAPS) return;
-  while (true) {
-    // Step 1: Query all the spaces from the schnaps-api
-    const spaces = await getSpacesExpirationDates();
+  console.log("SCHNAPS_API_URL", SCHNAPS_API_URL);
+  if (SCHNAPS_API_URL) {
+    while (true) {
+      // Step 1: Query all the spaces from the schnaps-api
+      const spaces = await getSpacesExpirationDates();
 
-    // Step 2: Update the turbo status of the spaces in the database
-    updateTurboStatuses(spaces);
+      // Step 2: Update the turbo status of the spaces in the database
+      updateTurboStatuses(spaces);
 
-    // Sleep for a while before running the loop again
-    await snapshot.utils.sleep(RUN_INTERVAL);
+      // Sleep for a while before running the loop again
+      await snapshot.utils.sleep(RUN_INTERVAL);
+    }
   }
 }
 
@@ -42,10 +43,7 @@ async function updateTurboStatuses(spaces: { id: string; turbo_expiration: numbe
   `;
 
   // Flatten `spaces` array: [id1, expiration1, id2, expiration2, ..., now, id1, id2, ...]
-  const params = spaces.flatMap(({ id, turbo_expiration }) => [
-    id,
-    turbo_expiration
-  ]);
+  const params = spaces.flatMap(({ id, turbo_expiration }) => [id, turbo_expiration]);
 
   // Add `now` for the `CASE` condition
   params.push(now);
