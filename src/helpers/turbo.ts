@@ -8,18 +8,17 @@ const RUN_INTERVAL = 10 * 1e3; // 10 seconds
 
 // Periodically sync the turbo status of spaces with the schnaps-api
 export async function trackTurboStatuses() {
-  return;
-  if (!SCHNAPS_API_URL) return;
+  if (SCHNAPS_API_URL) {
+    while (true) {
+      // Step 1: Query all the spaces from the schnaps-api
+      const spaces = await getSpacesExpirationDates();
 
-  while (true) {
-    // Step 1: Query all the spaces from the schnaps-api
-    const spaces = await getSpacesExpirationDates();
+      // Step 2: Update the turbo status of the spaces in the database
+      updateTurboStatuses(spaces);
 
-    // Step 2: Update the turbo status of the spaces in the database
-    updateTurboStatuses(spaces);
-
-    // Sleep for a while before running the loop again
-    await snapshot.utils.sleep(RUN_INTERVAL);
+      // Sleep for a while before running the loop again
+      await snapshot.utils.sleep(RUN_INTERVAL);
+    }
   }
 }
 
