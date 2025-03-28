@@ -8,6 +8,7 @@ const RUN_INTERVAL = 10 * 1e3; // 10 seconds
 
 // Periodically sync the turbo status of spaces with the schnaps-api
 export async function trackTurboStatuses() {
+  return;
   if (!SCHNAPS_API_URL) return;
 
   while (true) {
