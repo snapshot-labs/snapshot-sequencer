@@ -8,12 +8,14 @@ import initMetrics from './helpers/metrics';
 import refreshModeration from './helpers/moderation';
 import rateLimit from './helpers/rateLimit';
 import shutter from './helpers/shutter';
+import { trackTurboStatuses } from './helpers/turbo';
 
 const app = express();
 
 initLogger(app);
 refreshModeration();
 initMetrics(app);
+trackTurboStatuses();
 
 app.disable('x-powered-by');
 app.use(express.json({ limit: '20mb' }));
