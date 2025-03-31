@@ -237,7 +237,7 @@ async function updateWalletConnectWhitelist(
       },
       body: JSON.stringify({
         projectId: process.env.WALLETCONNECT_PROJECT_ID,
-        origins: [`https://${domain}`]
+        origins: [domain]
       })
     });
   } catch (e) {
