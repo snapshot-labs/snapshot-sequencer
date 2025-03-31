@@ -212,3 +212,38 @@ export function captureError(e: any, context?: any, ignoredErrorCodes?: number[]
 export async function clearStampCache(type: string, id: string) {
   return fetch(`https://cdn.stamp.fyi/clear/${type}/${type === 'avatar' ? 'eth:' : ''}${id}`);
 }
+
+export async function removeFromWalletConnectWhitelist(domain: string) {
+  return updateWalletConnectWhitelist(domain, 'DELETE');
+}
+
+export async function addToWalletConnectWhitelist(domain: string) {
+  return updateWalletConnectWhitelist(domain, 'POST');
+}
+
+async function updateWalletConnectWhitelist(
+  domain: string,
+  method: 'POST' | 'DELETE'
+): Promise<boolean> {
+  if (!domain || !process.env.REOWN_SECRET || !process.env.WALLETCONNECT_PROJECT_ID) return false;
+
+  try {
+    await fetch(`https://cloud.reown.com/api/set-allowed-domains`, {
+      method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: process.env.REOWN_SECRET
+      },
+      body: JSON.stringify({
+        projectId: process.env.WALLETCONNECT_PROJECT_ID,
+        origins: [domain]
+      })
+    });
+  } catch (e) {
+    capture(e, { domain, method });
+    return false;
+  }
+
+  return true;
+}
