@@ -189,7 +189,7 @@ describe('writer/proposal', () => {
         expect.assertions(3);
         mockGetSpace.mockResolvedValueOnce({
           ...spacesGetSpaceFixtures,
-          strategies: [{ name: 'ticket', network: '1' }],
+          strategies: [{ name: 'ticket' }],
           voteValidation: { name: 'gitcoin' }
         });
 

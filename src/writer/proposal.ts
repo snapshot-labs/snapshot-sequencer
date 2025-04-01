@@ -47,7 +47,8 @@ async function checkNonPremiumNetworksOnSpace(space: any) {
         ? strategy.params.strategies.map((param: any) => param.network)
         : []
     )
-  ]);
+  ]).filter(Boolean);
+
   const nonPremiumNetworks = spaceNetworks.filter(network => !premiumNetworks.includes(network));
 
   if (nonPremiumNetworks.length > 0) {
