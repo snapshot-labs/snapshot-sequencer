@@ -1,8 +1,9 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
+import { uniq } from 'lodash';
 import { validateSpaceSettings } from './settings';
-import { getSpace } from '../helpers/actions';
+import { getPremiumNetworkIds, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
@@ -36,6 +37,25 @@ export const getProposalsCount = async (space, author) => {
   return await db.queryAsync(query, [space, author]);
 };
 
+async function checkNonPremiumNetworksOnSpace(space: any) {
+  const premiumNetworks = await getPremiumNetworkIds();
+  const spaceNetworks = uniq([
+    space.network,
+    ...space.strategies.map((strategy: any) => strategy.network),
+    ...space.strategies.flatMap((strategy: any) =>
+      Array.isArray(strategy.params?.strategies)
+        ? strategy.params.strategies.map((param: any) => param.network)
+        : []
+    )
+  ]).filter(Boolean);
+
+  const nonPremiumNetworks = spaceNetworks.filter(network => !premiumNetworks.includes(network));
+
+  if (nonPremiumNetworks.length > 0) {
+    return Promise.reject('space is using a non-premium network');
+  }
+}
+
 async function validateSpace(space: any) {
   if (!space) {
     return Promise.reject('unknown space');
@@ -62,6 +82,8 @@ export async function verify(body): Promise<any> {
   } catch (e) {
     return Promise.reject(`invalid space settings: ${e}`);
   }
+
+  await checkNonPremiumNetworksOnSpace(space);
 
   space.id = msg.space;
 
