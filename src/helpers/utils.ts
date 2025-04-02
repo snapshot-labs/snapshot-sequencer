@@ -247,3 +247,16 @@ async function updateWalletConnectWhitelist(
 
   return true;
 }
+
+export function getSpaceController(space: string) {
+  const shibariumNetworkMap = {
+    '1': '109',
+    '11155111': '157'
+  };
+
+  return snapshot.utils.getSpaceController(
+    space,
+    space.endsWith('.shib') ? shibariumNetworkMap[DEFAULT_NETWORK] : DEFAULT_NETWORK,
+    { broviderUrl }
+  );
+}

@@ -8,13 +8,12 @@ import { getLimit, getSpaceType } from '../helpers/options';
 import {
   addToWalletConnectWhitelist,
   clearStampCache,
-  DEFAULT_NETWORK,
+  getSpaceController,
   jsonParse,
   removeFromWalletConnectWhitelist
 } from '../helpers/utils';
 
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
-const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export async function validateSpaceSettings(originalSpace: any) {
   const spaceType = originalSpace.turbo ? 'turbo' : 'default';
@@ -86,9 +85,7 @@ export async function verify(body): Promise<any> {
     return Promise.reject(`max number of strategies is ${strategiesLimit}`);
   }
 
-  const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
-    broviderUrl
-  });
+  const controller = await getSpaceController(msg.space);
   const isController = controller === body.address;
 
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());

@@ -1,11 +1,8 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
-import snapshot from '@snapshot-labs/snapshot.js';
 import { getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
-import { DEFAULT_NETWORK, jsonParse } from '../helpers/utils';
-
-const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
+import { getSpaceController, jsonParse } from '../helpers/utils';
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
@@ -13,9 +10,7 @@ export async function verify(body): Promise<any> {
   const space = await getSpace(msg.space);
   if (!space) return Promise.reject('space not found');
 
-  const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
-    broviderUrl
-  });
+  const controller = await getSpaceController(msg.space);
   const isController = controller === body.address;
   if (!isController) return Promise.reject('not allowed');
 }
