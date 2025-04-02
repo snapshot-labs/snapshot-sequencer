@@ -79,7 +79,8 @@ jest.mock('../../src/helpers/actions', () => {
   return {
     __esModule: true,
     ...originalModule,
-    getSpace: (id: string) => mockGetSpace(id)
+    getSpace: (id: string) => mockGetSpace(id),
+    getPremiumNetworkIds: () => ['1', '10', '137', '250']
   };
 });
 

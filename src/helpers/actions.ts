@@ -145,3 +145,8 @@ export async function sxSpaceExists(network: string, spaceId: string): Promise<b
     return false;
   }
 }
+
+export async function getPremiumNetworkIds(): Promise<string[]> {
+  const premiumNetworks = await db.queryAsync('SELECT id FROM networks where premium = 1');
+  return premiumNetworks.map(network => network.id);
+}
