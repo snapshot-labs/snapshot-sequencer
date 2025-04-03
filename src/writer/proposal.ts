@@ -83,12 +83,12 @@ export async function verify(body): Promise<any> {
     return Promise.reject(`invalid space settings: ${e}`);
   }
 
-  await checkNonPremiumNetworksOnSpace(space);
-
   space.id = msg.space;
 
   const spaceType = await getSpaceType(space);
   const spaceTypeWithEcosystem = await getSpaceType(space, true);
+
+  if (spaceType !== 'turbo') await checkNonPremiumNetworksOnSpace(space);
 
   const limits = await getLimits([
     `space.${spaceType}.body_limit`,
