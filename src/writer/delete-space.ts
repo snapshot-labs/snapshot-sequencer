@@ -4,13 +4,15 @@ import log from '../helpers/log';
 import db from '../helpers/mysql';
 import { getSpaceController, jsonParse } from '../helpers/utils';
 
+const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
+
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
 
   const space = await getSpace(msg.space);
   if (!space) return Promise.reject('space not found');
 
-  const controller = await getSpaceController(msg.space);
+  const controller = await getSpaceController(msg.space, SNAPSHOT_ENV);
   const isController = controller === body.address;
   if (!isController) return Promise.reject('not allowed');
 }

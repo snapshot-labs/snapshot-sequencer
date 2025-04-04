@@ -85,7 +85,7 @@ export async function verify(body): Promise<any> {
     return Promise.reject(`max number of strategies is ${strategiesLimit}`);
   }
 
-  const controller = await getSpaceController(msg.space);
+  const controller = await getSpaceController(msg.space, SNAPSHOT_ENV);
   const isController = controller === body.address;
 
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());

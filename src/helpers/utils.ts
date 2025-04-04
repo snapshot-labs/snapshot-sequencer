@@ -249,7 +249,7 @@ async function updateWalletConnectWhitelist(
   return true;
 }
 
-export function getSpaceController(space: string) {
+export function getSpaceController(space: string, network = NETWORK) {
   const shibariumNetworkMap = {
     mainnet: '109',
     testnet: '157'
@@ -257,7 +257,7 @@ export function getSpaceController(space: string) {
 
   return snapshot.utils.getSpaceController(
     space,
-    space.endsWith('.shib') ? shibariumNetworkMap[NETWORK] : DEFAULT_NETWORK,
+    space.endsWith('.shib') ? shibariumNetworkMap[network] : DEFAULT_NETWORK,
     { broviderUrl }
   );
 }
