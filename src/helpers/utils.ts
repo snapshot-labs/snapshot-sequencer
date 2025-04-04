@@ -27,6 +27,7 @@ export const NETWORK_ID_WHITELIST = [
   ...TESTNET_NETWORK_ID_WHITELIST
 ];
 export const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
+export const NETWORK = process.env.NETWORK ?? 'testnet';
 export const NETWORK_IDS =
   process.env.NETWORK === 'testnet' ? TESTNET_NETWORK_ID_WHITELIST : MAINNET_NETWORK_ID_WHITELIST;
 export const DEFAULT_NETWORK_ID = NETWORK_IDS[0];
@@ -246,4 +247,17 @@ async function updateWalletConnectWhitelist(
   }
 
   return true;
+}
+
+export function getSpaceController(space: string, network = NETWORK) {
+  const shibariumNetworkMap = {
+    mainnet: '109',
+    testnet: '157'
+  };
+
+  return snapshot.utils.getSpaceController(
+    space,
+    space.endsWith('.shib') ? shibariumNetworkMap[network] : DEFAULT_NETWORK,
+    { broviderUrl }
+  );
 }
