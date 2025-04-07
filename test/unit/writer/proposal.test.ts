@@ -61,7 +61,8 @@ jest.mock('../../../src/helpers/actions', () => {
   return {
     __esModule: true,
     ...originalModule,
-    getSpace: (id: string) => mockGetSpace(id)
+    getSpace: (id: string) => mockGetSpace(id),
+    getPremiumNetworkIds: () => ['1', '10', '137', '250']
   };
 });
 
@@ -582,6 +583,41 @@ describe('writer/proposal', () => {
         await expect(writer.verify(input)).rejects.toMatch(
           'invalid space settings: network not allowed'
         );
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if using a non-premium network', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          network: '56' // Using BSC network, which is not in the premium list
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch('space is using a non-premium network');
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('should not reject if using a premium network for turbo space', async () => {
+        expect.assertions(3);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          network: '56', // Using Ethereum mainnet, which is in the premium list
+          turbo: '1'
+        });
+
+        await expect(writer.verify(input)).resolves.toBeUndefined();
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+        expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if strategies use a non-premium network', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          strategies: [{ name: 'erc20-balance-of', network: '56' }] // Non-premium network
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch('space is using a non-premium network');
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
       });
 
