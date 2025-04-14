@@ -8,13 +8,12 @@ import { getLimit, getSpaceType } from '../helpers/options';
 import {
   addToWalletConnectWhitelist,
   clearStampCache,
-  DEFAULT_NETWORK,
+  getSpaceController,
   jsonParse,
   removeFromWalletConnectWhitelist
 } from '../helpers/utils';
 
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
-const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
 export async function validateSpaceSettings(originalSpace: any) {
@@ -107,9 +106,7 @@ export async function verify(body): Promise<any> {
     return Promise.reject('failed to validate strategies');
   }
 
-  const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
-    broviderUrl
-  });
+  const controller = await getSpaceController(msg.space, SNAPSHOT_ENV);
   const isController = controller === body.address;
 
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());
