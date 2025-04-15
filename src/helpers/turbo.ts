@@ -1,3 +1,4 @@
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import fetch from 'node-fetch';
 import db from './mysql';
@@ -86,13 +87,13 @@ async function getSpacesExpirationDates(): Promise<Space[]> {
     const data = await response.json();
 
     if (data.errors) {
-      console.error('GraphQL Errors:', data.errors);
+      capture(data);
       return [];
     }
 
     return data.data.spaces;
-  } catch (error) {
-    console.error('Error fetching payments:', error);
+  } catch (e) {
+    capture(e);
     return [];
   }
 }
