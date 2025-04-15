@@ -37,27 +37,18 @@ export async function trackTurboStatuses() {
 async function updateTurboStatuses(spaces: { id: string; turbo_expiration: number }[]) {
   if (spaces.length === 0) return;
 
-  const now = Math.floor(Date.now() / 1000); // Current timestamp in seconds
-
-  // Sync `turbo_expiration` and `turbo` status for each space
+  // Sync `turbo_expiration` for each space
   const query = `
     UPDATE spaces
     SET
       turbo_expiration = CASE id
         ${spaces.map(() => `WHEN ? THEN ?`).join(' ')}
-      END,
-      turbo = CASE
-        WHEN turbo_expiration < ? THEN 0
-        ELSE 1
       END
     WHERE id IN (${spaces.map(() => '?').join(', ')});
   `;
 
   // Flatten `spaces` array: [id1, expiration1, id2, expiration2, ..., now, id1, id2, ...]
   const params = spaces.flatMap(({ id, turbo_expiration }) => [id, turbo_expiration]);
-
-  // Add `now` for the `CASE` condition
-  params.push(now);
 
   // Append `id`s again for the `WHERE IN (...)` clause
   params.push(...spaces.map(space => space.id));
