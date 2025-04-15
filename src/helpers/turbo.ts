@@ -1,7 +1,7 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
-import fetch from 'node-fetch';
 import db from './mysql';
+import { fetchWithKeepAlive } from './utils';
 
 type Space = {
   id: string;
@@ -76,7 +76,8 @@ async function getSpacesExpirationDates(): Promise<Space[]> {
   `;
 
   try {
-    const response = await fetch(SCHNAPS_API_URL, {
+    const response = await fetchWithKeepAlive(SCHNAPS_API_URL, {
+      timeout: 5e3,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
