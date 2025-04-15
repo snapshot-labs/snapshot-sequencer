@@ -65,6 +65,7 @@ async function updateTurboStatuses(spaces: { id: string; turbo_expiration: numbe
   await db.query(query, params);
 }
 
+// TODO: adds pagination to handle large number of spaces
 async function getSpacesExpirationDates(): Promise<Space[]> {
   const query = `
     query GetSpaces {
