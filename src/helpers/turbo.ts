@@ -9,7 +9,7 @@ type Space = {
 };
 
 const SCHNAPS_API_URL = process.env.SCHNAPS_API_URL;
-const NETWORK_PREFIX = process.env.NETWORK === '1' ? 's:' : 's-tn:';
+const NETWORK_PREFIX = process.env.NETWORK === 'mainnet' ? 's:' : 's-tn:';
 const RUN_INTERVAL = 10 * 1e3; // 10 seconds
 
 // Periodically sync the turbo status of spaces with the schnaps-api
