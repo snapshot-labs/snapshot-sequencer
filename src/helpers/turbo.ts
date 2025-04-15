@@ -44,14 +44,17 @@ async function updateTurboStatuses(spaces: { id: string; turbo_expiration: numbe
       turbo_expiration = CASE id
         ${spaces.map(() => `WHEN ? THEN ?`).join(' ')}
       END
-    WHERE id IN (${spaces.map(() => '?').join(', ')});
+    WHERE id IN (?);
   `;
 
   // Flatten `spaces` array: [id1, expiration1, id2, expiration2, ..., now, id1, id2, ...]
-  const params = spaces.flatMap(({ id, turbo_expiration }) => [id, turbo_expiration]);
+  const params: (string | string[] | number)[] = spaces.flatMap(({ id, turbo_expiration }) => [
+    id,
+    turbo_expiration
+  ]);
 
   // Append `id`s again for the `WHERE IN (...)` clause
-  params.push(...spaces.map(space => space.id));
+  params.push(spaces.map(space => space.id));
 
   await db.query(query, params);
 }
