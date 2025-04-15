@@ -2,8 +2,13 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import fetch from 'node-fetch';
 import db from './mysql';
 
-const SCHNAPS_API_URL = process.env.SCHNAPS_API_URL;
+type Space = {
+  id: string;
+  turbo_expiration: number;
+};
 
+const SCHNAPS_API_URL = process.env.SCHNAPS_API_URL;
+const NETWORK_PREFIX = process.env.NETWORK === '1' ? 's:' : 's-tn:';
 const RUN_INTERVAL = 10 * 1e3; // 10 seconds
 
 // Periodically sync the turbo status of spaces with the schnaps-api
@@ -12,7 +17,13 @@ export async function trackTurboStatuses() {
 
   while (true) {
     // Step 1: Query all the spaces from the schnaps-api
-    const spaces = await getSpacesExpirationDates();
+    let spaces = await getSpacesExpirationDates();
+
+    spaces = spaces
+      .filter(space => space.id.startsWith(NETWORK_PREFIX))
+      .map(space => {
+        return { ...space, id: space.id.replace(NETWORK_PREFIX, '') };
+      });
 
     // Step 2: Update the turbo status of the spaces in the database
     updateTurboStatuses(spaces);
@@ -53,7 +64,7 @@ async function updateTurboStatuses(spaces: { id: string; turbo_expiration: numbe
   await db.query(query, params);
 }
 
-async function getSpacesExpirationDates() {
+async function getSpacesExpirationDates(): Promise<Space[]> {
   const query = `
     query GetSpaces {
       spaces {
