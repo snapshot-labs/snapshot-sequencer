@@ -33,7 +33,9 @@ async function getSpaceENS(id: string): Promise<Space> {
     }
 
     try {
-      return await snapshot.utils.getJSON(uri);
+      return await snapshot.utils.getJSON(uri, {
+        gateways: ['pineapple.fyi']
+      });
     } catch (e) {
       return Promise.reject(`${uri} is not a valid JSON file`);
     }
