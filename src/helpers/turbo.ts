@@ -12,6 +12,10 @@ const SCHNAPS_API_URL = process.env.SCHNAPS_API_URL;
 const NETWORK_PREFIX = process.env.NETWORK === 'mainnet' ? 's:' : 's-tn:';
 const RUN_INTERVAL = 10 * 1e3; // 10 seconds
 
+const provider = snapshot.utils.getProvider(process.env.DEFAULT_NETWORK, {
+  broviderUrl: process.env.BROVIDER_URL || 'https://rpc.snapshot.org'
+});
+
 // Periodically sync the turbo status of spaces with the schnaps-api
 export async function trackTurboStatuses() {
   if (!SCHNAPS_API_URL) return;
@@ -63,6 +67,10 @@ async function updateTurboStatuses(spaces: { id: string; turbo_expiration: numbe
 async function getSpacesExpirationDates(): Promise<Space[]> {
   const query = `
     query GetSpaces {
+      _metadata(id: "last_indexed_block") {
+        id
+        value
+      }
       spaces {
         id
         turbo_expiration
@@ -84,6 +92,12 @@ async function getSpacesExpirationDates(): Promise<Space[]> {
 
     if (data.errors) {
       capture(data);
+      return [];
+    }
+
+    const block = await provider.getBlock('latest');
+    if (block.number - Number(data.data._metadata.value) > 10) {
+      console.log('Schnaps API is outdated. Skipping update.');
       return [];
     }
 
