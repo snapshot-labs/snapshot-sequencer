@@ -12,7 +12,7 @@ const SCHNAPS_API_URL = process.env.SCHNAPS_API_URL;
 const NETWORK_PREFIX = process.env.NETWORK === 'mainnet' ? 's:' : 's-tn:';
 const RUN_INTERVAL = 10 * 1e3; // 10 seconds
 
-const provider = snapshot.utils.getProvider(process.env.DEFAULT_NETWORK, {
+const provider = snapshot.utils.getProvider(process.env.DEFAULT_NETWORK ?? '1', {
   broviderUrl: process.env.BROVIDER_URL || 'https://rpc.snapshot.org'
 });
 
