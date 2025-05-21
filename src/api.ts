@@ -13,6 +13,7 @@ import { name, version } from '../package.json';
 
 const router = express.Router();
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
+const SCORE_FINALIZATION_DELAY = 60000;
 
 const maintenanceMsg = 'update in progress, try later';
 
@@ -47,15 +48,18 @@ router.get('/', (req, res) => {
 });
 
 router.get('/scores/:proposalId', async (req, res) => {
-  const { proposalId } = req.params;
-  try {
-    const result = await serve(proposalId, updateProposalAndVotes, [proposalId]);
-    return res.json({ result });
-  } catch (e) {
-    capture(e);
-    log.warn(`[api] updateProposalAndVotes() failed ${proposalId}, ${JSON.stringify(e)}`);
-    return res.json({ error: 'failed', message: e });
-  }
+  // Delay the score finalization to allow some time for last minute votes to complete
+  setTimeout(async () => {
+    const { proposalId } = req.params;
+    try {
+      await serve(proposalId, updateProposalAndVotes, [proposalId]);
+    } catch (e) {
+      capture(e);
+      log.warn(`[api] updateProposalAndVotes() failed ${proposalId}, ${JSON.stringify(e)}`);
+    }
+  }, SCORE_FINALIZATION_DELAY);
+
+  return res.json({ result: 'pending' });
 });
 
 router.get('/spaces/:key/poke', async (req, res) => {
