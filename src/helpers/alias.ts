@@ -18,7 +18,10 @@ const OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS = [
   'delete-proposal'
 ];
 // These types can be executed with a Starknet alias
-const TYPES_EXECUTABLE_BY_STARKNET_ALIAS = OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS;
+const TYPES_EXECUTABLE_BY_STARKNET_ALIAS = [
+  ...OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS,
+  'update-proposal'
+];
 
 export async function isExistingAlias(address: string, alias: string): Promise<boolean> {
   const query = `SELECT
