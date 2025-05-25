@@ -55,7 +55,7 @@ export function isStarknetAddress(address: string): boolean {
 }
 
 export function getAllowedTypes(withAlias: boolean, forStarknet: boolean): string[] {
-  const types = TYPES_EXECUTABLE_BY_ALIAS;
+  const types = [...TYPES_EXECUTABLE_BY_ALIAS];
 
   if (withAlias) {
     types.push(...OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS);
