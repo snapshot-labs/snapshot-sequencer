@@ -27,7 +27,7 @@ describe('alias', () => {
     await sequencerDB.endAsync();
   });
 
-  describe('isValidAlias()', () => {
+  describe('isExistingAlias()', () => {
     it('should return true for valid alias', () => {
       expect(
         isExistingAlias(aliasesSqlFixtures[0].address, aliasesSqlFixtures[0].alias)
