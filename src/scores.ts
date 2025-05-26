@@ -116,10 +116,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
   if (proposal.end <= ts && proposal.scores_state !== 'final') {
     const secondsSinceEnd = ts - proposal.end;
     await snapshot.utils.sleep(
-      Math.min(
-        Math.max(FINALIZE_SCORE_SECONDS_DELAY - secondsSinceEnd, 0),
-        FINALIZE_SCORE_SECONDS_DELAY
-      ) * 1000
+      Math.max(FINALIZE_SCORE_SECONDS_DELAY - secondsSinceEnd, 0) * 1000
     );
   }
 
