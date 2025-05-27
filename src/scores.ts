@@ -115,9 +115,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
   // up to 1 minute after the end of the proposal
   if (proposal.end <= ts && proposal.scores_state !== 'final') {
     const secondsSinceEnd = ts - proposal.end;
-    await snapshot.utils.sleep(
-      Math.max(FINALIZE_SCORE_SECONDS_DELAY - secondsSinceEnd, 0) * 1000
-    );
+    await snapshot.utils.sleep(Math.max(FINALIZE_SCORE_SECONDS_DELAY - secondsSinceEnd, 0) * 1000);
   }
 
   // Ignore score calculation if proposal have more than 100k votes and scores_updated greater than 5 minute
