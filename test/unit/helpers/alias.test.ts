@@ -21,11 +21,13 @@ describe('Alias', () => {
       const result = getAllowedTypes(false, false);
       expect(result).toContain('profile');
       expect(result).not.toContain('vote');
+      expect(result).not.toContain('update-proposal');
     });
     it('should return the correct types when withAlias is true and forStarknet is false', () => {
       const result = getAllowedTypes(true, false);
       expect(result).toContain('profile');
       expect(result).toContain('vote');
+      expect(result).not.toContain('update-proposal');
     });
     it('should return the correct types when withAlias is false and forStarknet is true', () => {
       const result = getAllowedTypes(false, true);
