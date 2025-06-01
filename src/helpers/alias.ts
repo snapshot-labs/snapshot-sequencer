@@ -1,3 +1,4 @@
+import { uniq } from 'lodash';
 import db from './mysql';
 
 // These types can always be executed with an alias
@@ -68,5 +69,5 @@ export function getAllowedTypes(withAlias: boolean, forStarknet: boolean): strin
     types.push(...TYPES_EXECUTABLE_BY_STARKNET_ALIAS);
   }
 
-  return types;
+  return uniq(types);
 }
