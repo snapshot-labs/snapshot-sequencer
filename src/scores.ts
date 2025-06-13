@@ -113,7 +113,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
 
   // Delay computation of final scores, to allow time for last minute votes to finish
   // up to 1 minute after the end of the proposal
-  if (proposal.end <= ts && proposal.scores_state !== 'final') {
+  if (proposal.end <= ts) {
     const secondsSinceEnd = ts - proposal.end;
     await snapshot.utils.sleep(Math.max(FINALIZE_SCORE_SECONDS_DELAY - secondsSinceEnd, 0) * 1000);
   }
