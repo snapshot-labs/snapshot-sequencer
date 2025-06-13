@@ -5,7 +5,7 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import hashTypes from '@snapshot-labs/snapshot.js/src/sign/hashedTypes.json';
 import castArray from 'lodash/castArray';
 import { getProposal, getSpace } from './helpers/actions';
-import { isValidAlias } from './helpers/alias';
+import { verifyAlias } from './helpers/alias';
 import envelope from './helpers/envelope.json';
 import { doesMessageExist, storeMsg } from './helpers/highlight';
 import log from './helpers/log';
@@ -104,17 +104,7 @@ export default async function ingestor(req) {
       }
     }
 
-    // Check if signing address is an alias
-    const aliasTypes = ['follow', 'unfollow', 'subscribe', 'unsubscribe', 'profile', 'statement'];
-    const aliasOptionTypes = ['vote', 'vote-array', 'vote-string', 'proposal', 'delete-proposal'];
-    if (body.address !== message.from) {
-      if (!aliasTypes.includes(type) && !aliasOptionTypes.includes(type))
-        return Promise.reject('wrong from');
-
-      if (aliasOptionTypes.includes(type) && !aliased) return Promise.reject('alias not enabled');
-
-      if (!(await isValidAlias(message.from, body.address))) return Promise.reject('wrong alias');
-    }
+    await verifyAlias(type, body, aliased);
 
     // Check if signature is valid
     try {
