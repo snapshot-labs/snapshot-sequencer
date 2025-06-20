@@ -52,7 +52,7 @@ export async function isExistingAlias(
   const query = `SELECT 1
     FROM aliases
     WHERE address = ? AND alias = ?
-      AND created > DATE_SUB(NOW(), INTERVAL ? DAY)
+      AND created > UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL ? DAY))
     LIMIT 1`;
 
   const results = await db.queryAsync(query, [address, alias, expiryDays]);
