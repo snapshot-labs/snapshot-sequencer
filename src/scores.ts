@@ -5,6 +5,7 @@ import { getDecryptionKey } from './helpers/shutter';
 import { hasStrategyOverride, sha256 } from './helpers/utils';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
+const FINALIZE_SCORE_SECONDS_DELAY = 60;
 
 async function getProposal(id: string): Promise<any | undefined> {
   const query = 'SELECT * FROM proposals WHERE id = ? LIMIT 1';
@@ -108,8 +109,16 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     return true;
   }
 
-  // Ignore score calculation if proposal have more than 100k votes and scores_updated greater than 5 minute
   const ts = Number((Date.now() / 1e3).toFixed());
+
+  // Delay computation of final scores, to allow time for last minute votes to finish
+  // up to 1 minute after the end of the proposal
+  if (proposal.end <= ts) {
+    const secondsSinceEnd = ts - proposal.end;
+    await snapshot.utils.sleep(Math.max(FINALIZE_SCORE_SECONDS_DELAY - secondsSinceEnd, 0) * 1000);
+  }
+
+  // Ignore score calculation if proposal have more than 100k votes and scores_updated greater than 5 minute
   if (
     (proposal.votes > 20000 && proposal.scores_updated > ts - 300) ||
     pendingRequests[proposalId]
