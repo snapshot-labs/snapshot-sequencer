@@ -19,14 +19,12 @@ const OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS = [
   'vote-array',
   'vote-string',
   'proposal',
+  'update-proposal',
   'delete-proposal'
 ] as const;
 
 // These types can be executed with a Starknet alias
-const TYPES_EXECUTABLE_BY_STARKNET_ALIAS = [
-  ...OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS,
-  'update-proposal'
-] as const;
+const TYPES_EXECUTABLE_BY_STARKNET_ALIAS = [...OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS] as const;
 
 // Memoization cache for getAllowedTypes
 const allowedTypesCache = new Map<string, ExecutableType[]>();

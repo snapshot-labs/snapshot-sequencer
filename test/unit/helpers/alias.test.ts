@@ -27,7 +27,7 @@ describe('Alias', () => {
       const result = getAllowedTypes(true, false);
       expect(result).toContain('profile');
       expect(result).toContain('vote');
-      expect(result).not.toContain('update-proposal');
+      expect(result).toContain('update-proposal');
     });
     it('should return the correct types when withAlias is false and forStarknet is true', () => {
       const result = getAllowedTypes(false, true);
