@@ -5,6 +5,8 @@ import Connection from 'mysql/lib/Connection';
 import Pool from 'mysql/lib/Pool';
 import log from './log';
 
+bluebird.promisifyAll([Pool, Connection]);
+
 const connectionLimit = parseInt(process.env.CONNECTION_LIMIT ?? '25');
 log.info(`[mysql] connection limit ${connectionLimit}`);
 
@@ -19,7 +21,6 @@ hubConfig.connectTimeout = 60e3;
 hubConfig.acquireTimeout = 60e3;
 hubConfig.timeout = 60e3;
 hubConfig.charset = 'utf8mb4';
-bluebird.promisifyAll([Pool, Connection]);
 const hubDB = mysql.createPool(hubConfig);
 
 // @ts-ignore
@@ -33,7 +34,6 @@ sequencerConfig.connectTimeout = 60e3;
 sequencerConfig.acquireTimeout = 60e3;
 sequencerConfig.timeout = 60e3;
 sequencerConfig.charset = 'utf8mb4';
-bluebird.promisifyAll([Pool, Connection]);
 const sequencerDB = mysql.createPool(sequencerConfig);
 
 export { hubDB as default, sequencerDB };
