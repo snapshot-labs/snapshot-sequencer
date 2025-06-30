@@ -24,7 +24,10 @@ const OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS = [
 ] as const;
 
 // These types can be executed with a Starknet alias
-const TYPES_EXECUTABLE_BY_STARKNET_ALIAS = [...OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS] as const;
+const TYPES_EXECUTABLE_BY_STARKNET_ALIAS = [
+  'flag-proposal',
+  ...OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS
+] as const;
 
 // Memoization cache for getAllowedTypes
 const allowedTypesCache = new Map<string, ExecutableType[]>();
@@ -33,7 +36,7 @@ const allowedTypesCache = new Map<string, ExecutableType[]>();
 type ExecutableType =
   | (typeof TYPES_EXECUTABLE_BY_ALIAS)[number]
   | (typeof OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS)[number]
-  | 'update-proposal';
+  | 'flag-proposal';
 
 /**
  * Checks if an alias relationship exists and is not expired
