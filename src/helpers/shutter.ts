@@ -63,10 +63,6 @@ export async function getDecryptionKey(proposal: string, url: string = SHUTTER_U
   return result;
 }
 
-export async function requestEonKey(url: string = SHUTTER_URL) {
-  return await rpcRequest('request_eon_key', null, url);
-}
-
 async function setEonPubkey(params) {
   log.info(`[shutter] set eon pubkey ${JSON.stringify(params)}`);
   return true;
