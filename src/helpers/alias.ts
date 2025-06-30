@@ -36,7 +36,7 @@ const allowedTypesCache = new Map<string, ExecutableType[]>();
 type ExecutableType =
   | (typeof TYPES_EXECUTABLE_BY_ALIAS)[number]
   | (typeof OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS)[number]
-  | 'flag-proposal';
+  | (typeof TYPES_EXECUTABLE_BY_STARKNET_ALIAS)[number];
 
 /**
  * Checks if an alias relationship exists and is not expired
