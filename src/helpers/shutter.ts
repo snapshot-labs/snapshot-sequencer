@@ -63,7 +63,6 @@ export async function getDecryptionKey(proposal: string, url: string = SHUTTER_U
   return result;
 }
 
-
 async function setEonPubkey(params) {
   log.info(`[shutter] set eon pubkey ${JSON.stringify(params)}`);
   return true;
