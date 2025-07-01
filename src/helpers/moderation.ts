@@ -42,10 +42,15 @@ export function setData(result?: Record<string, string[]>) {
 }
 
 export default async function run() {
-  setData(await loadModerationData());
+  while (true) {
+    try {
+      setData(await loadModerationData());
+    } catch (e: any) {
+      capture(e);
+    }
 
-  await snapshot.utils.sleep(20e3);
-  run();
+    await snapshot.utils.sleep(20e3);
+  }
 }
 
 export function containsFlaggedLinks(body: string): boolean {
