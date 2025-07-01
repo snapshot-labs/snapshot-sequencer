@@ -1,7 +1,7 @@
 import cloneDeep from 'lodash/cloneDeep';
 import omit from 'lodash/omit';
 import db, { sequencerDB } from '../../src/helpers/mysql';
-import relayer from '../../src/helpers/relayer';
+import relayer, { verifyReceipt } from '../../src/helpers/relayer';
 import ingestor from '../../src/ingestor';
 import proposalInput from '../fixtures/ingestor-payload/proposal.json';
 import voteInput from '../fixtures/ingestor-payload/vote.json';
@@ -278,6 +278,7 @@ describe('ingestor', () => {
       expect(result).toHaveProperty('relayer');
       expect(result.relayer.address).toEqual(relayer.address);
       expect(result.relayer).toHaveProperty('receipt');
+      expect(verifyReceipt(proposalRequest.body.sig, result.relayer.receipt)).toBe(true);
     });
 
     it('saves the proposal in the DB', async () => {

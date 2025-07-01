@@ -11,7 +11,7 @@ import { doesMessageExist, storeMsg } from './helpers/highlight';
 import log from './helpers/log';
 import { timeIngestorProcess } from './helpers/metrics';
 import { flaggedIps } from './helpers/moderation';
-import relayer, { issueReceipt } from './helpers/relayer';
+import relayer, { issueReceipt, verifyReceipt } from './helpers/relayer';
 import { getIp, jsonParse, sha256 } from './helpers/utils';
 import writer from './writer';
 
@@ -239,6 +239,8 @@ export default async function ingestor(req) {
         pin(ipfsBody, process.env.PINEAPPLE_URL),
         issueReceipt(formattedSignature)
       ]);
+
+      if (!verifyReceipt(formattedSignature, receipt)) throw new Error('invalid relayer receipt');
     } catch (e) {
       capture(e);
       return Promise.reject('pinning failed');
