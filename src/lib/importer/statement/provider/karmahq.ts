@@ -20,25 +20,22 @@ export default class Karmahq extends Provider {
   static readonly ID = 'karmahq';
 
   async fetchWithRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
-    while (retries > 0) {
-      try {
-        const response: Response = await fn();
+    try {
+      const response: Response = await fn();
 
-        if (!response.ok) {
-          throw new Error(`Response not ok: ${response.status}`);
-        }
-
-        return response;
-      } catch (error) {
-        console.log(`Error, retrying...`);
-        if (retries > 0) {
-          this.fetchWithRetry(fn, retries - 1);
-        } else {
-          throw error;
-        }
+      if (!response.ok) {
+        throw new Error(`Response not ok: ${response.status}`);
       }
+
+      return response;
+    } catch (error) {
+      if (retries <= 0) {
+        throw error;
+      }
+
+      console.log(`Error, retrying...`);
+      return this.fetchWithRetry(fn, retries - 1);
     }
-    throw new Error('Max retries reached');
   }
 
   async _fetch() {
