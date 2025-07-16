@@ -28,6 +28,18 @@ export async function validateSpaceSettings(originalSpace: any) {
   delete space.hibernated;
   delete space.id;
 
+  if (space.parent && space.parent === originalSpace.id) {
+    return Promise.reject('space cannot be its own parent');
+  }
+
+  if (
+    space.children &&
+    Array.isArray(space.children) &&
+    space.children.includes(originalSpace.id)
+  ) {
+    return Promise.reject('space cannot be its own child');
+  }
+
   const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, space, {
     spaceType,
     snapshotEnv: SNAPSHOT_ENV
@@ -72,6 +84,7 @@ export async function verify(body): Promise<any> {
   try {
     await validateSpaceSettings({
       ...msg.payload,
+      id: msg.space,
       deleted: space?.deleted,
       turbo: space?.turbo
     });

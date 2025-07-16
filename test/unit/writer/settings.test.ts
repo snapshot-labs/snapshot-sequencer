@@ -131,6 +131,29 @@ describe('writer/settings', () => {
           verify(editedInput({ validation: { name: 'any' }, strategies: [{ name: 'ticket' }] }))
         ).rejects.toContain('space with ticket requires voting validation');
       });
+
+      it('rejects if space tries to set itself as parent', async () => {
+        return expect(verify(editedInput({ parent: 'fabien.eth' }))).rejects.toContain(
+          'space cannot be its own parent'
+        );
+      });
+
+      it('rejects if space tries to include itself in children array', async () => {
+        return expect(
+          verify(editedInput({ children: ['other-space.eth', 'fabien.eth', 'another-space.eth'] }))
+        ).rejects.toContain('space cannot be its own child');
+      });
+
+      it('accepts valid parent that is not the space itself', async () => {
+        return expect(verify(editedInput({ parent: 'parent-space.eth' }))).resolves.toBeUndefined();
+      });
+
+      it('accepts valid children array that does not include the space itself', async () => {
+        return expect(
+          verify(editedInput({ children: ['child1.eth', 'child2.eth'] }))
+        ).resolves.toBeUndefined();
+      });
+
       it.todo('rejects if the submitter does not have permission');
       it.todo('rejects if the submitter does not have permission to change admin');
       const maxStrategiesForNormalSpace = LIMITS['space.default.strategies_limit'];
