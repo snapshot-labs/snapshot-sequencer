@@ -259,7 +259,7 @@ export function getSpaceController(space: string, network = NETWORK) {
       testnet: '157'
     },
     sonic: {
-      mainnet: '147'
+      mainnet: '146'
     }
   };
   const networkId = tldMapping[tld]?.[network] ?? DEFAULT_NETWORK;
