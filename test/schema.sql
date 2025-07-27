@@ -246,3 +246,11 @@ CREATE TABLE messages (
   INDEX type (type),
   INDEX receipt (receipt)
 );
+
+CREATE TABLE vote_prices (
+  vote_id VARCHAR(66) NOT NULL,
+  usd_value DECIMAL(20,8) NOT NULL,
+  created INT(11) NOT NULL,
+  PRIMARY KEY (vote_id),
+  INDEX created (created)
+);

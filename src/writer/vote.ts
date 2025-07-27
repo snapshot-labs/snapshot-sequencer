@@ -2,6 +2,7 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import { getProposal } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
+import { assignVotePrices } from '../helpers/tokenPricing';
 import { captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
 import { updateProposalAndVotes } from '../scores';
 
@@ -197,4 +198,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     captureError(e, { contexts: { input: { space: msg.space, id: proposalId } } }, [504]);
     log.warn(`[writer] updateProposalAndVotes() failed, ${msg.space}, ${proposalId}`);
   }
+
+  // Assign price values to vote - non-blocking
+  assignVotePrices(context.proposal, id);
 }
