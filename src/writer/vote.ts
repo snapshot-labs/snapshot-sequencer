@@ -2,8 +2,8 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import { getProposal } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
-import { assignVotePrices } from '../helpers/tokenPricing';
 import { captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
+import { assignVotePrices } from '../helpers/voteValue';
 import { updateProposalAndVotes } from '../scores';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
@@ -200,5 +200,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   }
 
   // Assign price values to vote - non-blocking
-  assignVotePrices(context.proposal, id);
+  assignVotePrices(context.proposal, id, created).catch(error => {
+    captureError(error, { contexts: { input: { space: msg.space, voteId: id } } });
+  });
 }

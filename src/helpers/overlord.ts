@@ -1,10 +1,13 @@
-import supportedStrategies from '@snapshot-labs/overlord';
+import strategiesModule from '@snapshot-labs/overlord/dist/strategies';
 import log from './log';
+import { Strategy } from './voteValue';
+
+const supportedStrategies = strategiesModule;
 
 export async function fetchTokenPrices(
-  strategies: any[],
+  strategies: Strategy[],
   network: string,
-  blockNumber: number
+  timestamp: number
 ): Promise<number[]> {
   const pricePromises = strategies.map(async strategy => {
     if (!supportedStrategies[strategy.name]) {
@@ -34,7 +37,7 @@ export async function fetchTokenPrices(
       const price = await strategyFunction(
         { ...strategy.params, address: tokenAddress },
         strategyNetworkId,
-        blockNumber
+        timestamp
       );
 
       if (price > 0) {
