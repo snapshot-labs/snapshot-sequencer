@@ -1,10 +1,12 @@
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getProposal } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
-import { captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
+import { captureError, dotProduct, hasStrategyOverride, jsonParse } from '../helpers/utils';
 import { updateProposalAndVotes } from '../scores';
 
+const LAST_VOTE_CB = 1;
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
 // async function isLimitReached(space) {
@@ -116,6 +118,17 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   const withOverride = hasStrategyOverride(context.proposal.strategies);
   if (vpState === 'final' && withOverride) vpState = 'pending';
 
+  // Compute vote value
+  let vp_value = 0;
+  let cb = 0;
+
+  try {
+    vp_value = dotProduct(context.proposal.vp_value_by_strategy, context.vp.vp_by_strategy);
+    cb = LAST_VOTE_CB;
+  } catch (e: any) {
+    capture(e, { msg, proposalId });
+  }
+
   const params = {
     id,
     ipfs,
@@ -130,7 +143,8 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     vp: context.vp.vp,
     vp_by_strategy: JSON.stringify(context.vp.vp_by_strategy),
     vp_state: vpState,
-    cb: 0
+    vp_value,
+    cb
   };
 
   // Check if voter already voted

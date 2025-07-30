@@ -266,3 +266,116 @@ export function getSpaceController(space: string, network = NETWORK) {
 
   return snapshot.utils.getSpaceController(space, networkId, { broviderUrl });
 }
+
+/**
+ * Recursively checks if two arrays have the exact same structure,
+ * including nesting levels at corresponding positions, and contain only valid numbers.
+ *
+ * @param arrayA - First array
+ * @param arrayB - Second array
+ * @returns True if structures match exactly and contain only numbers, false otherwise
+ */
+function arraysHaveSameStructure(arrayA: any, arrayB: any): boolean {
+  // Both must be arrays or both must not be arrays
+  if (Array.isArray(arrayA) !== Array.isArray(arrayB)) {
+    return false;
+  }
+
+  // If neither is an array, check they are valid numeric values
+  if (!Array.isArray(arrayA)) {
+    return (
+      typeof arrayA === 'number' && !isNaN(arrayA) && typeof arrayB === 'number' && !isNaN(arrayB)
+    );
+  }
+
+  // Both are arrays - check they have the same length
+  if (arrayA.length !== arrayB.length) {
+    return false;
+  }
+
+  // Recursively check each element has the same structure and valid content
+  for (let i = 0; i < arrayA.length; i++) {
+    if (!arraysHaveSameStructure(arrayA[i], arrayB[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Validates and prepares arrays for dot product calculation.
+ * Ensures arrays have identical structure and nesting patterns.
+ *
+ * @param arrayA - First array
+ * @param arrayB - Second array
+ * @returns Object with flattened arrays, or null if invalid or structure mismatch
+ */
+function validateAndFlattenArrays(
+  arrayA: any,
+  arrayB: any
+): { flatArrayA: any[]; flatArrayB: any[] } | null {
+  if (!Array.isArray(arrayA) || !Array.isArray(arrayB)) {
+    return null;
+  }
+
+  // Check for exact structural match
+  if (!arraysHaveSameStructure(arrayA, arrayB)) {
+    return null;
+  }
+
+  // Structure matches, safe to flatten
+  const flatArrayA = arrayA.flat(Infinity);
+  const flatArrayB = arrayB.flat(Infinity);
+
+  return { flatArrayA, flatArrayB };
+}
+
+/**
+ * Computes the dot product of two arrays by multiplying corresponding elements and summing the results.
+ *
+ * This function performs a dot product calculation between two arrays of numbers using
+ * JavaScript's native arithmetic. Both arrays are flattened to handle nested structures
+ * of unlimited depth before calculation. Arrays must have identical structure and contain only numbers.
+ *
+ * @param arrayA - First array of numbers. Can contain deeply nested arrays of any depth
+ * @param arrayB - Second array of numbers. Must have the same structure as arrayA after flattening
+ * @returns The computed dot product as a number. Returns 0 if arrays are invalid or mismatched.
+ *
+ * @example
+ * // Simple arrays
+ * dotProduct([1, 2, 3], [10, 20, 30]) // Returns 140 (1*10 + 2*20 + 3*30)
+ *
+ * @example
+ * // Nested arrays (2 levels)
+ * dotProduct([1, [2, 3]], [10, [20, 30]]) // Returns 140 (1*10 + 2*20 + 3*30)
+ *
+ * @example
+ * // Financial calculations
+ * dotProduct([1.833444691890596], [1000.123456789]) // Uses JavaScript precision
+ */
+export function dotProduct(arrayA: any[], arrayB: any[]): number {
+  const validation = validateAndFlattenArrays(arrayA, arrayB);
+  if (!validation) {
+    throw new Error('Invalid arrays structure mismatch');
+  }
+
+  const { flatArrayA, flatArrayB } = validation;
+
+  // Use pure JavaScript arithmetic for all calculations
+  let sum = 0;
+
+  for (let i = 0; i < flatArrayA.length; i++) {
+    const numA = flatArrayA[i];
+    const numB = flatArrayB[i];
+
+    const product = numA * numB;
+
+    // Only add finite numbers to avoid NaN propagation
+    if (isFinite(product)) {
+      sum += product;
+    }
+  }
+
+  return sum;
+}
