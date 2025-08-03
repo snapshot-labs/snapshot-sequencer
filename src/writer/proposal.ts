@@ -10,6 +10,7 @@ import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
 import { getLimits, getSpaceType } from '../helpers/options';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
+import { setProposalVpValue } from '../helpers/vpValue';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
@@ -316,4 +317,6 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   `;
 
   await db.queryAsync(query, [proposal, space, author, space]);
+
+  setProposalVpValue({ ...proposal, strategies: spaceSettings.strategies });
 }
