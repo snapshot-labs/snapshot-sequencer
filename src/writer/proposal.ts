@@ -9,9 +9,8 @@ import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
 import { getLimits, getSpaceType } from '../helpers/options';
-import { validateSpaceSettings } from '../helpers/spaceValidation';
+import getStrategiesValue from '../helpers/strategiesValue';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
-import { setProposalVpValue } from '../helpers/vpValue';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
@@ -239,9 +238,34 @@ export async function verify(body): Promise<any> {
   if (msg.payload.choices.length > choicesLimit) {
     return Promise.reject(`number of choices can not exceed ${choicesLimit}`);
   }
+
+  let strategiesValue: number[] = [];
+
+  try {
+    strategiesValue = await getStrategiesValue({
+      network: space.network,
+      start: msg.payload.start,
+      strategies: space.strategies
+    });
+
+    // Handle unlikely case where strategies value array length does not match strategies length
+    if (strategiesValue.length !== space.strategies.length) {
+      capture(new Error('Strategies value length mismatch'), {
+        space: space.id,
+        strategiesLength: space.strategies.length,
+        strategiesValue: JSON.stringify(strategiesValue)
+      });
+      return Promise.reject('failed to get strategies value');
+    }
+  } catch (e: any) {
+    console.log('unable to get strategies value', e.message);
+    return Promise.reject('failed to get strategies value');
+  }
+
+  return { strategiesValue };
 }
 
-export async function action(body, ipfs, receipt, id): Promise<void> {
+export async function action(body, ipfs, receipt, id, context): Promise<void> {
   const msg = jsonParse(body.msg);
   const space = msg.space;
 
@@ -299,8 +323,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     scores_state: 'pending',
     scores_total: 0,
     scores_updated: 0,
-    scores_total_value: 0,
-    vp_value_by_strategy: JSON.stringify([]),
+    vp_value_by_strategy: JSON.stringify(context.strategiesValue),
     votes: 0,
     validation,
     flagged: +containsFlaggedLinks(msg.payload.body),
@@ -316,6 +339,4 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   `;
 
   await db.queryAsync(query, [proposal, space, author, space]);
-
-  setProposalVpValue({ ...proposal, strategies: spaceSettings.strategies });
 }

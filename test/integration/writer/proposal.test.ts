@@ -45,7 +45,7 @@ describe('writer/proposal', () => {
         expect.hasAssertions();
         mockContainsFlaggedLinks.mockReturnValueOnce(true);
         const id = '0x01-flagged';
-        expect(await action(input, 'ipfs', 'receipt', id)).toBeUndefined();
+        expect(await action(input, 'ipfs', 'receipt', id, {})).toBeUndefined();
         expect(mockContainsFlaggedLinks).toBeCalledTimes(1);
 
         const [proposal] = await db.queryAsync('SELECT * FROM proposals WHERE id = ?', [id]);
@@ -57,7 +57,7 @@ describe('writer/proposal', () => {
       it('creates and does not flag proposal', async () => {
         expect.hasAssertions();
         const id = '0x02-non-flagged';
-        expect(await action(input, 'ipfs', 'receipt', id)).toBeUndefined();
+        expect(await action(input, 'ipfs', 'receipt', id, {})).toBeUndefined();
         expect(mockContainsFlaggedLinks).toBeCalledTimes(1);
 
         const [proposal] = await db.queryAsync('SELECT * FROM proposals WHERE id = ?', [id]);
