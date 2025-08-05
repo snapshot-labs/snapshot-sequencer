@@ -1,3 +1,4 @@
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import { fetchWithKeepAlive } from './utils';
 
 type Proposal = {
@@ -28,5 +29,15 @@ export default async function getStrategiesValue(proposal: Proposal): Promise<nu
   };
   const res = await fetchWithKeepAlive(OVERLORD_URL, init);
   const { result } = await res.json();
+
+  // Handle unlikely case where strategies value array length does not match strategies length
+  if (result.length !== proposal.strategies.length) {
+    capture(new Error('Strategies value length mismatch'), {
+      strategiesLength: proposal.strategies.length,
+      result: JSON.stringify(result)
+    });
+    return Promise.reject('failed to get strategies value');
+  }
+
   return result;
 }

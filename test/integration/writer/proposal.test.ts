@@ -19,6 +19,11 @@ jest.mock('../../../src/helpers/moderation', () => {
   };
 });
 
+jest.mock('../../../src/helpers/strategiesValue', () => ({
+  __esModule: true,
+  default: jest.fn(() => Promise.resolve([]))
+}));
+
 const getSpaceMock = jest.spyOn(actionHelper, 'getSpace');
 getSpaceMock.mockResolvedValue(spacesGetSpaceFixtures);
 

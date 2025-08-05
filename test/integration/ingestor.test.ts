@@ -111,6 +111,11 @@ jest.mock('@snapshot-labs/pineapple', () => {
   };
 });
 
+jest.mock('../../src/helpers/strategiesValue', () => ({
+  __esModule: true,
+  default: jest.fn(() => Promise.resolve([]))
+}));
+
 const proposalRequest = {
   headers: { 'x-real-ip': '1.1.1.1' },
   body: proposalInput
