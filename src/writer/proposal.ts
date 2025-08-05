@@ -14,6 +14,7 @@ import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
+const LAST_CB = process.env.LAST_CB ?? 0;
 
 export const getProposalsCount = async (space, author) => {
   const query = `
@@ -323,11 +324,12 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     scores_state: 'pending',
     scores_total: 0,
     scores_updated: 0,
+    scores_total_value: 0,
     vp_value_by_strategy: JSON.stringify(context.strategiesValue),
     votes: 0,
     validation,
     flagged: +containsFlaggedLinks(msg.payload.body),
-    cb: CB.PENDING_SYNC
+    cb: LAST_CB
   };
 
   const query = `
