@@ -92,7 +92,8 @@ export function hasStrategyOverride(strategies: any[]) {
     '"api-v2-override"',
     '"rocketpool-node-operator-delegate-v8"',
     '"eden-online-override"',
-    '"split-delegation"'
+    '"split-delegation"',
+    '"sonic-staked-balance"'
   ];
   const strategiesStr = JSON.stringify(strategies).toLowerCase();
   if (keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`))) return true;
