@@ -14,7 +14,7 @@ import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
-const LAST_CB = process.env.LAST_CB ?? 0;
+const LAST_CB = parseInt(process.env.LAST_CB ?? '1');
 
 export const getProposalsCount = async (space, author) => {
   const query = `
