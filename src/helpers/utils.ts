@@ -269,114 +269,86 @@ export function getSpaceController(space: string, network = NETWORK) {
 }
 
 /**
- * Recursively checks if two arrays have the exact same structure,
- * including nesting levels at corresponding positions, and contain only valid numbers.
+ * Performs element-wise operations on two arrays while preserving their structure.
  *
- * @param arrayA - First array
- * @param arrayB - Second array
- * @returns True if structures match exactly and contain only numbers, false otherwise
- */
-function arraysHaveSameStructure(arrayA: any, arrayB: any): boolean {
-  // Both must be arrays or both must not be arrays
-  if (Array.isArray(arrayA) !== Array.isArray(arrayB)) {
-    return false;
-  }
-
-  // If neither is an array, check they are valid numeric values
-  if (!Array.isArray(arrayA)) {
-    return (
-      typeof arrayA === 'number' && !isNaN(arrayA) && typeof arrayB === 'number' && !isNaN(arrayB)
-    );
-  }
-
-  // Both are arrays - check they have the same length
-  if (arrayA.length !== arrayB.length) {
-    return false;
-  }
-
-  // Recursively check each element has the same structure and valid content
-  for (let i = 0; i < arrayA.length; i++) {
-    if (!arraysHaveSameStructure(arrayA[i], arrayB[i])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/**
- * Validates and prepares arrays for dot product calculation.
- * Ensures arrays have identical structure and nesting patterns.
- *
- * @param arrayA - First array
- * @param arrayB - Second array
- * @returns Object with flattened arrays, or null if invalid or structure mismatch
- */
-function validateAndFlattenArrays(
-  arrayA: any,
-  arrayB: any
-): { flatArrayA: any[]; flatArrayB: any[] } | null {
-  if (!Array.isArray(arrayA) || !Array.isArray(arrayB)) {
-    return null;
-  }
-
-  // Check for exact structural match
-  if (!arraysHaveSameStructure(arrayA, arrayB)) {
-    return null;
-  }
-
-  // Structure matches, safe to flatten
-  const flatArrayA = arrayA.flat(Infinity);
-  const flatArrayB = arrayB.flat(Infinity);
-
-  return { flatArrayA, flatArrayB };
-}
-
-/**
- * Computes the dot product of two arrays by multiplying corresponding elements and summing the results.
- *
- * This function performs a dot product calculation between two arrays of numbers using
- * JavaScript's native arithmetic. Both arrays are flattened to handle nested structures
- * of unlimited depth before calculation. Arrays must have identical structure and contain only numbers.
+ * This function applies the specified operation between corresponding elements of two arrays.
+ * The result maintains the same nested structure as the input arrays.
+ * Arrays must have identical structure and contain only numbers.
  *
  * @param arrayA - First array of numbers. Can contain deeply nested arrays of any depth
- * @param arrayB - Second array of numbers. Must have the same structure as arrayA after flattening
- * @returns The computed dot product as a number. Returns 0 if arrays are invalid or mismatched.
+ * @param arrayB - Second array of numbers. Must have the same structure as arrayA
+ * @param operation - Operation to perform on corresponding elements:
+ *                   - 'multiply': a * b (default)
+ *                   - 'add': a + b
+ *                   - 'subtract': a - b
+ *                   - 'divide': a / b (returns 0 when dividing by 0)
+ * @returns Array with same structure as inputs, containing results from element-wise operations
+ * @throws {Error} Throws 'Invalid arrays structure mismatch' if arrays have different structures or contain non-numeric values
  *
  * @example
- * // Simple arrays
- * dotProduct([1, 2, 3], [10, 20, 30]) // Returns 140 (1*10 + 2*20 + 3*30)
+ * // Element-wise multiplication (default)
+ * arrayOperation([1, 2, 3], [4, 5, 6]) // Returns [4, 10, 18]
  *
  * @example
- * // Nested arrays (2 levels)
- * dotProduct([1, [2, 3]], [10, [20, 30]]) // Returns 140 (1*10 + 2*20 + 3*30)
+ * // Element-wise addition
+ * arrayOperation([1, 2, 3], [10, 20, 30], 'add') // Returns [11, 22, 33]
  *
  * @example
- * // Financial calculations
- * dotProduct([1.833444691890596], [1000.123456789]) // Uses JavaScript precision
+ * // Element-wise subtraction
+ * arrayOperation([10, 20, 30], [1, 2, 3], 'subtract') // Returns [9, 18, 27]
+ *
+ * @example
+ * // Element-wise division
+ * arrayOperation([10, 20, 30], [2, 4, 5], 'divide') // Returns [5, 5, 6]
+ *
+ * @example
+ * // Nested arrays (structure preserved)
+ * arrayOperation([1, [2, 3]], [10, [20, 30]], 'multiply') // Returns [10, [40, 90]]
  */
-export function dotProduct(arrayA: any[], arrayB: any[]): number {
-  const validation = validateAndFlattenArrays(arrayA, arrayB);
-  if (!validation) {
+export function arrayOperation(
+  arrayA: any[],
+  arrayB: any[],
+  operation: 'multiply' | 'add' | 'subtract' | 'divide' = 'multiply'
+): any[] {
+  // Recursive function to process arrays while maintaining structure
+  function processArrays(a: any, b: any): any {
+    // If both are not arrays, they should be numbers
+    if (!Array.isArray(a) && !Array.isArray(b) && typeof a === 'number' && typeof b === 'number') {
+      let result: number;
+      switch (operation) {
+        case 'multiply':
+          result = a * b;
+          break;
+        case 'add':
+          result = a + b;
+          break;
+        case 'subtract':
+          result = a - b;
+          break;
+        case 'divide':
+          result = a / b;
+          break;
+        default:
+          result = a * b;
+      }
+      // Throw error if result is not finite
+      if (!isFinite(result)) {
+        throw new Error('Operation resulted in infinity or NaN');
+      }
+      return result;
+    }
+
+    // If both are arrays, process each element recursively
+    if (Array.isArray(a) && Array.isArray(b) && a.length === b.length) {
+      const results: any[] = [];
+      for (let i = 0; i < a.length; i++) {
+        results.push(processArrays(a[i], b[i]));
+      }
+      return results;
+    }
+
     throw new Error('Invalid arrays structure mismatch');
   }
 
-  const { flatArrayA, flatArrayB } = validation;
-
-  // Use pure JavaScript arithmetic for all calculations
-  let sum = 0;
-
-  for (let i = 0; i < flatArrayA.length; i++) {
-    const numA = flatArrayA[i];
-    const numB = flatArrayB[i];
-
-    const product = numA * numB;
-
-    // Only add finite numbers to avoid NaN propagation
-    if (isFinite(product)) {
-      sum += product;
-    }
-  }
-
-  return sum;
+  return processArrays(arrayA, arrayB);
 }

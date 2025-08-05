@@ -3,7 +3,7 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import { getProposal } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
-import { captureError, dotProduct, hasStrategyOverride, jsonParse } from '../helpers/utils';
+import { arrayOperation, captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
 import { updateProposalAndVotes } from '../scores';
 
 const LAST_CB = parseInt(process.env.LAST_CB ?? '1');
@@ -123,7 +123,12 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   let cb = 0;
 
   try {
-    vp_value = dotProduct(context.proposal.vp_value_by_strategy, context.vp.vp_by_strategy);
+    const products = arrayOperation(
+      context.proposal.vp_value_by_strategy,
+      context.vp.vp_by_strategy,
+      'multiply'
+    );
+    vp_value = products.flat(Infinity).reduce((sum, val) => sum + val, 0);
     cb = LAST_CB;
   } catch (e: any) {
     capture(e, { msg, proposalId });
