@@ -15,6 +15,7 @@ import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 const LAST_CB = parseInt(process.env.LAST_CB ?? '1');
+const STRATEGIES_VALUE_PRECISION = 9; // Precision for strategies value
 
 export const getProposalsCount = async (space, author) => {
   const query = `
@@ -263,7 +264,9 @@ export async function verify(body): Promise<any> {
       return Promise.reject('failed to get strategies value');
     }
 
-    strategiesValue = strategiesValue.map(value => parseFloat(value.toFixed(9)));
+    strategiesValue = strategiesValue.map(value =>
+      parseFloat(value.toFixed(STRATEGIES_VALUE_PRECISION))
+    );
   } catch (e: any) {
     console.log('unable to get strategies value', e.message);
     return Promise.reject('failed to get strategies value');
