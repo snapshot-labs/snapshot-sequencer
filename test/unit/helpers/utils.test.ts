@@ -3,36 +3,57 @@ import { dotProduct } from '../../../src/helpers/utils';
 describe('utils', () => {
   describe('dotProduct()', () => {
     describe('Input Validation', () => {
-      it('should return 0 for invalid array inputs', () => {
-        expect(dotProduct(null as any, [1, 2])).toBe(0);
-        expect(dotProduct([1, 2], null as any)).toBe(0);
-        expect(dotProduct(undefined as any, [1, 2])).toBe(0);
-        expect(dotProduct([1, 2], undefined as any)).toBe(0);
-        expect(dotProduct('string' as any, [1, 2])).toBe(0);
-        expect(dotProduct([1, 2], 'string' as any)).toBe(0);
+      it('should throw error for invalid array inputs', () => {
+        expect(() => dotProduct(null as any, [1, 2])).toThrow('Invalid arrays structure mismatch');
+        expect(() => dotProduct([1, 2], null as any)).toThrow('Invalid arrays structure mismatch');
+        expect(() => dotProduct(undefined as any, [1, 2])).toThrow(
+          'Invalid arrays structure mismatch'
+        );
+        expect(() => dotProduct([1, 2], undefined as any)).toThrow(
+          'Invalid arrays structure mismatch'
+        );
+        expect(() => dotProduct('string' as any, [1, 2])).toThrow(
+          'Invalid arrays structure mismatch'
+        );
+        expect(() => dotProduct([1, 2], 'string' as any)).toThrow(
+          'Invalid arrays structure mismatch'
+        );
       });
 
-      it('should return 0 for arrays of different lengths', () => {
-        expect(dotProduct([1, 2], [3])).toBe(0);
-        expect(dotProduct([1], [2, 3, 4])).toBe(0);
-        expect(dotProduct([], [1, 2])).toBe(0); // Empty vs non-empty
-        expect(dotProduct([], [])).toBe(0); // Both empty
+      it('should throw error for arrays of different lengths', () => {
+        expect(() => dotProduct([1, 2], [3])).toThrow('Invalid arrays structure mismatch');
+        expect(() => dotProduct([1], [2, 3, 4])).toThrow('Invalid arrays structure mismatch');
+        expect(() => dotProduct([], [1, 2])).toThrow('Invalid arrays structure mismatch'); // Empty vs non-empty
       });
 
-      it('should reject arrays with non-numeric values', () => {
-        expect(dotProduct([1, null, 3], [4, 5, 6])).toBe(0); // Should reject null values
-        expect(dotProduct([1, undefined, 3], [4, 5, 6])).toBe(0); // Should reject undefined values
-        expect(dotProduct([1, 2, 3], [4, null, 6])).toBe(0); // Should reject null values
-        expect(dotProduct(['1', '2'], ['3', '4'])).toBe(0); // Should reject string numbers
-        expect(dotProduct([1, '2'], [3, '4'])).toBe(0); // Should reject mixed types
-        expect(dotProduct([1, 'invalid', 3], [4, 5, 6])).toBe(0); // Should reject invalid strings
-        expect(dotProduct([1, {}, 3], [4, 5, 6])).toBe(0); // Should reject objects
-        expect(dotProduct([1, [], 3], [4, 5, 6])).toBe(0); // Should reject arrays as values
+      it('should throw error for arrays with non-numeric values', () => {
+        expect(() => dotProduct([1, null, 3], [4, 5, 6])).toThrow(
+          'Invalid arrays structure mismatch'
+        ); // Should reject null values
+        expect(() => dotProduct([1, undefined, 3], [4, 5, 6])).toThrow(
+          'Invalid arrays structure mismatch'
+        ); // Should reject undefined values
+        expect(() => dotProduct([1, 2, 3], [4, null, 6])).toThrow(
+          'Invalid arrays structure mismatch'
+        ); // Should reject null values
+        expect(() => dotProduct(['1', '2'], ['3', '4'])).toThrow(
+          'Invalid arrays structure mismatch'
+        ); // Should reject string numbers
+        expect(() => dotProduct([1, '2'], [3, '4'])).toThrow('Invalid arrays structure mismatch'); // Should reject mixed types
+        expect(() => dotProduct([1, 'invalid', 3], [4, 5, 6])).toThrow(
+          'Invalid arrays structure mismatch'
+        ); // Should reject invalid strings
+        expect(() => dotProduct([1, {}, 3], [4, 5, 6])).toThrow(
+          'Invalid arrays structure mismatch'
+        ); // Should reject objects
+        expect(() => dotProduct([1, [], 3], [4, 5, 6])).toThrow(
+          'Invalid arrays structure mismatch'
+        ); // Should reject arrays as values
       });
 
-      it('should reject mixed flat and nested arrays with different structures', () => {
-        expect(dotProduct([1, 2], [[3], 4])).toBe(0); // Different structures - should reject
-        expect(dotProduct([[1], 2], [3, 4])).toBe(0); // Different structures - should reject
+      it('should throw error for mixed flat and nested arrays with different structures', () => {
+        expect(() => dotProduct([1, 2], [[3], 4])).toThrow('Invalid arrays structure mismatch'); // Different structures - should reject
+        expect(() => dotProduct([[1], 2], [3, 4])).toThrow('Invalid arrays structure mismatch'); // Different structures - should reject
       });
     });
 
