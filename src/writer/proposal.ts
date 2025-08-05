@@ -250,16 +250,6 @@ export async function verify(body): Promise<any> {
       strategies: space.strategies
     });
 
-    // Handle unlikely case where strategies value array length does not match strategies length
-    if (strategiesValue.length !== space.strategies.length) {
-      capture(new Error('Strategies value length mismatch'), {
-        space: space.id,
-        strategiesLength: space.strategies.length,
-        strategiesValue: JSON.stringify(strategiesValue)
-      });
-      return Promise.reject('failed to get strategies value');
-    }
-
     strategiesValue = strategiesValue.map(value =>
       parseFloat(value.toFixed(STRATEGIES_VALUE_PRECISION))
     );

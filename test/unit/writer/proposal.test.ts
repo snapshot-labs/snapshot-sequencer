@@ -98,10 +98,10 @@ jest.mock('../../../src/helpers/moderation', () => {
   };
 });
 
-// Get the mocked function after the mock is created
-const { validateSpaceSettings: mockValidateSpaceSettings } = jest.requireMock(
-  '../../../src/helpers/spaceValidation'
-);
+jest.mock('../../../src/helpers/strategiesValue', () => ({
+  __esModule: true,
+  default: jest.fn(() => Promise.resolve([]))
+}));
 
 const mockGetProposalsCount = jest.spyOn(writer, 'getProposalsCount');
 mockGetProposalsCount.mockResolvedValue([
@@ -170,9 +170,48 @@ describe('writer/proposal', () => {
       msg.payload.type = 'basic';
       msg.payload.choices = ['For', 'Against', 'Abstain'];
 
-      await expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).resolves.toBeUndefined();
+      await expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).resolves.toBeDefined();
       expect(mockGetSpace).toHaveBeenCalledTimes(1);
       expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
+    });
+
+    describe('when the space has enabled the ticket validation strategy', () => {
+      it('rejects if the space does not have voting validation', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          strategies: [{ name: 'ticket' }],
+          voteValidation: undefined
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch('ticket');
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if the space voting validation is <any>', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          strategies: [{ name: 'ticket' }],
+          voteValidation: { name: 'any' }
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch('ticket');
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('does not reject if the space voting validation is anything else valid than <any>', async () => {
+        expect.assertions(3);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          strategies: [{ name: 'ticket' }],
+          voteValidation: { name: 'gitcoin' }
+        });
+
+        await expect(writer.verify(input)).resolves.toBeDefined();
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+        expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
+      });
     });
 
     describe('when the space has set a voting period', () => {
@@ -199,7 +238,7 @@ describe('writer/proposal', () => {
           voting: { ...spacesGetSpaceFixtures.voting, period: VOTING_PERIOD }
         });
 
-        await expect(writer.verify(inputWithVotingPeriod)).resolves.toBeUndefined();
+        await expect(writer.verify(inputWithVotingPeriod)).resolves.toBeDefined();
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
         expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
       });
@@ -231,7 +270,7 @@ describe('writer/proposal', () => {
 
         await expect(
           writer.verify({ ...input, msg: JSON.stringify(msg) })
-        ).resolves.toBeUndefined();
+        ).resolves.toBeDefined();
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
         expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
       });
@@ -296,7 +335,7 @@ describe('writer/proposal', () => {
         it('does not validate the space validation', async () => {
           expect.assertions(2);
 
-          await expect(writer.verify(input)).resolves.toBeUndefined();
+          await expect(writer.verify(input)).resolves.toBeDefined();
           expect(mockSnapshotUtilsValidate).toHaveBeenCalledTimes(0);
         });
       });
@@ -305,7 +344,7 @@ describe('writer/proposal', () => {
         it('does not validate the space validation', async () => {
           expect.assertions(2);
 
-          await expect(writer.verify(input)).resolves.toBeUndefined();
+          await expect(writer.verify(input)).resolves.toBeDefined();
           expect(mockSnapshotUtilsValidate).toHaveBeenCalledTimes(0);
         });
       });
@@ -321,19 +360,19 @@ describe('writer/proposal', () => {
         it('accepts a proposal with shutter privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: 'shutter' }))
-          ).resolves.toBeUndefined();
+          ).resolves.toBeDefined();
         });
 
         it('accepts a proposal with undefined privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: undefined }))
-          ).resolves.toBeUndefined();
+          ).resolves.toBeDefined();
         });
 
         it('accepts a proposal with no privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: '' }))
-          ).resolves.toBeUndefined();
+          ).resolves.toBeDefined();
         });
       });
 
@@ -349,19 +388,19 @@ describe('writer/proposal', () => {
         it('accepts a proposal with shutter privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: 'shutter' }))
-          ).resolves.toBeUndefined();
+          ).resolves.toBeDefined();
         });
 
         it('accepts a proposal with undefined privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: undefined }))
-          ).resolves.toBeUndefined();
+          ).resolves.toBeDefined();
         });
 
         it('accepts a proposal with no privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: '' }))
-          ).resolves.toBeUndefined();
+          ).resolves.toBeDefined();
         });
       });
 
@@ -382,13 +421,13 @@ describe('writer/proposal', () => {
         it('accepts a proposal with undefined privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: undefined }))
-          ).resolves.toBeUndefined();
+          ).resolves.toBeDefined();
         });
 
         it('accepts a proposal with no privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: '' }))
-          ).resolves.toBeUndefined();
+          ).resolves.toBeDefined();
         });
       });
 
@@ -403,13 +442,13 @@ describe('writer/proposal', () => {
         it('accepts a proposal with shutter privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: 'shutter' }))
-          ).resolves.toBeUndefined();
+          ).resolves.toBeDefined();
         });
 
         it('accepts a proposal with undefined privacy', () => {
           return expect(
             writer.verify(updateInputPayload(input, { privacy: undefined }))
-          ).resolves.toBeUndefined();
+          ).resolves.toBeDefined();
         });
 
         it('rejects a proposal with privacy empty string', async () => {
@@ -542,10 +581,94 @@ describe('writer/proposal', () => {
         ...spacesGetSpaceFixtures
       });
 
-      await expect(writer.verify(input)).rejects.toMatch(
-        'invalid space settings: space validation failed'
-      );
-      expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      it('rejects if the network does not exist', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          network: '123abc'
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch(
+          'invalid space settings: network not allowed'
+        );
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if using a non-premium network', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          network: '56' // Using BSC network, which is not in the premium list
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch('space is using a non-premium network');
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('should not reject if using a premium network for turbo space', async () => {
+        expect.assertions(3);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          network: '56', // Using Ethereum mainnet, which is in the premium list
+          turbo: '1'
+        });
+
+        await expect(writer.verify(input)).resolves.toBeDefined();
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+        expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if strategies use a non-premium network', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          strategies: [{ name: 'erc20-balance-of', network: '56' }] // Non-premium network
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch('space is using a non-premium network');
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if missing proposal validation', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          validation: { name: 'any' }
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch(
+          'invalid space settings: space missing proposal validation'
+        );
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if missing vote validation with ticket strategy', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          validation: { name: 'any' },
+          strategies: [{ name: 'ticket' }]
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch(
+          'invalid space settings: space with ticket requires voting validation'
+        );
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
+
+      it('rejects if the space was deleted', async () => {
+        expect.assertions(2);
+        mockGetSpace.mockResolvedValueOnce({
+          ...spacesGetSpaceFixtures,
+          filters: { onlyMembers: true },
+          deleted: true
+        });
+
+        await expect(writer.verify(input)).rejects.toMatch(
+          'invalid space settings: space deleted, contact admin'
+        );
+        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+      });
     });
 
     describe('when only members can propose', () => {
@@ -563,7 +686,7 @@ describe('writer/proposal', () => {
 
     it('verifies a valid input', async () => {
       expect.assertions(1);
-      await expect(writer.verify(input)).resolves.toBeUndefined();
+      await expect(writer.verify(input)).resolves.toBeDefined();
     });
   });
 });
