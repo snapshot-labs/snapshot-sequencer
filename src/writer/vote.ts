@@ -6,7 +6,7 @@ import db from '../helpers/mysql';
 import { captureError, dotProduct, hasStrategyOverride, jsonParse } from '../helpers/utils';
 import { updateProposalAndVotes } from '../scores';
 
-const LAST_VOTE_CB = 1;
+const LAST_CB = parseInt(process.env.LAST_CB ?? '1');
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
 // async function isLimitReached(space) {
@@ -124,7 +124,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
 
   try {
     vp_value = dotProduct(context.proposal.vp_value_by_strategy, context.vp.vp_by_strategy);
-    cb = LAST_VOTE_CB;
+    cb = LAST_CB;
   } catch (e: any) {
     capture(e, { msg, proposalId });
   }
