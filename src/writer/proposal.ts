@@ -258,6 +258,8 @@ export async function verify(body): Promise<any> {
       });
       return Promise.reject('failed to get strategies value');
     }
+
+    strategiesValue = strategiesValue.map(value => parseFloat(value.toFixed(9)));
   } catch (e: any) {
     console.log('unable to get strategies value', e.message);
     return Promise.reject('failed to get strategies value');
