@@ -98,9 +98,9 @@ jest.mock('../../../src/helpers/moderation', () => {
   };
 });
 
-jest.mock('../../../src/helpers/strategiesValue', () => ({
+jest.mock('../../../src/helpers/entityValue', () => ({
   __esModule: true,
-  default: jest.fn(() => Promise.resolve([]))
+  getStrategiesValue: jest.fn(() => Promise.resolve([]))
 }));
 
 const mockGetProposalsCount = jest.spyOn(writer, 'getProposalsCount');
