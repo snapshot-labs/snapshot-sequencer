@@ -8,8 +8,9 @@ type Proposal = {
 };
 
 const OVERLORD_URL = 'https://overlord.snapshot.org';
+const STRATEGIES_VALUE_PRECISION = 9;
 
-export default async function getStrategiesValue(proposal: Proposal): Promise<number[]> {
+export async function getStrategiesValue(proposal: Proposal): Promise<number[]> {
   const init = {
     method: 'POST',
     headers: {
@@ -39,5 +40,5 @@ export default async function getStrategiesValue(proposal: Proposal): Promise<nu
     return Promise.reject('failed to get strategies value');
   }
 
-  return result;
+  return result.map(value => parseFloat(value.toFixed(STRATEGIES_VALUE_PRECISION)));
 }

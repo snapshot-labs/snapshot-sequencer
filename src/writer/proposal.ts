@@ -4,18 +4,17 @@ import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import { uniq } from 'lodash';
 import { validateSpaceSettings } from './settings';
 import { getPremiumNetworkIds, getSpace } from '../helpers/actions';
+import { getStrategiesValue } from '../helpers/entityValue';
 import log from '../helpers/log';
 import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
 import { getLimits, getSpaceType } from '../helpers/options';
-import getStrategiesValue from '../helpers/strategiesValue';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 const LAST_CB = parseInt(process.env.LAST_CB ?? '1');
-const STRATEGIES_VALUE_PRECISION = 9; // Precision for strategies value
 
 export const getProposalsCount = async (space, author) => {
   const query = `
@@ -253,10 +252,6 @@ export async function verify(body): Promise<any> {
       start: msg.payload.start,
       strategies: space.strategies
     });
-
-    strategiesValue = strategiesValue.map(value =>
-      parseFloat(value.toFixed(STRATEGIES_VALUE_PRECISION))
-    );
   } catch (e: any) {
     console.log('unable to get strategies value', e.message);
     return Promise.reject('failed to get strategies value');
