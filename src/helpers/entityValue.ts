@@ -8,7 +8,8 @@ type Proposal = {
 
 /**
  * Calculates the total vote value in USD based on the voting power and the proposal's value per strategy.
- * @returns The total vote value in USD
+ * Calculates the total vote value based on the voting power and the proposal's value per strategy.
+ * @returns The total vote value, in the currency unit specified by the proposal's vp_value_by_strategy values
  **/
 export function getVoteValue(proposal: Proposal, vote: Vote): number {
   if (proposal.vp_value_by_strategy.length !== vote.vp_by_strategy.length) {
