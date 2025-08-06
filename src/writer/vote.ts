@@ -1,6 +1,7 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getProposal } from '../helpers/actions';
+import { getVoteValue } from '../helpers/entityValue';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
 import { captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
@@ -15,14 +16,6 @@ const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 //   const [{ count }] = await db.queryAsync(query, [space]);
 //   return count > limit;
 // }
-
-function getVoteValue(proposal, vote) {
-  if (proposal.vp_value_by_strategy.length !== vote.vp_by_strategy.length) {
-    throw new Error('invalid data to compute vote value');
-  }
-
-  return proposal.vp_value_by_strategy.map((value, index) => value * vote.vp_by_strategy[index]);
-}
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
