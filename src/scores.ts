@@ -97,6 +97,24 @@ async function updateProposalScores(proposalId: string, scores: any, votes: numb
   ]);
 }
 
+async function updateProposalScoresValue(proposalId: string) {
+  const [proposal] = await db.queryAsync(
+    'SELECT vp_value_by_strategy, scores_by_strategy FROM proposals WHERE id = ? LIMIT 1;',
+    [proposalId]
+  );
+  const scoresByStrategy: number[][] = JSON.parse(proposal.scores_by_strategy);
+  const vpValueByStrategy: number[] = JSON.parse(proposal.vp_value_by_strategy);
+
+  const score_total_value =
+    scoresByStrategy[0]
+      ?.map((_, index) => scoresByStrategy.reduce((sum, array) => sum + array[index], 0))
+      ?.map((value, index) => value * vpValueByStrategy[index])
+      ?.reduce((sum, value) => sum + value, 0) || 0;
+
+  const query = 'UPDATE proposals SET scores_total_value = ? WHERE id = ? LIMIT 1;';
+  await db.queryAsync(query, [score_total_value, proposalId]);
+}
+
 const pendingRequests = {};
 
 export async function updateProposalAndVotes(proposalId: string, force = false) {
@@ -186,6 +204,9 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     );
 
     delete pendingRequests[proposalId];
+
+    await updateProposalScoresValue(proposalId);
+
     return true;
   } catch (e) {
     delete pendingRequests[proposalId];
