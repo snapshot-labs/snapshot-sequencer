@@ -249,7 +249,7 @@ export async function verify(body): Promise<any> {
       strategies: space.strategies
     });
   } catch (e: any) {
-    console.log('unable to get strategies value', e.message);
+    log.warn('unable to get strategies value', e.message);
     return Promise.reject('failed to get strategies value');
   }
 
