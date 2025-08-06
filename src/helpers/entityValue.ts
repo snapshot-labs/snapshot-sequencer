@@ -10,6 +10,7 @@ type Proposal = {
 
 const OVERLORD_URL = 'https://overlord.snapshot.org';
 const STRATEGIES_VALUE_PRECISION = 9;
+const PRECISION_MULTIPLIER = Math.pow(10, STRATEGIES_VALUE_PRECISION);
 
 export async function getStrategiesValue(proposal: Proposal): Promise<number[]> {
   const init = {
@@ -71,7 +72,7 @@ export async function getStrategiesValue(proposal: Proposal): Promise<number[]> 
       return Promise.reject('failed to get strategies value');
     }
 
-    return result.map(value => parseFloat(value.toFixed(STRATEGIES_VALUE_PRECISION)));
+    return result.map(value => Math.round(value * PRECISION_MULTIPLIER) / PRECISION_MULTIPLIER);
   } catch (error) {
     capture(new Error('Network or parsing error'), {
       error: error instanceof Error ? error.message : String(error),
