@@ -17,6 +17,7 @@ async function getProposal(id: string): Promise<any | undefined> {
   proposal.choices = JSON.parse(proposal.choices);
   proposal.scores = JSON.parse(proposal.scores);
   proposal.scores_by_strategy = JSON.parse(proposal.scores_by_strategy);
+  proposal.vp_value_by_strategy = JSON.parse(proposal.vp_value_by_strategy);
   let proposalState = 'pending';
   const ts = parseInt((Date.now() / 1e3).toFixed());
   if (ts > proposal.start) proposalState = 'active';
@@ -99,10 +100,7 @@ async function updateProposalScores(proposalId: string, scores: any, votes: numb
 }
 
 async function updateProposalScoresValue(proposalId: string) {
-  const [proposal] = await db.queryAsync(
-    'SELECT vp_value_by_strategy, scores_by_strategy FROM proposals WHERE id = ? LIMIT 1;',
-    [proposalId]
-  );
+  const proposal = await getProposal(proposalId);
   const query = 'UPDATE proposals SET scores_total_value = ? WHERE id = ? LIMIT 1;';
   await db.queryAsync(query, [getProposalValue(proposal), proposalId]);
 }
