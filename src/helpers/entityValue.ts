@@ -4,7 +4,7 @@ type Proposal = {
 };
 
 /**
- * Calculates the total proposal value based on the vote's total voting power and the proposal's value per strategy.
+ * Calculates the total proposal value based on all votes' total voting power and the proposal's value per strategy.
  * @returns The total value of the given proposal's votes, in the currency unit specified by the proposal's vp_value_by_strategy values
  */
 export function getProposalValue(proposal: Proposal): number {
