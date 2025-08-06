@@ -1,4 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
+import { getProposalValue } from './helpers/entityValue';
 import log from './helpers/log';
 import db from './helpers/mysql';
 import { getDecryptionKey } from './helpers/shutter';
@@ -102,17 +103,8 @@ async function updateProposalScoresValue(proposalId: string) {
     'SELECT vp_value_by_strategy, scores_by_strategy FROM proposals WHERE id = ? LIMIT 1;',
     [proposalId]
   );
-  const scoresByStrategy: number[][] = JSON.parse(proposal.scores_by_strategy);
-  const vpValueByStrategy: number[] = JSON.parse(proposal.vp_value_by_strategy);
-
-  const score_total_value =
-    scoresByStrategy[0]
-      ?.map((_, index) => scoresByStrategy.reduce((sum, array) => sum + array[index], 0))
-      ?.map((value, index) => value * vpValueByStrategy[index])
-      ?.reduce((sum, value) => sum + value, 0) || 0;
-
   const query = 'UPDATE proposals SET scores_total_value = ? WHERE id = ? LIMIT 1;';
-  await db.queryAsync(query, [score_total_value, proposalId]);
+  await db.queryAsync(query, [getProposalValue(proposal), proposalId]);
 }
 
 const pendingRequests = {};
