@@ -253,7 +253,7 @@ export async function verify(body): Promise<any> {
       strategies: space.strategies
     });
   } catch (e: any) {
-    console.log('unable to get strategies value', e.message);
+    log.warn('unable to get strategies value', e.message);
     return Promise.reject('failed to get strategies value');
   }
 
@@ -285,7 +285,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     try {
       quorum = await getQuorum(spaceSettings.plugins.quorum, spaceNetwork, proposalSnapshot);
     } catch (e: any) {
-      console.log('unable to get quorum', e.message);
+      log.warn('unable to get quorum', e.message);
       return Promise.reject('unable to get quorum');
     }
   }
