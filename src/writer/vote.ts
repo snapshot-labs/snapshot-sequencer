@@ -16,6 +16,14 @@ const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 //   return count > limit;
 // }
 
+function getVoteValue(proposal, vote) {
+  if (proposal.vp_value_by_strategy.length !== vote.vp_by_strategy.length) {
+    throw new Error('invalid data to compute vote value');
+  }
+
+  return proposal.vp_value_by_strategy.map((value, index) => value * vote.vp_by_strategy[index]);
+}
+
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
 
@@ -118,15 +126,11 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   const withOverride = hasStrategyOverride(context.proposal.strategies);
   if (vpState === 'final' && withOverride) vpState = 'pending';
 
-  // Compute vote value
   let vp_value = 0;
   let cb = 0;
 
   try {
-    const products = context.proposal.vp_value_by_strategy.map((strategyValues, index) =>
-      strategyValues.map((value, subIndex) => value * context.vp.vp_by_strategy[index][subIndex])
-    );
-    vp_value = products.flat(Infinity).reduce((sum, val) => sum + val, 0);
+    vp_value = getVoteValue(context.proposal, context.vp);
     cb = LAST_CB;
   } catch (e: any) {
     capture(e, { msg, proposalId });
