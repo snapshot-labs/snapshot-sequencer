@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import { fetchWithKeepAlive } from './utils';
 
@@ -25,7 +26,7 @@ export async function getStrategiesValue(proposal: Proposal): Promise<number[]> 
         strategies: proposal.strategies,
         snapshot: proposal.start
       },
-      id: Math.random().toString(36).substring(7)
+      id: randomUUID()
     })
   };
   const res = await fetchWithKeepAlive(OVERLORD_URL, init);
