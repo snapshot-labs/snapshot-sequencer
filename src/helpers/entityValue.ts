@@ -15,7 +15,8 @@ export function getVoteValue(proposal: Proposal, vote: Vote): number {
     throw new Error('invalid data to compute vote value');
   }
 
-  return proposal.vp_value_by_strategy
-    .map((value, index) => value * vote.vp_by_strategy[index])
-    .reduce((a, b) => a + b, 0);
+  return proposal.vp_value_by_strategy.reduce(
+    (sum, value, index) => sum + value * vote.vp_by_strategy[index],
+    0
+  );
 }
