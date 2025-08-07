@@ -19,6 +19,8 @@ export async function verify(body): Promise<any> {
 }
 
 export async function action(body): Promise<void> {
+  const BATCH_SIZE = 1000;
+
   const msg = jsonParse(body.msg);
   const proposal = await getProposal(msg.space, msg.payload.proposal);
 
@@ -56,9 +58,8 @@ export async function action(body): Promise<void> {
 
   const votersWithVpValue = voters.filter(v => v.vp_value > 0);
   if (votersWithVpValue.length > 0) {
-    const batchSize = 1000;
-    for (let i = 0; i < votersWithVpValue.length; i += batchSize) {
-      const batch = votersWithVpValue.slice(i, i + batchSize);
+    for (let i = 0; i < votersWithVpValue.length; i += BATCH_SIZE) {
+      const batch = votersWithVpValue.slice(i, i + BATCH_SIZE);
       const vpQueries = batch
         .map(
           () =>

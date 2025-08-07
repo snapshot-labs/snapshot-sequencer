@@ -119,14 +119,16 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   const withOverride = hasStrategyOverride(context.proposal.strategies);
   if (vpState === 'final' && withOverride) vpState = 'pending';
 
-  let vp_value = 0;
+  // Get proposal voting power value
+  // Value is set on creation, and not updated on vote update
+  let vpValue = 0;
   let cb = 0;
 
   try {
-    vp_value = getVoteValue(context.proposal, context.vp);
+    vpValue = getVoteValue(context.proposal, context.vp);
     cb = LAST_CB;
   } catch (e: any) {
-    capture(e, { msg, proposalId });
+    capture(e, { msg, proposalId, context });
   }
 
   const params = {
@@ -143,7 +145,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     vp: context.vp.vp,
     vp_by_strategy: JSON.stringify(context.vp.vp_by_strategy),
     vp_state: vpState,
-    vp_value,
+    vp_value: vpValue,
     cb
   };
 
@@ -185,7 +187,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
         proposalId,
         msg.space,
         created,
-        vp_value,
+        vpValue,
         voter,
         msg.space
       ]
@@ -195,20 +197,12 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     await db.queryAsync(
       `
         INSERT INTO votes SET ?;
-        INSERT INTO leaderboard (
-          space, user, vote_count, last_vote, vp_value
-        ) VALUES (
-          ?, ?, 1, ?, ?
-        )
-        ON DUPLICATE KEY UPDATE
-          vote_count = vote_count + 1,
-          last_vote = VALUES(last_vote),
-          vp_value = vp_value + VALUES(vp_value);
-        UPDATE spaces
-          SET vote_count = vote_count + 1
-          WHERE id = ?;
+        INSERT INTO leaderboard (space, user, vote_count, last_vote, vp_value)
+          VALUES(?, ?, 1, ?, ?)
+          ON DUPLICATE KEY UPDATE vote_count = vote_count + 1, last_vote = VALUES(last_vote), vp_value = vp_value + VALUES(vp_value);
+        UPDATE spaces SET vote_count = vote_count + 1 WHERE id = ?;
       `,
-      [params, msg.space, voter, created, vp_value, msg.space]
+      [params, msg.space, voter, created, vpValue, msg.space]
     );
   }
 
