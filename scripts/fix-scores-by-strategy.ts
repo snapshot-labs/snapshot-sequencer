@@ -36,7 +36,7 @@ async function main() {
     WHERE JSON_DEPTH(scores_by_strategy) > 3
   `;
 
-  console.log('Fetching proposals with weighted or quadratic voting...');
+  console.log('Fetching proposals with deeply nested scores_by_strategy data...');
   const proposals: ProposalRow[] = await db.queryAsync(query);
   console.log(`Found ${proposals.length.toLocaleString()} proposals to check`);
 
