@@ -1,4 +1,4 @@
-import { createHash, randomInt } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import http from 'http';
 import https from 'https';
 import { URL } from 'url';
@@ -73,7 +73,7 @@ export async function jsonRpcRequest(url: string, method: string, params: any): 
       jsonrpc: '2.0',
       method,
       params,
-      id: randomInt(10000)
+      id: randomUUID()
     })
   };
 
