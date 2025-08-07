@@ -9,7 +9,6 @@ type Proposal = {
 const OVERLORD_URL = 'https://overlord.snapshot.org';
 // Round strategy values to 9 decimal places
 const STRATEGIES_VALUE_PRECISION = 9;
-const PRECISION_MULTIPLIER = Math.pow(10, STRATEGIES_VALUE_PRECISION);
 
 export async function getStrategiesValue(proposal: Proposal): Promise<number[]> {
   const result: number[] = await jsonRpcRequest(OVERLORD_URL, 'get_vp_value_by_strategy', {
@@ -23,5 +22,5 @@ export async function getStrategiesValue(proposal: Proposal): Promise<number[]> 
     throw new Error('Strategies value length mismatch');
   }
 
-  return result.map(value => Math.round(value * PRECISION_MULTIPLIER) / PRECISION_MULTIPLIER);
+  return result.map(value => parseFloat(value.toFixed(STRATEGIES_VALUE_PRECISION)));
 }
