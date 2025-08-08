@@ -100,6 +100,7 @@ CREATE TABLE votes (
   vp DECIMAL(64,30) NOT NULL,
   vp_by_strategy JSON NOT NULL,
   vp_state VARCHAR(24) NOT NULL,
+  vp_value DECIMAL(13,3) NOT NULL DEFAULT 0.000,
   cb INT(11) NOT NULL,
   PRIMARY KEY (voter, space, proposal),
   UNIQUE KEY id (id),
@@ -111,6 +112,7 @@ CREATE TABLE votes (
   INDEX app (app),
   INDEX vp (vp),
   INDEX vp_state (vp_state),
+  INDEX vp_value (vp_value),
   INDEX cb (cb)
 );
 
