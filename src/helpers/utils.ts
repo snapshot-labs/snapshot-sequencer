@@ -8,17 +8,7 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import { Response } from 'express';
 import fetch from 'node-fetch';
 
-const MAINNET_NETWORK_ID_WHITELIST = [
-  's',
-  'eth',
-  'matic',
-  'arb1',
-  'oeth',
-  'sn',
-  'base',
-  'mnt',
-  'ape'
-];
+const MAINNET_NETWORK_ID_WHITELIST = ['s', 'eth', 'arb1', 'oeth', 'sn', 'base', 'mnt', 'ape'];
 const TESTNET_NETWORK_ID_WHITELIST = ['s-tn', 'sep', 'curtis', 'linea-testnet', 'sn-sep'];
 const broviderUrl = process.env.BROVIDER_URL ?? 'https://rpc.snapshot.org';
 
@@ -92,7 +82,8 @@ export function hasStrategyOverride(strategies: any[]) {
     '"api-v2-override"',
     '"rocketpool-node-operator-delegate-v8"',
     '"eden-online-override"',
-    '"split-delegation"'
+    '"split-delegation"',
+    '"sonic-staked-balance"'
   ];
   const strategiesStr = JSON.stringify(strategies).toLowerCase();
   if (keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`))) return true;
