@@ -8,9 +8,9 @@ import { getLimit, getSpaceType } from '../helpers/options';
 import {
   addToWalletConnectWhitelist,
   clearStampCache,
+  fetchWithKeepAlive,
   getSpaceController,
   jsonParse,
-  fetchWithKeepAlive,
   removeFromWalletConnectWhitelist
 } from '../helpers/utils';
 
