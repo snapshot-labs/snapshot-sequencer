@@ -2,6 +2,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import omit from 'lodash/omit';
 import db, { sequencerDB } from '../../src/helpers/mysql';
 import relayer from '../../src/helpers/relayer';
+import { run, stop } from '../../src/helpers/strategies';
 import ingestor from '../../src/ingestor';
 import proposalInput from '../fixtures/ingestor-payload/proposal.json';
 import voteInput from '../fixtures/ingestor-payload/vote.json';
@@ -37,6 +38,7 @@ const LIMITS = {
   'user.default.follow.limit': 25
 };
 const ECOSYSTEM_LIST = ['test.eth', 'snapshot.eth'];
+
 jest.mock('../../src/helpers/options', () => {
   const originalModule = jest.requireActual('../../src/helpers/options');
 
@@ -129,7 +131,13 @@ function cloneWithNewMessage(data: Record<string, any>) {
 }
 
 describe('ingestor', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
+    // Start the strategies loader (runs in background)
+    run();
+    
+    // Wait a bit for the first load to complete
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
     proposalInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
     proposalInput.data.message.end = Math.floor(Date.now() / 1e3) + 60;
     voteInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
@@ -142,6 +150,8 @@ describe('ingestor', () => {
   });
 
   afterAll(async () => {
+    // Stop any running strategies loader
+    stop();
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.proposals;');
     await db.queryAsync('DELETE FROM snapshot_sequencer_test.messages;');
     await db.endAsync();

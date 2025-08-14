@@ -8,12 +8,14 @@ import initMetrics from './helpers/metrics';
 import refreshModeration from './helpers/moderation';
 import rateLimit from './helpers/rateLimit';
 import shutter from './helpers/shutter';
+import { run as refreshStrategies } from './helpers/strategies';
 import { trackTurboStatuses } from './helpers/turbo';
 
 const app = express();
 
 initLogger(app);
 refreshModeration();
+refreshStrategies();
 initMetrics(app);
 trackTurboStatuses();
 

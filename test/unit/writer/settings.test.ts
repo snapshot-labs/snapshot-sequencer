@@ -1,4 +1,3 @@
-import { verify } from '../../../src/writer/settings';
 import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/space.json';
 
@@ -51,7 +50,7 @@ const LIMITS = {
 };
 const ECOSYSTEM_LIST = ['test.eth', 'snapshot.eth'];
 
-const mockGetSpaceType = jest.fn((): any => {
+const mockGetSpaceType = jest.fn(async (space: any): Promise<string> => {
   return 'default';
 });
 jest.mock('../../../src/helpers/options', () => {
@@ -66,8 +65,8 @@ jest.mock('../../../src/helpers/options', () => {
     getLimit: async (key: string) => {
       return LIMITS[key];
     },
-    getSpaceType: () => {
-      return mockGetSpaceType();
+    getSpaceType: (space: any) => {
+      return mockGetSpaceType(space);
     }
   };
 });
@@ -102,66 +101,46 @@ jest.mock('@snapshot-labs/snapshot.js', () => {
   };
 });
 
+// Mock validateSpaceSettings function
+jest.mock('../../../src/helpers/validation', () => ({
+  validateSpaceSettings: jest.fn()
+}));
+
+// Get the mocked function after the mock is created
+const { validateSpaceSettings: mockValidateSpaceSettings } = jest.requireMock('../../../src/helpers/validation');
+
+// Import after mocks are set up
+import { verify } from '../../../src/writer/settings';
+
 describe('writer/settings', () => {
   describe('verify()', () => {
+    beforeEach(() => {
+      // Reset all mocks
+      jest.clearAllMocks();
+      // Default validateSpaceSettings to resolve (success)
+      mockValidateSpaceSettings.mockResolvedValue(undefined);
+    });
+
     describe('on invalid input', () => {
       it.todo('rejects if the schema is invalid');
-      it('rejects if the space was deleted', async () => {
-        mockGetSpace.mockResolvedValueOnce({ ...spacesGetSpaceFixtures, deleted: true });
-        return expect(verify(input)).rejects.toContain('space deleted');
+
+      it('rejects if validateSpaceSettings fails', async () => {
+        mockValidateSpaceSettings.mockRejectedValue('validation error');
+        return expect(verify(input)).rejects.toBe('validation error');
       });
 
-      it('rejects if the network does not exist', async () => {
-        return expect(verify(editedInput({ network: '1919191919' }))).rejects.toContain(
-          'network not allowed'
-        );
+      it('rejects if space id is too long', async () => {
+        const longId = 'a'.repeat(65);
+        const longInput = { ...input, msg: JSON.parse(input.msg) };
+        longInput.msg.space = longId;
+        const inputWithLongId = { ...input, msg: JSON.stringify(longInput.msg) };
+
+        return expect(verify(inputWithLongId)).rejects.toBe('id too long');
       });
 
-      it('rejects if using testnet on production', async () => {
-        return expect(verify(editedInput({ network: '5' }))).rejects.toContain(
-          'network not allowed'
-        );
-      });
-
-      it('rejects if missing proposal validation', () => {
-        return expect(verify(editedInput({ validation: { name: 'any' } }))).rejects.toContain(
-          'space missing proposal validation'
-        );
-      });
-
-      it('rejects if missing vote validation with ticket strategy', async () => {
-        return expect(
-          verify(editedInput({ validation: { name: 'any' }, strategies: [{ name: 'ticket' }] }))
-        ).rejects.toContain('space with ticket requires voting validation');
-      });
-
-      it('rejects if space tries to set itself as parent', async () => {
-        return expect(verify(editedInput({ parent: 'fabien.eth' }))).rejects.toContain(
-          'space cannot be its own parent'
-        );
-      });
-
-      it('rejects if space tries to include itself in children array', async () => {
-        return expect(
-          verify(editedInput({ children: ['other-space.eth', 'fabien.eth', 'another-space.eth'] }))
-        ).rejects.toContain('space cannot be its own child');
-      });
-
-      it('accepts valid parent that is not the space itself', async () => {
-        return expect(verify(editedInput({ parent: 'parent-space.eth' }))).resolves.toBeUndefined();
-      });
-
-      it('accepts valid children array that does not include the space itself', async () => {
-        return expect(
-          verify(editedInput({ children: ['child1.eth', 'child2.eth'] }))
-        ).resolves.toBeUndefined();
-      });
-
-      it.todo('rejects if the submitter does not have permission');
-      it.todo('rejects if the submitter does not have permission to change admin');
       const maxStrategiesForNormalSpace = LIMITS['space.default.strategies_limit'];
       const maxStrategiesForTurboSpace = LIMITS['space.turbo.strategies_limit'];
-      it.only(`rejects if passing more than ${maxStrategiesForNormalSpace} strategies for normal space`, async () => {
+      it(`rejects if passing more than ${maxStrategiesForNormalSpace} strategies for normal space`, async () => {
         return expect(
           verify(
             editedInput({
@@ -182,6 +161,9 @@ describe('writer/settings', () => {
           )
         ).rejects.toContain(`max number of strategies is ${maxStrategiesForTurboSpace}`);
       });
+
+      it.todo('rejects if the submitter does not have permission');
+      it.todo('rejects if the submitter does not have permission to change admin');
 
       describe('when the space has an existing custom domain', () => {
         it('accepts a new domain for non-turbo spaces', () => {
@@ -249,38 +231,26 @@ describe('writer/settings', () => {
     });
 
     describe('on valid data', () => {
-      describe('with ticket strategy but with voting validation', () => {
-        it('returns a Promise resolve', async () => {
-          return expect(
-            verify(
-              editedInput({ strategies: [{ name: 'ticket' }], voteValidation: { name: 'basic' } })
-            )
-          ).resolves.toBe(undefined);
-        });
+      it('calls validateSpaceSettings with correct parameters', async () => {
+        await verify(input);
+
+        expect(mockValidateSpaceSettings).toHaveBeenCalledWith({
+          ...JSON.parse(input.msg).payload,
+          id: JSON.parse(input.msg).space,
+          deleted: spacesGetSpaceFixtures.deleted,
+          turbo: spacesGetSpaceFixtures.turbo
+        }, 'mainnet');
       });
 
-      describe('with not ANY validation', () => {
-        it('returns a Promise resolve', async () => {
-          return expect(verify(editedInput({ validation: { name: 'basic' } }))).resolves.toBe(
-            undefined
-          );
-        });
-      });
+      it('passes when validateSpaceSettings succeeds and strategy count is valid', async () => {
+        const result = await verify(
+          editedInput({
+            strategies: randomStrategies(5)
+          })
+        );
 
-      describe('with ANY validation but with minScores filters', () => {
-        it('returns a Promise resolve', async () => {
-          return expect(
-            verify(editedInput({ validation: { name: 'any' }, filters: { minScore: 1 } }))
-          ).resolves.toBe(undefined);
-        });
-      });
-
-      describe('with ANY validation but with onlyMembers filters', () => {
-        it('returns a Promise resolve', async () => {
-          return expect(
-            verify(editedInput({ validation: { name: 'any' }, filters: { onlyMembers: true } }))
-          ).resolves.toBe(undefined);
-        });
+        expect(result).toBeUndefined();
+        expect(mockValidateSpaceSettings).toHaveBeenCalled();
       });
 
       describe('with correct number of strategies for normal spaces', () => {

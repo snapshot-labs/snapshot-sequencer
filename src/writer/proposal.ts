@@ -2,7 +2,6 @@ import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import { uniq } from 'lodash';
-import { validateSpaceSettings } from './settings';
 import { getPremiumNetworkIds, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
@@ -10,6 +9,7 @@ import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
 import { getLimits, getSpaceType } from '../helpers/options';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
+import { validateSpaceSettings } from '../helpers/validation';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
@@ -66,7 +66,7 @@ async function validateSpace(space: any) {
   }
 
   try {
-    await validateSpaceSettings(space);
+    await validateSpaceSettings(space, process.env.NETWORK);
   } catch (e) {
     return Promise.reject(e);
   }
