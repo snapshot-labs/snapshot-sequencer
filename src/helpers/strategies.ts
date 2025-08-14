@@ -10,6 +10,7 @@ type Strategy = {
 };
 
 const RUN_INTERVAL = 60e3;
+const MAX_CONSECUTIVE_FAILS = 3;
 const URI = new URL(
   '/api/strategies',
   process.env.SCORE_API_URL ?? 'https://score.snapshot.org'
@@ -49,7 +50,7 @@ export async function run() {
     } catch (e: any) {
       consecutiveFailsCount++;
 
-      if (consecutiveFailsCount >= 3) {
+      if (consecutiveFailsCount >= MAX_CONSECUTIVE_FAILS) {
         capture(e);
       }
       log.error(`[strategies] failed to load ${JSON.stringify(e)}`);
