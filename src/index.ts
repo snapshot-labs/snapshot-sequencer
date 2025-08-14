@@ -8,7 +8,7 @@ import initMetrics from './helpers/metrics';
 import refreshModeration from './helpers/moderation';
 import rateLimit from './helpers/rateLimit';
 import shutter from './helpers/shutter';
-import { run as refreshStrategies } from './helpers/strategies';
+import { run as refreshStrategies, stop as stopStrategies } from './helpers/strategies';
 import { trackTurboStatuses } from './helpers/turbo';
 
 const app = express();
@@ -31,4 +31,23 @@ app.use('/shutter', shutter);
 fallbackLogger(app);
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => log.info(`Started on: http://localhost:${PORT}`));
+const server = app.listen(PORT, () => log.info(`Started on: http://localhost:${PORT}`));
+
+const gracefulShutdown = (signal: string) => {
+  log.info(`Received ${signal}, shutting down gracefully...`);
+
+  stopStrategies();
+
+  server.close(() => {
+    log.info('Server closed');
+    process.exit(0);
+  });
+
+  setTimeout(() => {
+    log.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
