@@ -74,7 +74,7 @@ export async function validateSpaceSettings(
     }
 
     if (strategy.disabled) {
-      return Promise.reject(`strategy "${id}" has been deprecated`);
+      return Promise.reject(`strategy "${id}" is not available anymore`);
     }
   }
 }

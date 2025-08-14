@@ -60,7 +60,7 @@ describe('helpers/validation', () => {
 
         const space = createMockSpace();
         await expect(validateSpaceSettings(space, 'mainnet')).rejects.toBe(
-          'strategy "whitelist" has been deprecated'
+          'strategy "whitelist" is not available anymore'
         );
       });
 
@@ -89,7 +89,7 @@ describe('helpers/validation', () => {
         });
 
         await expect(validateSpaceSettings(space, 'mainnet')).rejects.toBe(
-          'strategy "strategy1" has been deprecated'
+          'strategy "strategy1" is not available anymore'
         );
       });
     });
