@@ -23,6 +23,18 @@ describe('helpers/validation', () => {
   describe('validateSpaceSettings()', () => {
     beforeEach(() => {
       jest.clearAllMocks();
+
+      // Reset mockStrategies to original state
+      Object.keys(mockStrategies).forEach(key => delete mockStrategies[key]);
+      Object.assign(mockStrategies, {
+        'erc20-balance-of': {
+          id: 'erc20-balance-of',
+          disabled: false,
+          override: false
+        },
+        whitelist: { id: 'whitelist', disabled: false, override: false },
+        ticket: { id: 'ticket', disabled: false, override: false }
+      });
     });
 
     const createMockSpace = (overrides = {}) => ({
@@ -46,7 +58,7 @@ describe('helpers/validation', () => {
       });
 
       it('should reject when strategy does not exist', async () => {
-        // Only mock one strategy, leaving whitelist undefined
+        // Remove whitelist strategy from mock
         delete mockStrategies['whitelist'];
 
         const space = createMockSpace();
@@ -65,6 +77,11 @@ describe('helpers/validation', () => {
       });
 
       it('should reject first invalid strategy when multiple are invalid', async () => {
+        // Keep only erc20-balance-of strategy
+        Object.keys(mockStrategies).forEach(key => {
+          if (key !== 'erc20-balance-of') delete mockStrategies[key];
+        });
+
         const space = createMockSpace({
           strategies: [
             { name: 'invalid-strategy-1', params: {} },
