@@ -1,4 +1,3 @@
-import { randomBytes } from 'crypto';
 import { arrayify } from '@ethersproject/bytes';
 import { toUtf8String } from '@ethersproject/strings';
 import { decrypt, init } from '@shutter-network/shutter-crypto';
@@ -6,7 +5,7 @@ import { capture } from '@snapshot-labs/snapshot-sentry';
 import express from 'express';
 import log from './log';
 import db from './mysql';
-import { fetchWithKeepAlive, getIp, jsonParse, rpcError, rpcSuccess } from './utils';
+import { getIp, jsonParse, jsonRpcRequest, rpcError, rpcSuccess } from './utils';
 import { updateProposalAndVotes } from '../scores';
 
 init().then(() => log.info('[shutter] init'));
@@ -36,28 +35,9 @@ function idToProposal(id: string): string {
   return `0x${id}`;
 }
 
-export async function rpcRequest(method, params, url: string = SHUTTER_URL) {
-  const init = {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      method,
-      params,
-      id: randomBytes(6).toString('hex')
-    })
-  };
-  const res = await fetchWithKeepAlive(url, init);
-  const { result } = await res.json();
-  return result;
-}
-
 export async function getDecryptionKey(proposal: string, url: string = SHUTTER_URL) {
   const id = proposalToId(proposal);
-  const result = await rpcRequest('get_decryption_key', ['1', id], url);
+  const result = await jsonRpcRequest(url, 'get_decryption_key', ['1', id]);
   log.info(`[shutter] get_decryption_key ${proposal} ${JSON.stringify(result)}`);
 
   return result;
