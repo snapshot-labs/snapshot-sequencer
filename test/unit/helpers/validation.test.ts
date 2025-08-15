@@ -109,6 +109,37 @@ describe('helpers/validation', () => {
           'strategy "strategy1" is not available anymore'
         );
       });
+
+      it('should reject override strategy for non-turbo space', async () => {
+        mockStrategies['override-strategy'] = {
+          id: 'override-strategy',
+          disabled: false,
+          override: true
+        };
+
+        const space = createMockSpace({
+          strategies: [{ name: 'override-strategy', params: {} }]
+        });
+
+        await expect(validateSpaceSettings(space, 'mainnet')).rejects.toBe(
+          'strategy "override-strategy" is only available for pro spaces'
+        );
+      });
+
+      it('should allow override strategy for turbo space', async () => {
+        mockStrategies['override-strategy'] = {
+          id: 'override-strategy',
+          disabled: false,
+          override: true
+        };
+
+        const space = createMockSpace({
+          turbo: true,
+          strategies: [{ name: 'override-strategy', params: {} }]
+        });
+
+        await expect(validateSpaceSettings(space, 'mainnet')).resolves.toBeUndefined();
+      });
     });
 
     describe('other validations', () => {
