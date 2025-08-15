@@ -65,11 +65,7 @@ async function validateSpace(space: any) {
     return Promise.reject('space hibernated');
   }
 
-  try {
-    await validateSpaceSettings(space, process.env.NETWORK);
-  } catch (e) {
-    return Promise.reject(e);
-  }
+  await validateSpaceSettings(space, process.env.NETWORK);
 }
 
 export async function verify(body): Promise<any> {
