@@ -76,5 +76,9 @@ export async function validateSpaceSettings(
     if (strategy.disabled) {
       return Promise.reject(`strategy "${id}" is not available anymore`);
     }
+
+    if (strategy.override && spaceType !== 'turbo') {
+      return Promise.reject(`strategy "${id}" is only available for pro spaces`);
+    }
   }
 }
