@@ -4,6 +4,7 @@ import { addOrUpdateSpace, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
 import { getLimit, getSpaceType } from '../helpers/options';
+import { validateSpaceSettings } from '../helpers/spaceValidation';
 import {
   addToWalletConnectWhitelist,
   clearStampCache,
@@ -11,7 +12,6 @@ import {
   jsonParse,
   removeFromWalletConnectWhitelist
 } from '../helpers/utils';
-import { validateSpaceSettings } from '../helpers/validation';
 
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 

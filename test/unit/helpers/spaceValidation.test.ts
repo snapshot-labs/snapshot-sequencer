@@ -17,9 +17,9 @@ jest.mock('../../../src/helpers/log', () => ({
   warn: jest.fn()
 }));
 
-import { validateSpaceSettings } from '../../../src/helpers/validation';
+import { validateSpaceSettings } from '../../../src/helpers/spaceValidation';
 
-describe('helpers/validation', () => {
+describe('helpers/spaceValidation', () => {
   describe('validateSpaceSettings()', () => {
     beforeEach(() => {
       jest.clearAllMocks();

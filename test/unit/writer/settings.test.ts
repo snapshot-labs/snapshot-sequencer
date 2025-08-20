@@ -1,3 +1,9 @@
+// Mock validateSpaceSettings function
+jest.mock('../../../src/helpers/spaceValidation', () => ({
+  validateSpaceSettings: jest.fn()
+}));
+
+import { verify } from '../../../src/writer/settings';
 import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/space.json';
 
@@ -101,16 +107,10 @@ jest.mock('@snapshot-labs/snapshot.js', () => {
   };
 });
 
-// Mock validateSpaceSettings function
-jest.mock('../../../src/helpers/validation', () => ({
-  validateSpaceSettings: jest.fn()
-}));
-
 // Get the mocked function after the mock is created
-const { validateSpaceSettings: mockValidateSpaceSettings } = jest.requireMock('../../../src/helpers/validation');
-
-// Import after mocks are set up
-import { verify } from '../../../src/writer/settings';
+const { validateSpaceSettings: mockValidateSpaceSettings } = jest.requireMock(
+  '../../../src/helpers/spaceValidation'
+);
 
 describe('writer/settings', () => {
   describe('verify()', () => {
@@ -234,12 +234,15 @@ describe('writer/settings', () => {
       it('calls validateSpaceSettings with correct parameters', async () => {
         await verify(input);
 
-        expect(mockValidateSpaceSettings).toHaveBeenCalledWith({
-          ...JSON.parse(input.msg).payload,
-          id: JSON.parse(input.msg).space,
-          deleted: spacesGetSpaceFixtures.deleted,
-          turbo: spacesGetSpaceFixtures.turbo
-        }, 'mainnet');
+        expect(mockValidateSpaceSettings).toHaveBeenCalledWith(
+          {
+            ...JSON.parse(input.msg).payload,
+            id: JSON.parse(input.msg).space,
+            deleted: spacesGetSpaceFixtures.deleted,
+            turbo: spacesGetSpaceFixtures.turbo
+          },
+          'mainnet'
+        );
       });
 
       it('passes when validateSpaceSettings succeeds and strategy count is valid', async () => {

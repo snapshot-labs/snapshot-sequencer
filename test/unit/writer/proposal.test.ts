@@ -1,4 +1,10 @@
+// Mock validateSpaceSettings function
+jest.mock('../../../src/helpers/spaceValidation', () => ({
+  validateSpaceSettings: jest.fn()
+}));
+
 import omit from 'lodash/omit';
+import * as writer from '../../../src/writer/proposal';
 import { spacesGetSpaceFixtures } from '../../fixtures/space';
 import input from '../../fixtures/writer-payload/proposal.json';
 
@@ -92,16 +98,10 @@ jest.mock('../../../src/helpers/moderation', () => {
   };
 });
 
-// Mock validateSpaceSettings function
-jest.mock('../../../src/helpers/validation', () => ({
-  validateSpaceSettings: jest.fn()
-}));
-
 // Get the mocked function after the mock is created
-const { validateSpaceSettings: mockValidateSpaceSettings } = jest.requireMock('../../../src/helpers/validation');
-
-// Import after mocks are set up
-import * as writer from '../../../src/writer/proposal';
+const { validateSpaceSettings: mockValidateSpaceSettings } = jest.requireMock(
+  '../../../src/helpers/spaceValidation'
+);
 
 const mockGetProposalsCount = jest.spyOn(writer, 'getProposalsCount');
 mockGetProposalsCount.mockResolvedValue([
@@ -123,7 +123,7 @@ describe('writer/proposal', () => {
     // Default validateSpaceSettings to resolve (success)
     mockValidateSpaceSettings.mockResolvedValue(undefined);
   });
-  
+
   afterEach(jest.clearAllMocks);
 
   const msg = JSON.parse(input.msg);
@@ -174,7 +174,6 @@ describe('writer/proposal', () => {
       expect(mockGetSpace).toHaveBeenCalledTimes(1);
       expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
     });
-
 
     describe('when the space has set a voting period', () => {
       const VOTING_PERIOD = 120;

@@ -8,8 +8,8 @@ import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
 import { getLimits, getSpaceType } from '../helpers/options';
+import { validateSpaceSettings } from '../helpers/spaceValidation';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
-import { validateSpaceSettings } from '../helpers/validation';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
