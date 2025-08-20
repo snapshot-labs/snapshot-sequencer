@@ -58,7 +58,7 @@ describe('POST /flag', () => {
           settings: JSON.stringify(space.settings)
         }))
         .map(async space => {
-          db.queryAsync('INSERT INTO snapshot_sequencer_test.spaces SET ?', space);
+          return db.queryAsync('INSERT INTO snapshot_sequencer_test.spaces SET ?', space);
         })
     );
 
@@ -75,7 +75,7 @@ describe('POST /flag', () => {
           vp_value_by_strategy: JSON.stringify(proposal.vp_value_by_strategy || [])
         }))
         .map(async proposal => {
-          db.queryAsync('INSERT INTO snapshot_sequencer_test.proposals SET ?', proposal);
+          return db.queryAsync('INSERT INTO snapshot_sequencer_test.proposals SET ?', proposal);
         })
     );
   });
