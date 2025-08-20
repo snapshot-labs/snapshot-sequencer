@@ -23,7 +23,7 @@ export let strategies: Record<Strategy['id'], Strategy> = {};
 async function loadStrategies() {
   const res = await snapshot.utils.getJSON(URI);
 
-  if (res.hasOwnProperty('error')) {
+  if ('error' in res) {
     capture(new Error('Failed to load strategies'), {
       contexts: { input: { uri: URI }, res }
     });
