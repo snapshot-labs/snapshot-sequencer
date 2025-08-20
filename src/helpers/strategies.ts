@@ -9,7 +9,7 @@ type Strategy = {
   disabled: boolean;
 };
 
-const RUN_INTERVAL = 60e3;
+const RUN_INTERVAL = 60e3 * 5; // 5 minutes
 const MAX_CONSECUTIVE_FAILS = 3;
 const URI = new URL(
   '/api/strategies',
