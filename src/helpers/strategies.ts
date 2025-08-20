@@ -30,12 +30,11 @@ async function loadStrategies() {
     return true;
   }
 
-  const strat = Object.values(res).map((strategy: any) => {
-    strategy.id = strategy.key;
-    strategy.override = strategy.dependOnOtherAddress || false;
-    strategy.disabled = strategy.disabled || false;
-    return strategy;
-  });
+  const strat = Object.values(res).map((strategy: any) => ({
+    id: strategy.key,
+    override: strategy.dependOnOtherAddress || false,
+    disabled: strategy.disabled || false
+  }));
 
   strategies = Object.fromEntries(strat.map(strategy => [strategy.id, strategy]));
 }
