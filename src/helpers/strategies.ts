@@ -24,10 +24,13 @@ async function loadStrategies() {
   const res = await snapshot.utils.getJSON(URI);
 
   if ('error' in res) {
-    capture(new Error('Failed to load strategies'), {
+    const error = new Error(
+      `Failed to load strategies: ${res.error.message || JSON.stringify(res.error)}`
+    );
+    capture(error, {
       contexts: { input: { uri: URI }, res }
     });
-    return true;
+    throw error;
   }
 
   const strat = Object.values(res).map((strategy: any) => ({
