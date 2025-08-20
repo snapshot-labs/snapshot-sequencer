@@ -56,7 +56,8 @@ const LIMITS = {
 };
 const ECOSYSTEM_LIST = ['test.eth', 'snapshot.eth'];
 
-const mockGetSpaceType = jest.fn(async (space: any): Promise<string> => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const mockGetSpaceType = jest.fn(async (_space: any): Promise<string> => {
   return 'default';
 });
 jest.mock('../../../src/helpers/options', () => {
@@ -234,15 +235,12 @@ describe('writer/settings', () => {
       it('calls validateSpaceSettings with correct parameters', async () => {
         await verify(input);
 
-        expect(mockValidateSpaceSettings).toHaveBeenCalledWith(
-          {
-            ...JSON.parse(input.msg).payload,
-            id: JSON.parse(input.msg).space,
-            deleted: spacesGetSpaceFixtures.deleted,
-            turbo: spacesGetSpaceFixtures.turbo
-          },
-          'mainnet'
-        );
+        expect(mockValidateSpaceSettings).toHaveBeenCalledWith({
+          ...JSON.parse(input.msg).payload,
+          id: JSON.parse(input.msg).space,
+          deleted: spacesGetSpaceFixtures.deleted,
+          turbo: spacesGetSpaceFixtures.turbo
+        });
       });
 
       it('passes when validateSpaceSettings succeeds and strategy count is valid', async () => {

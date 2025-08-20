@@ -23,15 +23,12 @@ export async function verify(body): Promise<any> {
   const space = await getSpace(msg.space, true);
 
   try {
-    await validateSpaceSettings(
-      {
-        ...msg.payload,
-        id: msg.space,
-        deleted: space?.deleted,
-        turbo: space?.turbo
-      },
-      process.env.NETWORK
-    );
+    await validateSpaceSettings({
+      ...msg.payload,
+      id: msg.space,
+      deleted: space?.deleted,
+      turbo: space?.turbo
+    });
   } catch (e) {
     return Promise.reject(e);
   }

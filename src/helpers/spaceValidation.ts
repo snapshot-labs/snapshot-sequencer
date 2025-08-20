@@ -6,7 +6,7 @@ const DEFAULT_SNAPSHOT_ENV: string = 'testnet';
 
 export async function validateSpaceSettings(
   originalSpace: any,
-  snapshotEnv = DEFAULT_SNAPSHOT_ENV
+  snapshotEnv = process.env.NETWORK ?? DEFAULT_SNAPSHOT_ENV
 ): Promise<void> {
   const spaceType = originalSpace.turbo ? 'turbo' : 'default';
   const space = snapshot.utils.clone(originalSpace);
