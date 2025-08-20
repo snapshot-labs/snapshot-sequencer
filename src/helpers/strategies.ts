@@ -18,7 +18,7 @@ const URI = new URL(
 
 let consecutiveFailsCount = 0;
 let shouldStop = false;
-export let strategies: Record<Strategy['id'], Strategy> = {};
+let strategies: Record<Strategy['id'], Strategy> = {};
 
 async function loadStrategies() {
   const res = await snapshot.utils.getJSON(URI);
@@ -33,13 +33,18 @@ async function loadStrategies() {
     throw error;
   }
 
-  const strat = Object.values(res).map((strategy: any) => ({
+  const strategiesList = Object.values(res).map((strategy: any) => ({
     id: strategy.key,
     override: strategy.dependOnOtherAddress || false,
     disabled: strategy.disabled || false
   }));
 
-  strategies = Object.fromEntries(strat.map(strategy => [strategy.id, strategy]));
+  strategies = Object.fromEntries(strategiesList.map(strategy => [strategy.id, strategy]));
+}
+
+// Using a getter to avoid potential reference initialization issues
+export function getStrategies(): Record<Strategy['id'], Strategy> {
+  return strategies;
 }
 
 export async function initialize() {

@@ -9,7 +9,7 @@ const mockStrategies: Record<string, any> = {
 };
 
 jest.mock('../../../src/helpers/strategies', () => ({
-  strategies: mockStrategies
+  getStrategies: jest.fn(() => mockStrategies)
 }));
 
 // Mock the log module to avoid any issues

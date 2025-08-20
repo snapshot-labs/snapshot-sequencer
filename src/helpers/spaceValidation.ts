@@ -1,6 +1,6 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import log from './log';
-import { strategies } from './strategies';
+import { getStrategies } from './strategies';
 
 const DEFAULT_SNAPSHOT_ENV: string = 'testnet';
 
@@ -67,7 +67,7 @@ export async function validateSpaceSettings(
   }
 
   for (const id of strategiesIds) {
-    const strategy = strategies[id];
+    const strategy = getStrategies()[id];
 
     if (!strategy) {
       return Promise.reject(`strategy "${id}" is not a valid strategy`);
