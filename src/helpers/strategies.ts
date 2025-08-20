@@ -40,6 +40,12 @@ async function loadStrategies() {
   strategies = Object.fromEntries(strat.map(strategy => [strategy.id, strategy]));
 }
 
+export async function initialize() {
+  log.info('[strategies] Initial strategies load');
+  await loadStrategies();
+  log.info('[strategies] Initial strategies load complete');
+}
+
 export async function run() {
   while (!shouldStop) {
     try {
