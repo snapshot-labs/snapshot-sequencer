@@ -54,7 +54,13 @@ export async function initialize() {
 }
 
 export async function run() {
+  log.info('[strategies] Start strategies refresh loop');
+
   while (!shouldStop) {
+    // Delay the first run to avoid immediate execution after initialize()
+    // if stop() has been called after sleep started,
+    // the loop will exit only after the sleep has completed
+    await snapshot.utils.sleep(RUN_INTERVAL);
     try {
       log.info('[strategies] Start strategies refresh');
       await loadStrategies();
@@ -68,10 +74,6 @@ export async function run() {
       }
       log.error(`[strategies] failed to load ${JSON.stringify(e)}`);
     }
-
-    // if stop() has been called after sleep started,
-    // the loop will exit only after the sleep has completed
-    await snapshot.utils.sleep(RUN_INTERVAL);
   }
 }
 
