@@ -2,13 +2,13 @@ import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import { uniq } from 'lodash';
-import { validateSpaceSettings } from './settings';
 import { getPremiumNetworkIds, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
 import { getLimits, getSpaceType } from '../helpers/options';
+import { validateSpaceSettings } from '../helpers/spaceValidation';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
@@ -65,11 +65,7 @@ async function validateSpace(space: any) {
     return Promise.reject('space hibernated');
   }
 
-  try {
-    await validateSpaceSettings(space);
-  } catch (e) {
-    return Promise.reject(e);
-  }
+  await validateSpaceSettings(space);
 }
 
 export async function verify(body): Promise<any> {
