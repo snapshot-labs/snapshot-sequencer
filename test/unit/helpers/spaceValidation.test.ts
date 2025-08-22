@@ -63,7 +63,7 @@ describe('helpers/spaceValidation', () => {
 
         const space = createMockSpace();
         await expect(validateSpaceSettings(space, 'mainnet')).rejects.toBe(
-          'strategy "whitelist" is not a valid strategy'
+          "strategy 'whitelist' is not a valid strategy"
         );
       });
 
@@ -72,7 +72,7 @@ describe('helpers/spaceValidation', () => {
 
         const space = createMockSpace();
         await expect(validateSpaceSettings(space, 'mainnet')).rejects.toBe(
-          'strategy "whitelist" is not available anymore'
+          "strategy 'whitelist' is not available anymore"
         );
       });
 
@@ -90,7 +90,7 @@ describe('helpers/spaceValidation', () => {
         });
 
         await expect(validateSpaceSettings(space, 'mainnet')).rejects.toBe(
-          'strategy "invalid-strategy-1" is not a valid strategy'
+          "strategy 'invalid-strategy-1' is not a valid strategy"
         );
       });
 
@@ -106,7 +106,7 @@ describe('helpers/spaceValidation', () => {
         });
 
         await expect(validateSpaceSettings(space, 'mainnet')).rejects.toBe(
-          'strategy "strategy1" is not available anymore'
+          "strategy 'strategy1' is not available anymore"
         );
       });
 
@@ -122,7 +122,7 @@ describe('helpers/spaceValidation', () => {
         });
 
         await expect(validateSpaceSettings(space, 'mainnet')).rejects.toBe(
-          'strategy "override-strategy" is only available for pro spaces'
+          "strategy 'override-strategy' is only available for pro spaces"
         );
       });
 
