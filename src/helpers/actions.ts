@@ -92,6 +92,7 @@ export async function getProposal(space, id) {
     params: {}
   };
   proposal.choices = jsonParse(proposal.choices);
+  proposal.vp_value_by_strategy = jsonParse(proposal.vp_value_by_strategy, []);
 
   return proposal;
 }
