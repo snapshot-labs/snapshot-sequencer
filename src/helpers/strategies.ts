@@ -19,6 +19,7 @@ const URI = new URL(
 let consecutiveFailsCount = 0;
 let shouldStop = false;
 let strategies: Record<Strategy['id'], Strategy> = {};
+let overridingStrategies: string[] = [];
 
 async function loadStrategies() {
   const res = await snapshot.utils.getJSON(URI);
@@ -40,11 +41,17 @@ async function loadStrategies() {
   }));
 
   strategies = Object.fromEntries(strategiesList.map(strategy => [strategy.id, strategy]));
+
+  overridingStrategies = strategiesList.filter(s => s.override).map(s => s.id);
 }
 
 // Using a getter to avoid potential reference initialization issues
 export function getStrategies(): Record<Strategy['id'], Strategy> {
   return strategies;
+}
+
+export function getOverridingStrategies(): string[] {
+  return overridingStrategies;
 }
 
 export async function initialize() {
