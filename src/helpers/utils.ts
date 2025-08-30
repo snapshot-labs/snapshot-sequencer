@@ -64,8 +64,6 @@ export function rpcError(res, code, e, id) {
 }
 
 export function hasStrategyOverride(strategies: any[]): boolean {
-  if (!strategies?.length) return false;
-
   const strategiesStr = JSON.stringify(strategies).toLowerCase();
   return getOverridingStrategies().some(strategyId =>
     strategiesStr.includes(`"name":"${strategyId}"`)
