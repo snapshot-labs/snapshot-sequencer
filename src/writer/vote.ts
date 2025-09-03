@@ -121,6 +121,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
 
   // Get proposal voting power value
   // Value is set on creation, and not updated on vote update
+  // Value will be recomputed on proposal close
   let vpValue = 0;
   let cb = 0;
 
