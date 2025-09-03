@@ -11,6 +11,8 @@ type Proposal = {
  * @returns The total vote value, in the currency unit specified by the proposal's vp_value_by_strategy values
  **/
 export function getVoteValue(proposal: Proposal, vote: Vote): number {
+  if (!proposal.vp_value_by_strategy.length) return 0;
+
   if (proposal.vp_value_by_strategy.length !== vote.vp_by_strategy.length) {
     throw new Error('invalid data to compute vote value');
   }
