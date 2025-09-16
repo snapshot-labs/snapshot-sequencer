@@ -3,7 +3,7 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import { uniq } from 'lodash';
 import { getPremiumNetworkIds, getSpace } from '../helpers/actions';
-import { getStrategiesValue } from '../helpers/entityValue';
+import { getVpValueByStrategy } from '../helpers/entityValue';
 import log from '../helpers/log';
 import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
@@ -243,7 +243,7 @@ export async function verify(body): Promise<any> {
   let strategiesValue: number[] = [];
 
   try {
-    strategiesValue = await getStrategiesValue({
+    strategiesValue = await getVpValueByStrategy({
       network: space.network,
       start: msg.payload.start,
       strategies: space.strategies

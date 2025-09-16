@@ -14,7 +14,7 @@ const OVERLORD_URL = process.env.OVERLORD_URL ?? 'https://overlord.snapshot.box'
 // Round strategy values to 9 decimal places
 const STRATEGIES_VALUE_PRECISION = 9;
 
-export async function getStrategiesValue(proposal: Proposal): Promise<number[]> {
+export async function getVpValueByStrategy(proposal: Proposal): Promise<number[]> {
   const result: number[] = await jsonRpcRequest(OVERLORD_URL, 'get_vp_value_by_strategy', {
     network: proposal.network,
     strategies: proposal.strategies,

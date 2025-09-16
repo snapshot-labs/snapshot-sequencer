@@ -100,7 +100,7 @@ jest.mock('../../../src/helpers/moderation', () => {
 
 jest.mock('../../../src/helpers/entityValue', () => ({
   __esModule: true,
-  getStrategiesValue: jest.fn(() => Promise.resolve([]))
+  getVpValueByStrategy: jest.fn(() => Promise.resolve([]))
 }));
 // Get the mocked function after the mock is created
 const { validateSpaceSettings: mockValidateSpaceSettings } = jest.requireMock(
