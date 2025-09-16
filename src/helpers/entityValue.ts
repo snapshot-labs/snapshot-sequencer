@@ -14,7 +14,7 @@ export async function getVpValueByStrategy(proposal: Proposal): Promise<number[]
   const result: number[] = await jsonRpcRequest(OVERLORD_URL, 'get_value_by_strategy', {
     network: proposal.network,
     strategies: proposal.strategies,
-    snapshot: proposal.start
+    snapshot: proposal.start // Expecting timestamp and not block number
   });
 
   // Handle unlikely case where strategies value array length does not match strategies length
