@@ -1,3 +1,8 @@
+// Mock validateSpaceSettings function
+jest.mock('../../../src/helpers/spaceValidation', () => ({
+  validateSpaceSettings: jest.fn()
+}));
+
 import omit from 'lodash/omit';
 import * as writer from '../../../src/writer/proposal';
 import { spacesGetSpaceFixtures } from '../../fixtures/space';
@@ -97,6 +102,10 @@ jest.mock('../../../src/helpers/entityValue', () => ({
   __esModule: true,
   getStrategiesValue: jest.fn(() => Promise.resolve([]))
 }));
+// Get the mocked function after the mock is created
+const { validateSpaceSettings: mockValidateSpaceSettings } = jest.requireMock(
+  '../../../src/helpers/spaceValidation'
+);
 
 const mockGetProposalsCount = jest.spyOn(writer, 'getProposalsCount');
 mockGetProposalsCount.mockResolvedValue([
@@ -114,6 +123,11 @@ function updateInputPayload(input: any, payload: any) {
 }
 
 describe('writer/proposal', () => {
+  beforeEach(() => {
+    // Default validateSpaceSettings to resolve (success)
+    mockValidateSpaceSettings.mockResolvedValue(undefined);
+  });
+
   afterEach(jest.clearAllMocks);
 
   const msg = JSON.parse(input.msg);
@@ -163,45 +177,6 @@ describe('writer/proposal', () => {
       await expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).resolves.toBeDefined();
       expect(mockGetSpace).toHaveBeenCalledTimes(1);
       expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
-    });
-
-    describe('when the space has enabled the ticket validation strategy', () => {
-      it('rejects if the space does not have voting validation', async () => {
-        expect.assertions(2);
-        mockGetSpace.mockResolvedValueOnce({
-          ...spacesGetSpaceFixtures,
-          strategies: [{ name: 'ticket' }],
-          voteValidation: undefined
-        });
-
-        await expect(writer.verify(input)).rejects.toMatch('ticket');
-        expect(mockGetSpace).toHaveBeenCalledTimes(1);
-      });
-
-      it('rejects if the space voting validation is <any>', async () => {
-        expect.assertions(2);
-        mockGetSpace.mockResolvedValueOnce({
-          ...spacesGetSpaceFixtures,
-          strategies: [{ name: 'ticket' }],
-          voteValidation: { name: 'any' }
-        });
-
-        await expect(writer.verify(input)).rejects.toMatch('ticket');
-        expect(mockGetSpace).toHaveBeenCalledTimes(1);
-      });
-
-      it('does not reject if the space voting validation is anything else valid than <any>', async () => {
-        expect.assertions(3);
-        mockGetSpace.mockResolvedValueOnce({
-          ...spacesGetSpaceFixtures,
-          strategies: [{ name: 'ticket' }],
-          voteValidation: { name: 'gitcoin' }
-        });
-
-        await expect(writer.verify(input)).resolves.toBeDefined();
-        expect(mockGetSpace).toHaveBeenCalledTimes(1);
-        expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
-      });
     });
 
     describe('when the space has set a voting period', () => {
@@ -258,9 +233,7 @@ describe('writer/proposal', () => {
         const msg = JSON.parse(input.msg);
         msg.payload.start = msg.timestamp + VOTING_DELAY;
 
-        await expect(
-          writer.verify({ ...input, msg: JSON.stringify(msg) })
-        ).resolves.toBeDefined();
+        await expect(writer.verify({ ...input, msg: JSON.stringify(msg) })).resolves.toBeDefined();
         expect(mockGetSpace).toHaveBeenCalledTimes(1);
         expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
       });
@@ -564,108 +537,17 @@ describe('writer/proposal', () => {
       expect(mockGetSpace).toHaveBeenCalledTimes(1);
     });
 
-    describe('on invalid space settings', () => {
-      it('rejects if using testnet on production', async () => {
-        expect.assertions(2);
-        mockGetSpace.mockResolvedValueOnce({
-          ...spacesGetSpaceFixtures,
-          network: '5'
-        });
-
-        await expect(writer.verify(input)).rejects.toMatch(
-          'invalid space settings: network not allowed'
-        );
-        expect(mockGetSpace).toHaveBeenCalledTimes(1);
+    it('rejects if space validation fails', async () => {
+      expect.assertions(2);
+      mockValidateSpaceSettings.mockRejectedValueOnce('space validation failed');
+      mockGetSpace.mockResolvedValueOnce({
+        ...spacesGetSpaceFixtures
       });
 
-      it('rejects if the network does not exist', async () => {
-        expect.assertions(2);
-        mockGetSpace.mockResolvedValueOnce({
-          ...spacesGetSpaceFixtures,
-          network: '123abc'
-        });
-
-        await expect(writer.verify(input)).rejects.toMatch(
-          'invalid space settings: network not allowed'
-        );
-        expect(mockGetSpace).toHaveBeenCalledTimes(1);
-      });
-
-      it('rejects if using a non-premium network', async () => {
-        expect.assertions(2);
-        mockGetSpace.mockResolvedValueOnce({
-          ...spacesGetSpaceFixtures,
-          network: '56' // Using BSC network, which is not in the premium list
-        });
-
-        await expect(writer.verify(input)).rejects.toMatch('space is using a non-premium network');
-        expect(mockGetSpace).toHaveBeenCalledTimes(1);
-      });
-
-      it('should not reject if using a premium network for turbo space', async () => {
-        expect.assertions(3);
-        mockGetSpace.mockResolvedValueOnce({
-          ...spacesGetSpaceFixtures,
-          network: '56', // Using Ethereum mainnet, which is in the premium list
-          turbo: '1'
-        });
-
-        await expect(writer.verify(input)).resolves.toBeDefined();
-        expect(mockGetSpace).toHaveBeenCalledTimes(1);
-        expect(mockGetProposalsCount).toHaveBeenCalledTimes(1);
-      });
-
-      it('rejects if strategies use a non-premium network', async () => {
-        expect.assertions(2);
-        mockGetSpace.mockResolvedValueOnce({
-          ...spacesGetSpaceFixtures,
-          strategies: [{ name: 'erc20-balance-of', network: '56' }] // Non-premium network
-        });
-
-        await expect(writer.verify(input)).rejects.toMatch('space is using a non-premium network');
-        expect(mockGetSpace).toHaveBeenCalledTimes(1);
-      });
-
-      it('rejects if missing proposal validation', async () => {
-        expect.assertions(2);
-        mockGetSpace.mockResolvedValueOnce({
-          ...spacesGetSpaceFixtures,
-          validation: { name: 'any' }
-        });
-
-        await expect(writer.verify(input)).rejects.toMatch(
-          'invalid space settings: space missing proposal validation'
-        );
-        expect(mockGetSpace).toHaveBeenCalledTimes(1);
-      });
-
-      it('rejects if missing vote validation with ticket strategy', async () => {
-        expect.assertions(2);
-        mockGetSpace.mockResolvedValueOnce({
-          ...spacesGetSpaceFixtures,
-          validation: { name: 'any' },
-          strategies: [{ name: 'ticket' }]
-        });
-
-        await expect(writer.verify(input)).rejects.toMatch(
-          'invalid space settings: space with ticket requires voting validation'
-        );
-        expect(mockGetSpace).toHaveBeenCalledTimes(1);
-      });
-
-      it('rejects if the space was deleted', async () => {
-        expect.assertions(2);
-        mockGetSpace.mockResolvedValueOnce({
-          ...spacesGetSpaceFixtures,
-          filters: { onlyMembers: true },
-          deleted: true
-        });
-
-        await expect(writer.verify(input)).rejects.toMatch(
-          'invalid space settings: space deleted, contact admin'
-        );
-        expect(mockGetSpace).toHaveBeenCalledTimes(1);
-      });
+      await expect(writer.verify(input)).rejects.toMatch(
+        'invalid space settings: space validation failed'
+      );
+      expect(mockGetSpace).toHaveBeenCalledTimes(1);
     });
 
     describe('when only members can propose', () => {

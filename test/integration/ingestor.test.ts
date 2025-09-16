@@ -37,6 +37,7 @@ const LIMITS = {
   'user.default.follow.limit': 25
 };
 const ECOSYSTEM_LIST = ['test.eth', 'snapshot.eth'];
+
 jest.mock('../../src/helpers/options', () => {
   const originalModule = jest.requireActual('../../src/helpers/options');
 
@@ -115,6 +116,17 @@ jest.mock('../../src/helpers/entityValue', () => ({
   __esModule: true,
   getStrategiesValue: jest.fn(() => Promise.resolve([]))
 }));
+jest.mock('../../src/helpers/strategies', () => ({
+  getStrategies: jest.fn(() => ({
+    'erc20-balance-of': { id: 'erc20-balance-of', override: false, disabled: false },
+    'contract-call': { id: 'contract-call', override: true, disabled: false },
+    delegation: { id: 'delegation', override: false, disabled: false },
+    whitelist: { id: 'whitelist', override: false, disabled: false }
+  })),
+  initialize: jest.fn().mockResolvedValue(undefined),
+  run: jest.fn(),
+  stop: jest.fn()
+}));
 
 const proposalRequest = {
   headers: { 'x-real-ip': '1.1.1.1' },
@@ -134,7 +146,7 @@ function cloneWithNewMessage(data: Record<string, any>) {
 }
 
 describe('ingestor', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     proposalInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
     proposalInput.data.message.end = Math.floor(Date.now() / 1e3) + 60;
     voteInput.data.message.timestamp = Math.floor(Date.now() / 1e3) - 60;
