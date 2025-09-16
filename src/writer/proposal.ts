@@ -105,7 +105,7 @@ export async function verify(body): Promise<any> {
     return Promise.reject('wrong proposal format');
   }
 
-  const tsInt = (Date.now() / 1e3).toFixed();
+  const tsInt = +(Date.now() / 1e3).toFixed();
   if (msg.payload.end <= tsInt) {
     return Promise.reject('proposal end date must be in the future');
   }
@@ -242,15 +242,18 @@ export async function verify(body): Promise<any> {
 
   let strategiesValue: number[] = [];
 
-  try {
-    strategiesValue = await getVpValueByStrategy({
-      network: space.network,
-      start: msg.payload.start,
-      strategies: space.strategies
-    });
-  } catch (e: any) {
-    log.warn('unable to get strategies value', e.message);
-    return Promise.reject('failed to get strategies value');
+  // Token value are not available yet for future proposals
+  if (msg.payload.start <= tsInt) {
+    try {
+      strategiesValue = await getVpValueByStrategy({
+        network: space.network,
+        start: msg.payload.start,
+        strategies: space.strategies
+      });
+    } catch (e: any) {
+      log.warn('unable to get strategies value', e.message);
+      return Promise.reject('failed to get strategies value');
+    }
   }
 
   return { strategiesValue };
