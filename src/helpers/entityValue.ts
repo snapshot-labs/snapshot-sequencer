@@ -8,7 +8,6 @@ type Proposal = {
   network: string;
   strategies: any[];
   start: number;
-  vp_value_by_strategy: number[];
 };
 
 const OVERLORD_URL = process.env.OVERLORD_URL ?? 'https://overlord.snapshot.org';
@@ -34,7 +33,7 @@ export async function getStrategiesValue(proposal: Proposal): Promise<number[]> 
  * Calculates the total vote value based on the voting power and the proposal's value per strategy.
  * @returns The total vote value, in the currency unit specified by the proposal's vp_value_by_strategy values
  **/
-export function getVoteValue(proposal: Proposal, vote: Vote): number {
+export function getVoteValue(proposal: { vp_value_by_strategy: number[] }, vote: Vote): number {
   if (!proposal.vp_value_by_strategy.length) return 0;
 
   if (proposal.vp_value_by_strategy.length !== vote.vp_by_strategy.length) {
