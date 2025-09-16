@@ -10,7 +10,7 @@ type Proposal = {
   start: number;
 };
 
-const OVERLORD_URL = process.env.OVERLORD_URL ?? 'https://overlord.snapshot.org';
+const OVERLORD_URL = process.env.OVERLORD_URL ?? 'https://overlord.snapshot.box';
 // Round strategy values to 9 decimal places
 const STRATEGIES_VALUE_PRECISION = 9;
 
