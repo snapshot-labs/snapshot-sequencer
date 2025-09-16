@@ -11,7 +11,7 @@ const OVERLORD_URL = process.env.OVERLORD_URL ?? 'https://overlord.snapshot.box'
 const STRATEGIES_VALUE_PRECISION = 9;
 
 export async function getVpValueByStrategy(proposal: Proposal): Promise<number[]> {
-  const result: number[] = await jsonRpcRequest(OVERLORD_URL, 'get_vp_value_by_strategy', {
+  const result: number[] = await jsonRpcRequest(OVERLORD_URL, 'get_value_by_strategy', {
     network: proposal.network,
     strategies: proposal.strategies,
     snapshot: proposal.start
