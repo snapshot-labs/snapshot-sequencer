@@ -1,9 +1,9 @@
-import { action } from '../../../src/writer/proposal';
-import db, { sequencerDB } from '../../../src/helpers/mysql';
-import input from '../../fixtures/writer-payload/proposal.json';
-import { spacesGetSpaceFixtures } from '../../fixtures/space';
-import { setData } from '../../../src/helpers/moderation';
 import * as actionHelper from '../../../src/helpers/actions';
+import { setData } from '../../../src/helpers/moderation';
+import db, { sequencerDB } from '../../../src/helpers/mysql';
+import { action } from '../../../src/writer/proposal';
+import { spacesGetSpaceFixtures } from '../../fixtures/space';
+import input from '../../fixtures/writer-payload/proposal.json';
 
 const mockContainsFlaggedLinks = jest.fn((): any => {
   return false;
@@ -18,11 +18,6 @@ jest.mock('../../../src/helpers/moderation', () => {
     containsFlaggedLinks: () => mockContainsFlaggedLinks()
   };
 });
-
-jest.mock('../../../src/helpers/entityValue', () => ({
-  __esModule: true,
-  getVpValueByStrategy: jest.fn(() => Promise.resolve([]))
-}));
 
 const getSpaceMock = jest.spyOn(actionHelper, 'getSpace');
 getSpaceMock.mockResolvedValue(spacesGetSpaceFixtures);
@@ -50,7 +45,7 @@ describe('writer/proposal', () => {
         expect.hasAssertions();
         mockContainsFlaggedLinks.mockReturnValueOnce(true);
         const id = '0x01-flagged';
-        expect(await action(input, 'ipfs', 'receipt', id, { strategiesValue: [] })).toBeUndefined();
+        expect(await action(input, 'ipfs', 'receipt', id)).toBeUndefined();
         expect(mockContainsFlaggedLinks).toBeCalledTimes(1);
 
         const [proposal] = await db.queryAsync('SELECT * FROM proposals WHERE id = ?', [id]);
@@ -62,7 +57,7 @@ describe('writer/proposal', () => {
       it('creates and does not flag proposal', async () => {
         expect.hasAssertions();
         const id = '0x02-non-flagged';
-        expect(await action(input, 'ipfs', 'receipt', id, { strategiesValue: [] })).toBeUndefined();
+        expect(await action(input, 'ipfs', 'receipt', id)).toBeUndefined();
         expect(mockContainsFlaggedLinks).toBeCalledTimes(1);
 
         const [proposal] = await db.queryAsync('SELECT * FROM proposals WHERE id = ?', [id]);

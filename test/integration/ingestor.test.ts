@@ -112,10 +112,6 @@ jest.mock('@snapshot-labs/pineapple', () => {
   };
 });
 
-jest.mock('../../src/helpers/entityValue', () => ({
-  __esModule: true,
-  getVpValueByStrategy: jest.fn(() => Promise.resolve([]))
-}));
 jest.mock('../../src/helpers/strategies', () => ({
   getStrategies: jest.fn(() => ({
     'erc20-balance-of': { id: 'erc20-balance-of', override: false, disabled: false },
