@@ -1,5 +1,6 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
+import { CURRENT_CB } from '../constants';
 import { getProposal } from '../helpers/actions';
 import { getVoteValue } from '../helpers/entityValue';
 import log from '../helpers/log';
@@ -7,7 +8,6 @@ import db from '../helpers/mysql';
 import { captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
 import { updateProposalAndVotes } from '../scores';
 
-const LAST_CB = parseInt(process.env.LAST_CB ?? '1');
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
 // async function isLimitReached(space) {
@@ -127,7 +127,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
 
   try {
     vpValue = getVoteValue(context.proposal, context.vp);
-    cb = LAST_CB;
+    cb = CURRENT_CB;
   } catch (e: any) {
     capture(e, { msg, proposalId, context });
   }

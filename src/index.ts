@@ -14,12 +14,14 @@ import {
   stop as stopStrategies
 } from './helpers/strategies';
 import { trackTurboStatuses } from './helpers/turbo';
+import refreshVpValue from './helpers/vpValue';
 
 const app = express();
 
 async function startServer() {
   initLogger(app);
   refreshModeration();
+  refreshVpValue();
 
   await initializeStrategies();
   refreshStrategies();
