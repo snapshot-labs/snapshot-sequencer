@@ -112,9 +112,16 @@ jest.mock('@snapshot-labs/pineapple', () => {
   };
 });
 
-jest.mock('../../src/helpers/entityValue', () => ({
-  __esModule: true,
-  getVpValueByStrategy: jest.fn(() => Promise.resolve([]))
+jest.mock('../../src/helpers/strategies', () => ({
+  getStrategies: jest.fn(() => ({
+    'erc20-balance-of': { id: 'erc20-balance-of', override: false, disabled: false },
+    'contract-call': { id: 'contract-call', override: true, disabled: false },
+    delegation: { id: 'delegation', override: false, disabled: false },
+    whitelist: { id: 'whitelist', override: false, disabled: false }
+  })),
+  initialize: jest.fn().mockResolvedValue(undefined),
+  run: jest.fn(),
+  stop: jest.fn()
 }));
 
 const proposalRequest = {
