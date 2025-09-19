@@ -1,6 +1,6 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
-import { CURRENT_CB } from '../constants';
+import { CB, CURRENT_CB } from '../constants';
 import { getProposal } from '../helpers/actions';
 import { getVoteValue } from '../helpers/entityValue';
 import log from '../helpers/log';
@@ -123,13 +123,15 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   // Value is set on creation, and not updated on vote update
   // Value will be recomputed on proposal close
   let vpValue = 0;
-  let cb = 0;
+  let cb = CB.PENDING_SYNC;
 
-  try {
-    vpValue = getVoteValue(context.proposal, context.vp);
-    cb = CURRENT_CB;
-  } catch (e: any) {
-    capture(e, { msg, proposalId, context });
+  if (context.proposal.cb >= 0) {
+    try {
+      vpValue = getVoteValue(context.proposal, context.vp);
+      cb = CURRENT_CB;
+    } catch (e: any) {
+      capture(e, { msg, proposalId, context });
+    }
   }
 
   const params = {
