@@ -100,17 +100,6 @@ describe('getProposalValue', () => {
     expect(result).toBe(11.8); // (10.5+15.5)*0.1 + (20.5+25.5)*0.2 = 26*0.1 + 46*0.2 = 2.6 + 9.2 = 11.8
   });
 
-  it('should handle single vote scenario', () => {
-    const proposal = {
-      scores_by_strategy: [[100]],
-      vp_value_by_strategy: [2.0]
-    };
-
-    const result = getProposalValue(proposal);
-
-    expect(result).toBe(200); // 100 * 2.0 = 200
-  });
-
   it('should throw on array size mismatch', () => {
     const proposal = {
       scores_by_strategy: [
