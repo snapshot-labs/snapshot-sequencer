@@ -102,6 +102,9 @@ async function updateProposalScores(proposalId: string, scores: any, votes: numb
 
 async function updateProposalScoresValue(proposalId: string) {
   const proposal = await getProposal(proposalId);
+
+  if (proposal.cb < 0 || !proposal.vp_value_by_strategy.length) return;
+
   const query = 'UPDATE proposals SET scores_total_value = ? WHERE id = ? LIMIT 1;';
   await db.queryAsync(query, [getProposalValue(proposal), proposalId]);
 }
