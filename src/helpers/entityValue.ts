@@ -22,14 +22,18 @@ export function getProposalValue(proposal: Proposal): number {
     return 0;
   }
 
+  // Validate that all voteScores arrays have the same length as vp_value_by_strategy
+  for (const voteScores of scores_by_strategy) {
+    if (voteScores.length !== vp_value_by_strategy.length) {
+      throw new Error(
+        'Array size mismatch: voteScores length does not match vp_value_by_strategy length'
+      );
+    }
+  }
+
   let totalValue = 0;
   for (let strategyIndex = 0; strategyIndex < vp_value_by_strategy.length; strategyIndex++) {
     const strategyTotal = scores_by_strategy.reduce((sum, voteScores) => {
-      if (voteScores.length !== vp_value_by_strategy.length) {
-        throw new Error(
-          'Array size mismatch: voteScores length does not match vp_value_by_strategy length'
-        );
-      }
       const score = voteScores[strategyIndex];
       if (typeof score !== 'number') {
         throw new Error(`Invalid score value: expected number, got ${typeof score}`);
