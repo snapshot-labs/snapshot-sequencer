@@ -1,8 +1,8 @@
-import { capture } from '@snapshot-labs/snapshot-sentry';
+// import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getVpValueByStrategy } from './entityValue';
 import db from './mysql';
-import { CB, CURRENT_CB } from '../constants';
+import { CB } from '../constants';
 
 type Proposal = {
   id: string;
@@ -12,11 +12,12 @@ type Proposal = {
 };
 
 const REFRESH_INTERVAL = 60 * 1000;
+const BATCH_SIZE = 100;
 
 async function getProposals(): Promise<Proposal[]> {
   const query =
-    'SELECT id, network, start, strategies FROM proposals WHERE cb = ? AND start < UNIX_TIMESTAMP() LIMIT 500';
-  const proposals = await db.queryAsync(query, [CB.PENDING_SYNC]);
+    'SELECT id, network, start, strategies FROM proposals WHERE cb = ? AND start < UNIX_TIMESTAMP() LIMIT ?';
+  const proposals = await db.queryAsync(query, [CB.PENDING_SYNC, BATCH_SIZE]);
 
   return proposals.map((p: any) => {
     p.strategies = JSON.parse(p.strategies);
@@ -24,26 +25,45 @@ async function getProposals(): Promise<Proposal[]> {
   });
 }
 
-async function refreshProposalVpValues(proposal: Proposal) {
-  try {
-    const values = await getVpValueByStrategy(proposal);
-    const query = 'UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1';
-    await db.queryAsync(query, [JSON.stringify(values), CURRENT_CB, proposal.id]);
-  } catch (e: any) {
-    capture(e);
+async function refreshProposalsVpValues(proposals: Proposal[]) {
+  const query: string[] = [];
+  const params: any[] = [];
+
+  for (const proposal of proposals) {
+    await buildQuery(proposal, query, params);
+  }
+
+  if (query.length) {
+    await db.queryAsync(query.join(';'), params);
   }
 }
 
-async function refreshProposals() {
+async function buildQuery(proposal: Proposal, query: string[], params: any[]) {
+  try {
+    const values = await getVpValueByStrategy(proposal);
+
+    query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
+    params.push(JSON.stringify(values), CB.PENDING_CLOSE, proposal.id);
+  } catch (e) {
+    // TODO: enable only after whole database is synced
+    // capture(e, { extra: { proposal } });
+  }
+}
+
+async function refreshPendingProposals() {
   const proposals = await getProposals();
 
-  for (const proposal of proposals) {
-    await refreshProposalVpValues(proposal);
+  while (true) {
+    if (proposals.length === 0) break;
+
+    await refreshProposalsVpValues(proposals);
+
+    if (proposals.length < BATCH_SIZE) break;
   }
 }
 
 export default async function run() {
-  await refreshProposals();
+  await refreshPendingProposals();
   await snapshot.utils.sleep(REFRESH_INTERVAL);
 
   run();
