@@ -1,3 +1,4 @@
+// import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getVpValueByStrategy } from './entityValue';
 import db from './mysql';
@@ -10,17 +11,12 @@ type Proposal = {
   strategies: any[];
 };
 
-const REFRESH_INTERVAL = 10 * 1000;
-const BATCH_SIZE = 25;
+const REFRESH_INTERVAL = 60 * 1000;
+const BATCH_SIZE = 100;
 
 async function getProposals(): Promise<Proposal[]> {
-  const query = `
-    SELECT id, network, start, strategies
-    FROM proposals
-    WHERE cb = ? AND start < UNIX_TIMESTAMP()
-    ORDER BY created ASC
-    LIMIT ?
-  `;
+  const query =
+    'SELECT id, network, start, strategies FROM proposals WHERE cb = ? AND start < UNIX_TIMESTAMP() ORDER BY created DESC LIMIT ?';
   const proposals = await db.queryAsync(query, [CB.PENDING_SYNC, BATCH_SIZE]);
 
   return proposals.map((p: any) => {
@@ -29,25 +25,12 @@ async function getProposals(): Promise<Proposal[]> {
   });
 }
 
-async function refreshVpByStrategy(proposals: Proposal[]) {
+async function refreshProposalsVpValues(proposals: Proposal[]) {
   const query: string[] = [];
   const params: any[] = [];
 
-  const results = await Promise.all(
-    proposals.map(async proposal => {
-      try {
-        const values = await getVpValueByStrategy(proposal);
-        return { proposal, values, cb: CB.PENDING_COMPUTE };
-      } catch (e) {
-        console.log(e);
-        return { proposal, values: [], cb: CB.ERROR_SYNC };
-      }
-    })
-  );
-
-  for (const result of results) {
-    query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
-    params.push(JSON.stringify(result.values), result.cb, result.proposal.id);
+  for (const proposal of proposals) {
+    await buildQuery(proposal, query, params);
   }
 
   if (query.length) {
@@ -55,16 +38,33 @@ async function refreshVpByStrategy(proposals: Proposal[]) {
   }
 }
 
-export default async function run() {
-  while (true) {
-    const proposals = await getProposals();
+async function buildQuery(proposal: Proposal, query: string[], params: any[]) {
+  try {
+    const values = await getVpValueByStrategy(proposal);
 
-    if (proposals.length) {
-      await refreshVpByStrategy(proposals);
-    }
-
-    if (proposals.length < BATCH_SIZE) {
-      await snapshot.utils.sleep(REFRESH_INTERVAL);
-    }
+    query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
+    params.push(JSON.stringify(values), CB.PENDING_CLOSE, proposal.id);
+  } catch (e) {
+    // TODO: enable only after whole database is synced
+    // capture(e, { extra: { proposal } });
   }
+}
+
+async function refreshPendingProposals() {
+  const proposals = await getProposals();
+
+  while (true) {
+    if (proposals.length === 0) break;
+
+    await refreshProposalsVpValues(proposals);
+
+    if (proposals.length < BATCH_SIZE) break;
+  }
+}
+
+export default async function run() {
+  await refreshPendingProposals();
+  await snapshot.utils.sleep(REFRESH_INTERVAL);
+
+  run();
 }
