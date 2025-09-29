@@ -43,7 +43,7 @@ async function buildQuery(proposal: Proposal, query: string[], params: any[]) {
     const values = await getVpValueByStrategy(proposal);
 
     query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
-    params.push(JSON.stringify(values), CB.PENDING_CLOSE, proposal.id);
+    params.push(JSON.stringify(values), CB.PENDING_COMPUTE, proposal.id);
   } catch (e) {
     // TODO: enable only after whole database is synced
     // capture(e, { extra: { proposal } });
