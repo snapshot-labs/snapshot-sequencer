@@ -6,6 +6,7 @@ import api from './api';
 import log from './helpers/log';
 import initMetrics from './helpers/metrics';
 import refreshModeration from './helpers/moderation';
+import refreshProposalsVpValue from './helpers/proposalStrategiesValue';
 import rateLimit from './helpers/rateLimit';
 import shutter from './helpers/shutter';
 import {
@@ -14,14 +15,13 @@ import {
   stop as stopStrategies
 } from './helpers/strategies';
 import { trackTurboStatuses } from './helpers/turbo';
-import refreshVpValue from './helpers/vpValue';
 
 const app = express();
 
 async function startServer() {
   initLogger(app);
   refreshModeration();
-  refreshVpValue();
+  refreshProposalsVpValue();
 
   await initializeStrategies();
   refreshStrategies();
