@@ -68,7 +68,7 @@ async function updateVotesVp(votes: any[], vpState: string, proposalId: string) 
       params.push(JSON.stringify(vote.scores));
       params.push(vpState);
       params.push(vote.vp_value);
-      params.push(CB.PENDING_SYNC);
+      params.push(CB.PENDING_COMPUTE);
       params.push(vote.id);
       params.push(proposalId);
     });
