@@ -15,6 +15,7 @@ import {
   stop as stopStrategies
 } from './helpers/strategies';
 import { trackTurboStatuses } from './helpers/turbo';
+import refreshVotesVpValue from './helpers/votesVpValue';
 
 const app = express();
 
@@ -22,6 +23,7 @@ async function startServer() {
   initLogger(app);
   refreshModeration();
   refreshProposalsVpValue();
+  refreshVotesVpValue();
 
   await initializeStrategies();
   refreshStrategies();
