@@ -51,9 +51,9 @@ async function buildQuery(proposal: Proposal, query: string[], params: any[]) {
 }
 
 async function refreshPendingProposals() {
-  const proposals = await getProposals();
-
   while (true) {
+    const proposals = await getProposals();
+
     if (proposals.length === 0) break;
 
     await refreshProposalsVpValues(proposals);
