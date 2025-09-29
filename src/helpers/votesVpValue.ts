@@ -2,28 +2,29 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getVoteValue } from './entityValue';
 import db from './mysql';
-import { CB } from '../constants';
+import { CB, CURRENT_CB } from '../constants';
 
 const REFRESH_INTERVAL = 60 * 1000;
 const BATCH_SIZE = 100;
 
 type Datum = {
   id: string;
+  vp_state: string;
   vp_by_strategy: number[];
   vp_value_by_strategy: number[];
 };
 
 async function getVotes(): Promise<Datum[]> {
   const query = `
-    SELECT votes.id, votes.vp_by_strategy, proposals.vp_value_by_strategy
+    SELECT votes.id, votes.vp_state, votes.vp_by_strategy, proposals.vp_value_by_strategy
     FROM votes
     JOIN proposals ON votes.proposal = proposals.id
-    WHERE proposals.cb IN (?) AND votes.cb = ?
+    WHERE proposals.cb IN (?) AND votes.cb IN (?)
     ORDER BY votes.created DESC
     LIMIT ?`;
   const results = await db.queryAsync(query, [
     [CB.PENDING_CLOSE, CB.PENDING_COMPUTE],
-    CB.PENDING_SYNC,
+    [CB.PENDING_SYNC, CB.PENDING_COMPUTE],
     BATCH_SIZE
   ]);
 
@@ -52,7 +53,7 @@ function buildQuery(datum: Datum, query: string[], params: any[]) {
     const value = getVoteValue(datum.vp_value_by_strategy, datum.vp_by_strategy);
 
     query.push('UPDATE votes SET vp_value = ?, cb = ? WHERE id = ? LIMIT 1');
-    params.push(value, CB.PENDING_CLOSE, datum.id);
+    params.push(value, datum.vp_state === 'final' ? CURRENT_CB : CB.PENDING_CLOSE, datum.id);
   } catch (e) {
     // TODO: enable only after whole database is synced
     // capture(e, { extra: { proposal } });
