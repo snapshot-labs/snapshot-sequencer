@@ -1,5 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import { CB, CURRENT_CB } from '../constants';
+import { CB } from '../constants';
 import { getProposal } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
@@ -117,21 +117,6 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
   const withOverride = hasStrategyOverride(context.proposal.strategies);
   if (vpState === 'final' && withOverride) vpState = 'pending';
 
-  // Get proposal voting power value
-  // Value is set on creation, and not updated on vote update
-  // Value will be recomputed on proposal close
-  let vpValue = 0;
-  let cb = CB.PENDING_SYNC;
-
-  if (context.proposal.cb >= 0) {
-    try {
-      vpValue = getVoteValue(context.proposal, context.vp);
-      cb = CURRENT_CB;
-    } catch (e: any) {
-      capture(e, { msg, proposalId, context });
-    }
-  }
-
   const params = {
     id,
     ipfs,
@@ -147,7 +132,7 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     vp_by_strategy: JSON.stringify(context.vp.vp_by_strategy),
     vp_state: vpState,
     vp_value: 0,
-    cb: CB.PENDING_COMPUTE
+    cb: CB.PENDING_SYNC
   };
 
   // Check if voter already voted
