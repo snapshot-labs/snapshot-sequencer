@@ -18,10 +18,14 @@ async function getVotes(): Promise<Datum[]> {
     SELECT votes.id, votes.vp_by_strategy, proposals.vp_value_by_strategy
     FROM votes
     JOIN proposals ON votes.proposal = proposals.id
-    WHERE proposals.cb = ? AND votes.cb = ?
+    WHERE proposals.cb IN (?) AND votes.cb = ?
     ORDER BY votes.created DESC
     LIMIT ?`;
-  const results = await db.queryAsync(query, [CB.PENDING_CLOSE, CB.PENDING_SYNC, BATCH_SIZE]);
+  const results = await db.queryAsync(query, [
+    [CB.PENDING_CLOSE, CB.PENDING_COMPUTE],
+    CB.PENDING_SYNC,
+    BATCH_SIZE
+  ]);
 
   return results.map((p: any) => {
     p.vp_value_by_strategy = JSON.parse(p.vp_value_by_strategy);
