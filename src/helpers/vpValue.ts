@@ -16,7 +16,7 @@ const BATCH_SIZE = 100;
 
 async function getProposals(): Promise<Proposal[]> {
   const query =
-    'SELECT id, network, start, strategies FROM proposals WHERE cb = ? AND start < UNIX_TIMESTAMP() LIMIT ?';
+    'SELECT id, network, start, strategies FROM proposals WHERE cb = ? AND start < UNIX_TIMESTAMP() ORDER BY created DESC LIMIT ?';
   const proposals = await db.queryAsync(query, [CB.PENDING_SYNC, BATCH_SIZE]);
 
   return proposals.map((p: any) => {
