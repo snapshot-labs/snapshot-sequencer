@@ -11,7 +11,7 @@ type Proposal = {
   strategies: any[];
 };
 
-const REFRESH_INTERVAL = 60 * 1000;
+const REFRESH_INTERVAL = 10 * 1000;
 const BATCH_SIZE = 100;
 
 async function getProposals(): Promise<Proposal[]> {
