@@ -57,16 +57,14 @@ async function refreshVpByStrategy(proposals: Proposal[]) {
 
 export default async function run() {
   while (true) {
-    while (true) {
-      const proposals = await getProposals();
+    const proposals = await getProposals();
 
-      if (proposals.length === 0) break;
-
+    if (proposals.length) {
       await refreshVpByStrategy(proposals);
-
-      if (proposals.length < BATCH_SIZE) break;
     }
 
-    await snapshot.utils.sleep(REFRESH_INTERVAL);
+    if (proposals.length < BATCH_SIZE) {
+      await snapshot.utils.sleep(REFRESH_INTERVAL);
+    }
   }
 }
