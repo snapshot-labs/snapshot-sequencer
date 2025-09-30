@@ -1,8 +1,8 @@
 export const CB = {
-  INELIGIBLE: -1,
-  PENDING_SYNC: -10, // waiting for value from overlord
-  PENDING_COMPUTE: -15, // value from overlord set, waiting for local computation or refresh
-  PENDING_CLOSE: -20 // value from overlord set, waiting for proposal close for final computation
+  FINAL: 1,
+  PENDING_SYNC: 0, // Default db value, waiting from value from overlord
+  PENDING_COMPUTE: -1,
+  PENDING_CLOSE: -2,
+  INELIGIBLE: -10, // Payload format, can not compute
+  ERROR_SYNC: -11 // Sync error from overlord, waiting for retry
 };
-
-export const CURRENT_CB = parseInt(process.env.LAST_CB ?? '1');
