@@ -57,15 +57,15 @@ async function refreshVotesVpValues(data: Datum[]) {
 
 export default async function run() {
   while (true) {
-    const votes = await getVotes();
+    while (true) {
+      const votes = await getVotes();
 
-    if (votes.length === 0) break;
+      if (votes.length === 0) break;
 
-    await refreshVotesVpValues(votes);
+      await refreshVotesVpValues(votes);
 
-    if (votes.length < BATCH_SIZE) break;
+      if (votes.length < BATCH_SIZE) break;
+    }
+    await snapshot.utils.sleep(REFRESH_INTERVAL);
   }
-  await snapshot.utils.sleep(REFRESH_INTERVAL);
-
-  run();
 }
