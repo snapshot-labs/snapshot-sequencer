@@ -1,4 +1,3 @@
-// import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getVpValueByStrategy } from './entityValue';
 import db from './mysql';
@@ -12,14 +11,14 @@ type Proposal = {
 };
 
 const REFRESH_INTERVAL = 10 * 1000;
-const BATCH_SIZE = 100;
+const BATCH_SIZE = 25;
 
 async function getProposals(): Promise<Proposal[]> {
   const query = `
     SELECT id, network, start, strategies
     FROM proposals
     WHERE cb = ? AND start < UNIX_TIMESTAMP()
-    ORDER BY created DESC
+    ORDER BY created ASC
     LIMIT ?
   `;
   const proposals = await db.queryAsync(query, [CB.PENDING_SYNC, BATCH_SIZE]);
@@ -34,18 +33,21 @@ async function refreshVpByStrategy(proposals: Proposal[]) {
   const query: string[] = [];
   const params: any[] = [];
 
-  for (const proposal of proposals) {
-    try {
-      const values = await getVpValueByStrategy(proposal);
+  const results = await Promise.all(
+    proposals.map(async proposal => {
+      try {
+        const values = await getVpValueByStrategy(proposal);
+        return { proposal, values, cb: CB.PENDING_COMPUTE };
+      } catch (e) {
+        console.log(e);
+        return { proposal, values: [], cb: CB.ERROR_SYNC };
+      }
+    })
+  );
 
-      query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
-      params.push(JSON.stringify(values), CB.PENDING_COMPUTE, proposal.id);
-    } catch (e) {
-      // TODO: switch to capture only after whole database is synced
-      // to avoid quota issues
-      // capture(e, { extra: { proposal } });
-      console.log(e);
-    }
+  for (const result of results) {
+    query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
+    params.push(JSON.stringify(result.values), result.cb, result.proposal.id);
   }
 
   if (query.length) {
@@ -57,14 +59,12 @@ export default async function run() {
   while (true) {
     const proposals = await getProposals();
 
-    if (proposals.length === 0) break;
+    if (proposals.length) {
+      await refreshVpByStrategy(proposals);
+    }
 
-    await refreshVpByStrategy(proposals);
-
-    if (proposals.length < BATCH_SIZE) break;
+    if (proposals.length < BATCH_SIZE) {
+      await snapshot.utils.sleep(REFRESH_INTERVAL);
+    }
   }
-
-  await snapshot.utils.sleep(REFRESH_INTERVAL);
-
-  run();
 }
