@@ -24,8 +24,8 @@ async function startServer() {
   initLogger(app);
   refreshModeration();
   refreshProposalsVpValue();
-  refreshProposalsScoresValue();
   refreshVotesVpValue();
+  refreshProposalsScoresValue();
 
   await initializeStrategies();
   refreshStrategies();
