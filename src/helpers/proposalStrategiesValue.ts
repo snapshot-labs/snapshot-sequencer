@@ -11,7 +11,7 @@ type Proposal = {
 };
 
 const REFRESH_INTERVAL = 10 * 1000;
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 25;
 
 async function getProposals(): Promise<Proposal[]> {
   const query = `
