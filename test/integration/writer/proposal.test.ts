@@ -1,9 +1,9 @@
-import { action } from '../../../src/writer/proposal';
-import db, { sequencerDB } from '../../../src/helpers/mysql';
-import input from '../../fixtures/writer-payload/proposal.json';
-import { spacesGetSpaceFixtures } from '../../fixtures/space';
-import { setData } from '../../../src/helpers/moderation';
 import * as actionHelper from '../../../src/helpers/actions';
+import { setData } from '../../../src/helpers/moderation';
+import db, { sequencerDB } from '../../../src/helpers/mysql';
+import { action } from '../../../src/writer/proposal';
+import { spacesGetSpaceFixtures } from '../../fixtures/space';
+import input from '../../fixtures/writer-payload/proposal.json';
 
 const mockContainsFlaggedLinks = jest.fn((): any => {
   return false;
