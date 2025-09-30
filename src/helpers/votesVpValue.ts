@@ -2,9 +2,9 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getVoteValue } from './entityValue';
 import db from './mysql';
-import { CB, CURRENT_CB } from '../constants';
+import { CB } from '../constants';
 
-const REFRESH_INTERVAL = 60 * 1000;
+const REFRESH_INTERVAL = 10 * 1000;
 const BATCH_SIZE = 100;
 
 type Datum = {
@@ -20,18 +20,18 @@ async function getVotes(): Promise<Datum[]> {
     FROM votes
     JOIN proposals ON votes.proposal = proposals.id
     WHERE proposals.cb IN (?) AND votes.cb IN (?)
-    ORDER BY votes.created DESC
+    ORDER BY votes.created ASC
     LIMIT ?`;
   const results = await db.queryAsync(query, [
-    [CB.PENDING_CLOSE, CB.PENDING_COMPUTE],
+    [CB.PENDING_CLOSE, CB.PENDING_COMPUTE, CB.FINAL],
     [CB.PENDING_SYNC, CB.PENDING_COMPUTE],
     BATCH_SIZE
   ]);
 
-  return results.map((p: any) => {
-    p.vp_value_by_strategy = JSON.parse(p.vp_value_by_strategy);
-    p.vp_by_strategy = JSON.parse(p.vp_by_strategy);
-    return p;
+  return results.map((r: any) => {
+    r.vp_value_by_strategy = JSON.parse(r.vp_value_by_strategy);
+    r.vp_by_strategy = JSON.parse(r.vp_by_strategy);
+    return r;
   });
 }
 
@@ -40,7 +40,14 @@ async function refreshVotesVpValues(data: Datum[]) {
   const params: any[] = [];
 
   for (const datum of data) {
-    buildQuery(datum, query, params);
+    try {
+      const value = getVoteValue(datum.vp_value_by_strategy, datum.vp_by_strategy);
+
+      query.push('UPDATE votes SET vp_value = ?, cb = ? WHERE id = ? LIMIT 1');
+      params.push(value, datum.vp_state === 'final' ? CB.FINAL : CB.PENDING_CLOSE, datum.id);
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   if (query.length) {
@@ -48,19 +55,7 @@ async function refreshVotesVpValues(data: Datum[]) {
   }
 }
 
-function buildQuery(datum: Datum, query: string[], params: any[]) {
-  try {
-    const value = getVoteValue(datum.vp_value_by_strategy, datum.vp_by_strategy);
-
-    query.push('UPDATE votes SET vp_value = ?, cb = ? WHERE id = ? LIMIT 1');
-    params.push(value, datum.vp_state === 'final' ? CURRENT_CB : CB.PENDING_CLOSE, datum.id);
-  } catch (e) {
-    // TODO: enable only after whole database is synced
-    // capture(e, { extra: { proposal } });
-  }
-}
-
-async function refreshPendingVotes() {
+export default async function run() {
   while (true) {
     const votes = await getVotes();
 
@@ -70,10 +65,6 @@ async function refreshPendingVotes() {
 
     if (votes.length < BATCH_SIZE) break;
   }
-}
-
-export default async function run() {
-  await refreshPendingVotes();
   await snapshot.utils.sleep(REFRESH_INTERVAL);
 
   run();
