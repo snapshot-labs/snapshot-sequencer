@@ -12,7 +12,7 @@ type Proposal = {
 };
 
 const REFRESH_INTERVAL = 10 * 1000;
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 25;
 
 async function getProposals(): Promise<Proposal[]> {
   const query = `
@@ -34,18 +34,21 @@ async function refreshVpByStrategy(proposals: Proposal[]) {
   const query: string[] = [];
   const params: any[] = [];
 
-  for (const proposal of proposals) {
-    try {
-      const values = await getVpValueByStrategy(proposal);
+  const results = await Promise.all(
+    proposals.map(async proposal => {
+      try {
+        const values = await getVpValueByStrategy(proposal);
+        return { proposal, values, cb: CB.PENDING_COMPUTE };
+      } catch (e) {
+        console.log(e);
+        return { proposal, values: [], cb: CB.SYNC_ERROR };
+      }
+    })
+  );
 
-      query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
-      params.push(JSON.stringify(values), CB.PENDING_COMPUTE, proposal.id);
-    } catch (e) {
-      // TODO: switch to capture only after whole database is synced
-      // to avoid quota issues
-      // capture(e, { extra: { proposal } });
-      console.log(e);
-    }
+  for (const result of results) {
+    query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
+    params.push(JSON.stringify(result.values), result.cb, result.proposal.id);
   }
 
   if (query.length) {
