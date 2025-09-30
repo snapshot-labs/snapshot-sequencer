@@ -41,7 +41,7 @@ async function refreshVpByStrategy(proposals: Proposal[]) {
         return { proposal, values, cb: CB.PENDING_COMPUTE };
       } catch (e) {
         console.log(e);
-        return { proposal, values: [], cb: CB.SYNC_ERROR };
+        return { proposal, values: [], cb: CB.ERROR_SYNC };
       }
     })
   );
