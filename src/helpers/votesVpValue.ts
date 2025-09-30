@@ -39,13 +39,15 @@ async function refreshVotesVpValues(data: Datum[]) {
   const params: any[] = [];
 
   for (const datum of data) {
+    query.push('UPDATE votes SET vp_value = ?, cb = ? WHERE id = ? LIMIT 1');
+
     try {
       const value = getVoteValue(datum.vp_value_by_strategy, datum.vp_by_strategy);
 
-      query.push('UPDATE votes SET vp_value = ?, cb = ? WHERE id = ? LIMIT 1');
       params.push(value, datum.vp_state === 'final' ? CB.FINAL : CB.PENDING_CLOSE, datum.id);
     } catch (e) {
       console.log(e);
+      params.push(0, CB.INELIGIBLE, datum.id);
     }
   }
 
