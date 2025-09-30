@@ -1,4 +1,3 @@
-// import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getVoteValue } from './entityValue';
 import db from './mysql';
