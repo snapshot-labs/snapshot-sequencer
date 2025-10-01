@@ -70,18 +70,8 @@ export function getProposalValue(
   let totalValue = 0;
   for (let strategyIndex = 0; strategyIndex < vpValueByStrategy.length; strategyIndex++) {
     const strategyTotal = scoresByStrategy.reduce((sum, voteScores) => {
-      const score = voteScores[strategyIndex];
-      if (typeof score !== 'number') {
-        throw new Error(`Invalid score value: expected number, got ${typeof score}`);
-      }
-      return sum + score;
+      return sum + voteScores[strategyIndex];
     }, 0);
-
-    if (typeof vpValueByStrategy[strategyIndex] !== 'number') {
-      throw new Error(
-        `Invalid vp_value: expected number, got ${typeof vpValueByStrategy[strategyIndex]}`
-      );
-    }
 
     totalValue += strategyTotal * vpValueByStrategy[strategyIndex];
   }
