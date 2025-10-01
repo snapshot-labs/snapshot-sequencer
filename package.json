@@ -47,7 +47,8 @@
     "ts-node": "^10.9.1",
     "turndown": "^7.2.0",
     "typescript": "^4.7.4",
-    "winston": "^3.8.2"
+    "winston": "^3.8.2",
+    "zod": "3.23.8"
   },
   "devDependencies": {
     "@snapshot-labs/eslint-config": "^0.1.0-beta.18",

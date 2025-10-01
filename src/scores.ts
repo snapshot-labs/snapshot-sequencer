@@ -1,4 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
+import { CB } from './constants';
 import { getVoteValue } from './helpers/entityValue';
 import log from './helpers/log';
 import db from './helpers/mysql';
@@ -77,7 +78,7 @@ async function updateVotesVp(votes: any[], vpState: string, proposalId: string) 
   log.info(`[scores] updated votes vp, ${votesWithChange.length}/${votes.length} on ${proposalId}`);
 }
 
-async function updateProposalScores(proposalId: string, scores: any, votes: number) {
+async function updateProposalScores(proposal: any, scores: any, votes: number) {
   const ts = (Date.now() / 1e3).toFixed();
   const query = `
     UPDATE proposals
@@ -86,7 +87,8 @@ async function updateProposalScores(proposalId: string, scores: any, votes: numb
     scores_by_strategy = ?,
     scores_total = ?,
     scores_updated = ?,
-    votes = ?
+    votes = ?,
+    cb = ?
     WHERE id = ? LIMIT 1;
   `;
   await db.queryAsync(query, [
@@ -96,7 +98,8 @@ async function updateProposalScores(proposalId: string, scores: any, votes: numb
     scores.scores_total,
     ts,
     votes,
-    proposalId
+    proposal.cb === CB.PENDING_FINAL ? CB.PENDING_COMPUTE : proposal.cb,
+    proposal.id
   ]);
 }
 
@@ -184,7 +187,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     if (!isFinal) await updateVotesVp(votes, vpState, proposalId);
 
     // Store scores
-    await updateProposalScores(proposalId, results, votes.length);
+    await updateProposalScores(proposal, results, votes.length);
     log.info(
       `[scores] Proposal updated ${proposal.id}, ${proposal.space}, ${results.scores_state}, ${votes.length}`
     );
