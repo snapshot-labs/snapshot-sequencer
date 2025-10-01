@@ -6,6 +6,7 @@ import { CB } from '../constants';
 
 type Proposal = {
   id: string;
+  scoresState: string;
   vpValueByStrategy: number[];
   scoresByStrategy: number[][];
 };
@@ -15,13 +16,13 @@ const BATCH_SIZE = 25;
 
 async function getProposals(): Promise<Proposal[]> {
   const query = `
-    SELECT id, vp_value_by_strategy, scores_by_strategy
+    SELECT id, scores_state as scoresState, vp_value_by_strategy, scores_by_strategy
     FROM proposals
-    WHERE cb = ? AND end < UNIX_TIMESTAMP() AND scores_state = ?
+    WHERE cb = ?
     ORDER BY created ASC
     LIMIT ?
   `;
-  const proposals = await db.queryAsync(query, [CB.PENDING_CLOSE, 'final', BATCH_SIZE]);
+  const proposals = await db.queryAsync(query, [CB.PENDING_CLOSE, BATCH_SIZE]);
 
   return proposals.map((p: any) => ({
     id: p.id,
@@ -42,7 +43,11 @@ async function refreshScoresTotal(proposals: Proposal[]) {
         proposal.scoresByStrategy,
         proposal.vpValueByStrategy
       );
-      params.push(scoresTotalValue, CB.FINAL, proposal.id);
+      params.push(
+        scoresTotalValue,
+        proposal.scoresState === 'final' ? CB.FINAL : CB.PENDING_CLOSE,
+        proposal.id
+      );
     } catch (e) {
       capture(e);
       params.push(0, CB.INELIGIBLE, proposal.id);
