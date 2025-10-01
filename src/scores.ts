@@ -4,7 +4,6 @@ import log from './helpers/log';
 import db from './helpers/mysql';
 import { getDecryptionKey } from './helpers/shutter';
 import { hasStrategyOverride, sha256 } from './helpers/utils';
-import { getVoteValue } from './helpers/votesVpValue';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const FINALIZE_SCORE_SECONDS_DELAY = 60;
@@ -166,7 +165,6 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
       votes = votes.map((vote: any) => {
         vote.scores = proposal.strategies.map((strategy, i) => scores[i][vote.voter] || 0);
         vote.balance = vote.scores.reduce((a, b: any) => a + b, 0);
-        vote.vp_value = getVoteValue(proposal, vote);
         return vote;
       });
     }

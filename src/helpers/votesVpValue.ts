@@ -1,49 +1,51 @@
+import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
+import { z } from 'zod';
 import db from './mysql';
 import { CB } from '../constants';
+
+type Datum = {
+  id: string;
+  vpState: string;
+  vpByStrategy: number[];
+  vpValueByStrategy: number[];
+};
 
 const REFRESH_INTERVAL = 10 * 1000;
 const BATCH_SIZE = 100;
 
-/**
- * Calculates the total vote value based on the voting power and the proposal's value per strategy.
- * @returns The total vote value, in the currency unit specified by the proposal's vp_value_by_strategy values
- **/
-export function getVoteValue(vp_value_by_strategy: number[], vp_by_strategy: number[]): number {
-  if (!vp_value_by_strategy.length) return 0;
-
-  if (vp_value_by_strategy.length !== vp_by_strategy.length) {
-    throw new Error('invalid data to compute vote value');
-  }
-
-  return vp_value_by_strategy.reduce((sum, value, index) => sum + value * vp_by_strategy[index], 0);
-}
-
-type Datum = {
-  id: string;
-  vp_state: string;
-  vp_by_strategy: number[];
-  vp_value_by_strategy: number[];
-};
+const datumSchema = z
+  .object({
+    id: z.string(),
+    vpState: z.string(),
+    vpValueByStrategy: z.array(z.number().finite()),
+    vpByStrategy: z.array(z.number().finite())
+  })
+  .refine(data => data.vpValueByStrategy.length === data.vpByStrategy.length, {
+    message: 'Array length mismatch: vpValueByStrategy and vpByStrategy must have the same length'
+  });
 
 async function getVotes(): Promise<Datum[]> {
   const query = `
     SELECT votes.id, votes.vp_state, votes.vp_by_strategy, proposals.vp_value_by_strategy
     FROM votes
     JOIN proposals ON votes.proposal = proposals.id
-    WHERE proposals.cb IN (?) AND votes.cb IN (?)
+    WHERE proposals.cb IN (?) AND votes.cb = ?
     ORDER BY votes.created ASC
     LIMIT ?`;
   const results = await db.queryAsync(query, [
     [CB.PENDING_FINAL, CB.PENDING_COMPUTE, CB.FINAL],
-    [CB.PENDING_SYNC, CB.PENDING_COMPUTE],
+    CB.PENDING_COMPUTE,
     BATCH_SIZE
   ]);
 
   return results.map((r: any) => {
-    r.vp_value_by_strategy = JSON.parse(r.vp_value_by_strategy);
-    r.vp_by_strategy = JSON.parse(r.vp_by_strategy);
-    return r;
+    return {
+      id: r.id,
+      vpState: r.vp_state,
+      vpValueByStrategy: JSON.parse(r.vp_value_by_strategy),
+      vpByStrategy: JSON.parse(r.vp_by_strategy)
+    };
   });
 }
 
@@ -55,11 +57,19 @@ async function refreshVotesVpValues(data: Datum[]) {
     query.push('UPDATE votes SET vp_value = ?, cb = ? WHERE id = ? LIMIT 1');
 
     try {
-      const value = getVoteValue(datum.vp_value_by_strategy, datum.vp_by_strategy);
+      const validatedDatum = datumSchema.parse(datum);
+      const value = validatedDatum.vpValueByStrategy.reduce(
+        (sum, value, index) => sum + value * validatedDatum.vpByStrategy[index],
+        0
+      );
 
-      params.push(value, datum.vp_state === 'final' ? CB.FINAL : CB.PENDING_FINAL, datum.id);
+      params.push(
+        value,
+        validatedDatum.vpState === 'final' ? CB.FINAL : CB.PENDING_FINAL,
+        validatedDatum.id
+      );
     } catch (e) {
-      console.log(e);
+      capture(e);
       params.push(0, CB.INELIGIBLE, datum.id);
     }
   }
