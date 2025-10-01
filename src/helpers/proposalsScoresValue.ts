@@ -34,7 +34,7 @@ async function refreshScoresTotal(proposals: Proposal[]) {
   const query: string[] = [];
   const params: any[] = [];
 
-  proposals.map(proposal => {
+  proposals.forEach(proposal => {
     query.push('UPDATE proposals SET scores_total_value = ?, cb = ? WHERE id = ? LIMIT 1');
 
     try {

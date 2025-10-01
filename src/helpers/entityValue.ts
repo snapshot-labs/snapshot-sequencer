@@ -54,7 +54,7 @@ export function getProposalValue(
   scoresByStrategy: number[][],
   vpValueByStrategy: number[]
 ): number {
-  if (!scoresByStrategy.length || !scoresByStrategy[0]?.length || !vpValueByStrategy.length) {
+  if (!scoresByStrategy.length || !scoresByStrategy[0].length || !vpValueByStrategy.length) {
     return 0;
   }
 
