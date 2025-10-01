@@ -1,5 +1,6 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
+import { z } from 'zod';
 import db from './mysql';
 import { CB } from '../constants';
 
@@ -13,9 +14,31 @@ type Proposal = {
 const REFRESH_INTERVAL = 10 * 1000;
 const BATCH_SIZE = 25;
 
+const proposalSchema = z
+  .object({
+    id: z.string(),
+    scoresState: z.string(),
+    vpValueByStrategy: z.array(z.number().finite()),
+    scoresByStrategy: z.array(z.array(z.number().finite()))
+  })
+  .refine(
+    data => {
+      if (data.scoresByStrategy.length === 0 || data.vpValueByStrategy.length === 0) {
+        return true;
+      }
+      // Ensure all scoresByStrategy arrays have the same length as vpValueByStrategy
+      return data.scoresByStrategy.every(
+        voteScores => voteScores.length === data.vpValueByStrategy.length
+      );
+    },
+    {
+      message: 'Array size mismatch: voteScores length does not match vpValueByStrategy length'
+    }
+  );
+
 async function getProposals(): Promise<Proposal[]> {
   const query = `
-    SELECT id, scores_state as scoresState, vp_value_by_strategy, scores_by_strategy
+    SELECT id, scores_state, vp_value_by_strategy, scores_by_strategy
     FROM proposals
     WHERE cb = ?
     ORDER BY created ASC
@@ -25,31 +48,14 @@ async function getProposals(): Promise<Proposal[]> {
 
   return proposals.map((p: any) => ({
     id: p.id,
+    scoresState: p.scores_state,
     vpValueByStrategy: JSON.parse(p.vp_value_by_strategy),
     scoresByStrategy: JSON.parse(p.scores_by_strategy)
   }));
 }
 
-/**
- * Calculates the proposal total value based on all votes' total voting power and the proposal's value per strategy.
- * @returns The total value of the given proposal's votes, in the currency unit specified by the proposal's vp_value_by_strategy values
- */
-export function getProposalValue(
-  scoresByStrategy: number[][],
-  vpValueByStrategy: number[]
-): number {
-  if (!scoresByStrategy.length || !scoresByStrategy[0].length || !vpValueByStrategy.length) {
-    return 0;
-  }
-
-  // Validate that all voteScores arrays have the same length as vpValueByStrategy
-  for (const voteScores of scoresByStrategy) {
-    if (voteScores.length !== vpValueByStrategy.length) {
-      throw new Error(
-        'Array size mismatch: voteScores length does not match vpValueByStrategy length'
-      );
-    }
-  }
+export function getScoresTotalValue(proposal: Proposal): number {
+  const { scoresByStrategy, vpValueByStrategy } = proposalSchema.parse(proposal);
 
   return vpValueByStrategy.reduce((totalValue, strategyValue, strategyIndex) => {
     const strategyTotal = scoresByStrategy.reduce(
@@ -60,7 +66,7 @@ export function getProposalValue(
   }, 0);
 }
 
-async function refreshScoresTotal(proposals: Proposal[]) {
+async function refreshProposalsScoresTotalValue(proposals: Proposal[]) {
   const query: string[] = [];
   const params: any[] = [];
 
@@ -68,10 +74,7 @@ async function refreshScoresTotal(proposals: Proposal[]) {
     query.push('UPDATE proposals SET scores_total_value = ?, cb = ? WHERE id = ? LIMIT 1');
 
     try {
-      const scoresTotalValue = getProposalValue(
-        proposal.scoresByStrategy,
-        proposal.vpValueByStrategy
-      );
+      const scoresTotalValue = getScoresTotalValue(proposal);
       params.push(
         scoresTotalValue,
         proposal.scoresState === 'final' ? CB.FINAL : CB.PENDING_CLOSE,
@@ -93,7 +96,7 @@ export default async function run() {
     const proposals = await getProposals();
 
     if (proposals.length) {
-      await refreshScoresTotal(proposals);
+      await refreshProposalsScoresTotalValue(proposals);
     }
 
     if (proposals.length < BATCH_SIZE) {
