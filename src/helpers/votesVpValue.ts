@@ -1,10 +1,23 @@
 import snapshot from '@snapshot-labs/snapshot.js';
-import { getVoteValue } from './entityValue';
 import db from './mysql';
 import { CB } from '../constants';
 
 const REFRESH_INTERVAL = 10 * 1000;
 const BATCH_SIZE = 100;
+
+/**
+ * Calculates the total vote value based on the voting power and the proposal's value per strategy.
+ * @returns The total vote value, in the currency unit specified by the proposal's vp_value_by_strategy values
+ **/
+export function getVoteValue(vp_value_by_strategy: number[], vp_by_strategy: number[]): number {
+  if (!vp_value_by_strategy.length) return 0;
+
+  if (vp_value_by_strategy.length !== vp_by_strategy.length) {
+    throw new Error('invalid data to compute vote value');
+  }
+
+  return vp_value_by_strategy.reduce((sum, value, index) => sum + value * vp_by_strategy[index], 0);
+}
 
 type Datum = {
   id: string;

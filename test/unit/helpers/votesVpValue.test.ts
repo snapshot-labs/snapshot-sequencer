@@ -1,4 +1,4 @@
-import { getVoteValue } from '../../../src/helpers/entityValue';
+import { getVoteValue } from '../../../src/helpers/votesVpValue';
 
 describe('getVoteValue', () => {
   it('should calculate correct vote value with single strategy', () => {
