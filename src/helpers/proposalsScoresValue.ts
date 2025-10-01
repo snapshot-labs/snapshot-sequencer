@@ -44,7 +44,7 @@ async function getProposals(): Promise<Proposal[]> {
     ORDER BY created ASC
     LIMIT ?
   `;
-  const proposals = await db.queryAsync(query, [CB.PENDING_CLOSE, BATCH_SIZE]);
+  const proposals = await db.queryAsync(query, [CB.PENDING_COMPUTE, BATCH_SIZE]);
 
   return proposals.map((p: any) => ({
     id: p.id,
@@ -77,7 +77,7 @@ async function refreshProposalsScoresTotalValue(proposals: Proposal[]) {
       const scoresTotalValue = getScoresTotalValue(proposal);
       params.push(
         scoresTotalValue,
-        proposal.scoresState === 'final' ? CB.FINAL : CB.PENDING_CLOSE,
+        proposal.scoresState === 'final' ? CB.FINAL : CB.PENDING_FINAL,
         proposal.id
       );
     } catch (e) {

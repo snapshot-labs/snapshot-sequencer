@@ -1,4 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
+import { CB } from './constants';
 import { getVoteValue } from './helpers/entityValue';
 import log from './helpers/log';
 import db from './helpers/mysql';
@@ -86,7 +87,8 @@ async function updateProposalScores(proposalId: string, scores: any, votes: numb
     scores_by_strategy = ?,
     scores_total = ?,
     scores_updated = ?,
-    votes = ?
+    votes = ?,
+    cb = ?
     WHERE id = ? LIMIT 1;
   `;
   await db.queryAsync(query, [
@@ -96,6 +98,7 @@ async function updateProposalScores(proposalId: string, scores: any, votes: numb
     scores.scores_total,
     ts,
     votes,
+    CB.PENDING_COMPUTE,
     proposalId
   ]);
 }
