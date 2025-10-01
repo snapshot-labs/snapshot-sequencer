@@ -62,12 +62,13 @@ async function updateVotesVp(votes: any[], vpState: string, proposalId: string) 
     let query = '';
     votesInPage.forEach((vote: any) => {
       query += `UPDATE votes
-      SET vp = ?, vp_by_strategy = ?, vp_state = ?, vp_value = ?
+      SET vp = ?, vp_by_strategy = ?, vp_state = ?, vp_value = ?, cb = ?
       WHERE id = ? AND proposal = ? LIMIT 1; `;
       params.push(vote.balance);
       params.push(JSON.stringify(vote.scores));
       params.push(vpState);
       params.push(vote.vp_value);
+      params.push(CB.PENDING_COMPUTE);
       params.push(vote.id);
       params.push(proposalId);
     });
