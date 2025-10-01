@@ -1,6 +1,5 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
-import { getProposalValue } from './entityValue';
 import db from './mysql';
 import { CB } from '../constants';
 
@@ -29,6 +28,36 @@ async function getProposals(): Promise<Proposal[]> {
     vpValueByStrategy: JSON.parse(p.vp_value_by_strategy),
     scoresByStrategy: JSON.parse(p.scores_by_strategy)
   }));
+}
+
+/**
+ * Calculates the proposal total value based on all votes' total voting power and the proposal's value per strategy.
+ * @returns The total value of the given proposal's votes, in the currency unit specified by the proposal's vp_value_by_strategy values
+ */
+export function getProposalValue(
+  scoresByStrategy: number[][],
+  vpValueByStrategy: number[]
+): number {
+  if (!scoresByStrategy.length || !scoresByStrategy[0].length || !vpValueByStrategy.length) {
+    return 0;
+  }
+
+  // Validate that all voteScores arrays have the same length as vpValueByStrategy
+  for (const voteScores of scoresByStrategy) {
+    if (voteScores.length !== vpValueByStrategy.length) {
+      throw new Error(
+        'Array size mismatch: voteScores length does not match vpValueByStrategy length'
+      );
+    }
+  }
+
+  return vpValueByStrategy.reduce((totalValue, strategyValue, strategyIndex) => {
+    const strategyTotal = scoresByStrategy.reduce(
+      (sum, voteScores) => sum + voteScores[strategyIndex],
+      0
+    );
+    return totalValue + strategyTotal * strategyValue;
+  }, 0);
 }
 
 async function refreshScoresTotal(proposals: Proposal[]) {

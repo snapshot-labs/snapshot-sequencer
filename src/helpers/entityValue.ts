@@ -45,36 +45,3 @@ export function getVoteValue(proposal: { vp_value_by_strategy: number[] }, vote:
     0
   );
 }
-
-/**
- * Calculates the proposal total value based on all votes' total voting power and the proposal's value per strategy.
- * @returns The total value of the given proposal's votes, in the currency unit specified by the proposal's vp_value_by_strategy values
- */
-export function getProposalValue(
-  scoresByStrategy: number[][],
-  vpValueByStrategy: number[]
-): number {
-  if (!scoresByStrategy.length || !scoresByStrategy[0].length || !vpValueByStrategy.length) {
-    return 0;
-  }
-
-  // Validate that all voteScores arrays have the same length as vpValueByStrategy
-  for (const voteScores of scoresByStrategy) {
-    if (voteScores.length !== vpValueByStrategy.length) {
-      throw new Error(
-        'Array size mismatch: voteScores length does not match vpValueByStrategy length'
-      );
-    }
-  }
-
-  let totalValue = 0;
-  for (let strategyIndex = 0; strategyIndex < vpValueByStrategy.length; strategyIndex++) {
-    const strategyTotal = scoresByStrategy.reduce((sum, voteScores) => {
-      return sum + voteScores[strategyIndex];
-    }, 0);
-
-    totalValue += strategyTotal * vpValueByStrategy[strategyIndex];
-  }
-
-  return totalValue;
-}
