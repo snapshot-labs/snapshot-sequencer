@@ -6,8 +6,8 @@ import { CB } from '../constants';
 
 type Proposal = {
   id: string;
-  vp_value_by_strategy: number[];
-  scores_by_strategy: number[][];
+  vpValueByStrategy: number[];
+  scoresByStrategy: number[][];
 };
 
 const REFRESH_INTERVAL = 10 * 1000;
@@ -24,8 +24,8 @@ async function getProposals(): Promise<Proposal[]> {
   const proposals = await db.queryAsync(query, [CB.PENDING_CLOSE, 'final', BATCH_SIZE]);
 
   return proposals.map((p: any) => {
-    p.vp_value_by_strategy = JSON.parse(p.vp_value_by_strategy);
-    p.scores_by_strategy = JSON.parse(p.scores_by_strategy);
+    p.scoresByStrategy = JSON.parse(p.vp_value_by_strategy);
+    p.vpValueByStrategy = JSON.parse(p.scores_by_strategy);
     return p;
   });
 }
@@ -38,11 +38,11 @@ async function refreshScoresTotal(proposals: Proposal[]) {
     query.push('UPDATE proposals SET scores_total_value = ?, cb = ? WHERE id = ? LIMIT 1');
 
     try {
-      const scores_total_value = getProposalValue(
-        proposal.scores_by_strategy,
-        proposal.vp_value_by_strategy
+      const scoresTotalValue = getProposalValue(
+        proposal.scoresByStrategy,
+        proposal.vpValueByStrategy
       );
-      params.push(scores_total_value, CB.FINAL, proposal.id);
+      params.push(scoresTotalValue, CB.FINAL, proposal.id);
     } catch (e) {
       capture(e);
       params.push(0, CB.INELIGIBLE, proposal.id);

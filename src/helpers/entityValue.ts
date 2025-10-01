@@ -44,20 +44,16 @@ export function getVoteValue(vp_value_by_strategy: number[], vp_by_strategy: num
  * @returns The total value of the given proposal's votes, in the currency unit specified by the proposal's vp_value_by_strategy values
  */
 export function getProposalValue(
-  scores_by_strategy: number[][],
-  vp_value_by_strategy: number[]
+  scoresByStrategy: number[][],
+  vpValueByStrategy: number[]
 ): number {
-  if (
-    !scores_by_strategy.length ||
-    !scores_by_strategy[0]?.length ||
-    !vp_value_by_strategy.length
-  ) {
+  if (!scoresByStrategy.length || !scoresByStrategy[0]?.length || !vpValueByStrategy.length) {
     return 0;
   }
 
   // Validate that all voteScores arrays have the same length as vp_value_by_strategy
-  for (const voteScores of scores_by_strategy) {
-    if (voteScores.length !== vp_value_by_strategy.length) {
+  for (const voteScores of scoresByStrategy) {
+    if (voteScores.length !== vpValueByStrategy.length) {
       throw new Error(
         'Array size mismatch: voteScores length does not match vp_value_by_strategy length'
       );
@@ -65,8 +61,8 @@ export function getProposalValue(
   }
 
   let totalValue = 0;
-  for (let strategyIndex = 0; strategyIndex < vp_value_by_strategy.length; strategyIndex++) {
-    const strategyTotal = scores_by_strategy.reduce((sum, voteScores) => {
+  for (let strategyIndex = 0; strategyIndex < vpValueByStrategy.length; strategyIndex++) {
+    const strategyTotal = scoresByStrategy.reduce((sum, voteScores) => {
       const score = voteScores[strategyIndex];
       if (typeof score !== 'number') {
         throw new Error(`Invalid score value: expected number, got ${typeof score}`);
@@ -74,13 +70,13 @@ export function getProposalValue(
       return sum + score;
     }, 0);
 
-    if (typeof vp_value_by_strategy[strategyIndex] !== 'number') {
+    if (typeof vpValueByStrategy[strategyIndex] !== 'number') {
       throw new Error(
-        `Invalid vp_value: expected number, got ${typeof vp_value_by_strategy[strategyIndex]}`
+        `Invalid vp_value: expected number, got ${typeof vpValueByStrategy[strategyIndex]}`
       );
     }
 
-    totalValue += strategyTotal * vp_value_by_strategy[strategyIndex];
+    totalValue += strategyTotal * vpValueByStrategy[strategyIndex];
   }
 
   return totalValue;
