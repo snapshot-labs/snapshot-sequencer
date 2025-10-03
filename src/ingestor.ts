@@ -113,7 +113,7 @@ export default async function ingestor(req) {
       });
       if (!isValidSig) throw new Error('invalid signature');
     } catch (e: any) {
-      log.warn(`signature validation failed for ${body.address} ${JSON.stringify(e)}`);
+      log.warn(`signature validation failed for ${body.address}`, e);
       return Promise.reject('signature validation failed');
     }
 
