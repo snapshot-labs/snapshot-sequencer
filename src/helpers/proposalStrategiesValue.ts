@@ -11,6 +11,13 @@ type Proposal = {
   strategies: any[];
 };
 
+class RateLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RateLimitError';
+  }
+}
+
 const REFRESH_INTERVAL = 10 * 1000;
 const BATCH_SIZE = 25;
 
@@ -45,14 +52,19 @@ async function getProposals(): Promise<Proposal[]> {
 async function refreshVpByStrategy(proposals: Proposal[]) {
   const query: string[] = [];
   const params: any[] = [];
+  let rateLimitHit = false;
 
-  const results = await Promise.all(
+  const results = await Promise.allSettled(
     proposals.map(async proposal => {
       try {
         const values = await getVpValueByStrategy(proposal);
         return { proposal, values, cb: CB.PENDING_COMPUTE };
       } catch (e: any) {
         log.error(e.message);
+        if (e.message && e.message.includes('HTTP error: 429')) {
+          rateLimitHit = true;
+          throw e;
+        }
         const cb = e.status === 400 ? CB.INELIGIBLE : CB.ERROR_SYNC;
         return { proposal, values: [], cb };
       }
@@ -60,12 +72,18 @@ async function refreshVpByStrategy(proposals: Proposal[]) {
   );
 
   for (const result of results) {
-    query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
-    params.push(JSON.stringify(result.values), result.cb, result.proposal.id);
+    if (result.status === 'fulfilled') {
+      query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
+      params.push(JSON.stringify(result.value.values), result.value.cb, result.value.proposal.id);
+    }
   }
 
   if (query.length) {
     await db.queryAsync(query.join(';'), params);
+  }
+
+  if (rateLimitHit) {
+    throw new RateLimitError('Rate limit hit (429)');
   }
 }
 
@@ -77,12 +95,21 @@ export default async function run() {
     log.info(`[proposalStrategiesValue] Found ${proposals.length} proposals`);
 
     if (proposals.length) {
-      await refreshVpByStrategy(proposals);
-      log.info(
-        `[proposalStrategiesValue] Refreshed from ${proposals[0].id} to ${
-          proposals[proposals.length - 1].id
-        }`
-      );
+      try {
+        await refreshVpByStrategy(proposals);
+        log.info(
+          `[proposalStrategiesValue] Refreshed from ${proposals[0].id} to ${
+            proposals[proposals.length - 1].id
+          }`
+        );
+      } catch (e) {
+        if (e instanceof RateLimitError) {
+          log.info('Rate limit hit (429), sleeping for 1 minute...');
+          await snapshot.utils.sleep(60 * 1000);
+          continue;
+        }
+        throw e;
+      }
     }
 
     if (proposals.length < BATCH_SIZE) {
