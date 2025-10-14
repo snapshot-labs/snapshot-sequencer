@@ -1,6 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import { CB } from './constants';
-import { getVoteValue } from './helpers/entityValue';
 import log from './helpers/log';
 import db from './helpers/mysql';
 import { getDecryptionKey } from './helpers/shutter';
@@ -62,12 +61,13 @@ async function updateVotesVp(votes: any[], vpState: string, proposalId: string) 
     let query = '';
     votesInPage.forEach((vote: any) => {
       query += `UPDATE votes
-      SET vp = ?, vp_by_strategy = ?, vp_state = ?, vp_value = ?
+      SET vp = ?, vp_by_strategy = ?, vp_state = ?, vp_value = ?, cb = ?
       WHERE id = ? AND proposal = ? LIMIT 1; `;
       params.push(vote.balance);
       params.push(JSON.stringify(vote.scores));
       params.push(vpState);
       params.push(vote.vp_value);
+      params.push(CB.PENDING_COMPUTE);
       params.push(vote.id);
       params.push(proposalId);
     });
@@ -165,7 +165,6 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
       votes = votes.map((vote: any) => {
         vote.scores = proposal.strategies.map((strategy, i) => scores[i][vote.voter] || 0);
         vote.balance = vote.scores.reduce((a, b: any) => a + b, 0);
-        vote.vp_value = getVoteValue(proposal, vote);
         return vote;
       });
     }
