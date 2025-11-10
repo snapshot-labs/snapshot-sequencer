@@ -56,6 +56,7 @@ async function refreshVpByStrategy(proposals: Proposal[]) {
 }
 
 export default async function run() {
+  if (!process.env.OVERLORD_URL) return;
   while (true) {
     const proposals = await getProposals();
 
