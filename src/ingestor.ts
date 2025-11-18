@@ -25,8 +25,9 @@ const NETWORK_METADATA = {
   starknet: {
     name: 'sx-starknet',
     version: '0.1.0',
-    broviderUrl: process.env.STARKNET_RPC_URL,
-    defaultNetwork: process.env.NETWORK === 'testnet' ? 'SN_SEPOLIA' : 'SN_MAIN'
+    broviderUrl: process.env.BROVIDER_URL ?? 'https://rpc.snapshot.org',
+    defaultNetwork:
+      process.env.NETWORK === 'testnet' ? '0x534e5f5345504f4c4941' : '0x534e5f4d41494e'
   }
 };
 
@@ -113,7 +114,7 @@ export default async function ingestor(req) {
       });
       if (!isValidSig) throw new Error('invalid signature');
     } catch (e: any) {
-      log.warn(`signature validation failed for ${body.address} ${JSON.stringify(e)}`);
+      log.warn(`signature validation failed for ${body.address}`, e);
       return Promise.reject('signature validation failed');
     }
 
