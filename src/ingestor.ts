@@ -25,7 +25,7 @@ const NETWORK_METADATA = {
   starknet: {
     name: 'sx-starknet',
     version: '0.1.0',
-    broviderUrl: process.env.STARKNET_RPC_URL,
+    broviderUrl: process.env.BROVIDER_URL ?? 'https://rpc.snapshot.org',
     defaultNetwork: process.env.NETWORK === 'testnet' ? 'SN_SEPOLIA' : 'SN_MAIN'
   }
 };
