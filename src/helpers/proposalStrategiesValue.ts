@@ -10,6 +10,13 @@ type Proposal = {
   strategies: any[];
 };
 
+class RateLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RateLimitError';
+  }
+}
+
 const REFRESH_INTERVAL = 10 * 1000;
 const BATCH_SIZE = 25;
 
@@ -32,26 +39,37 @@ async function getProposals(): Promise<Proposal[]> {
 async function refreshVpByStrategy(proposals: Proposal[]) {
   const query: string[] = [];
   const params: any[] = [];
+  let rateLimitHit = false;
 
-  const results = await Promise.all(
+  const results = await Promise.allSettled(
     proposals.map(async proposal => {
       try {
         const values = await getVpValueByStrategy(proposal);
         return { proposal, values, cb: CB.PENDING_COMPUTE };
-      } catch (e) {
+      } catch (e: any) {
         console.log(e);
+        if (e.message && e.message.includes('HTTP error: 429')) {
+          rateLimitHit = true;
+          throw e;
+        }
         return { proposal, values: [], cb: CB.ERROR_SYNC };
       }
     })
   );
 
   for (const result of results) {
-    query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
-    params.push(JSON.stringify(result.values), result.cb, result.proposal.id);
+    if (result.status === 'fulfilled') {
+      query.push('UPDATE proposals SET vp_value_by_strategy = ?, cb = ? WHERE id = ? LIMIT 1');
+      params.push(JSON.stringify(result.value.values), result.value.cb, result.value.proposal.id);
+    }
   }
 
   if (query.length) {
     await db.queryAsync(query.join(';'), params);
+  }
+
+  if (rateLimitHit) {
+    throw new RateLimitError('Rate limit hit (429)');
   }
 }
 
@@ -61,7 +79,16 @@ export default async function run() {
     const proposals = await getProposals();
 
     if (proposals.length) {
-      await refreshVpByStrategy(proposals);
+      try {
+        await refreshVpByStrategy(proposals);
+      } catch (e) {
+        if (e instanceof RateLimitError) {
+          console.log('Rate limit hit (429), sleeping for 1 minute...');
+          await snapshot.utils.sleep(60 * 1000);
+          continue;
+        }
+        throw e;
+      }
     }
 
     if (proposals.length < BATCH_SIZE) {
