@@ -27,38 +27,25 @@ const datumSchema = z
 
 async function getVotes(): Promise<Datum[]> {
   const query = `
-    SELECT id, proposal, vp_state, vp_by_strategy
+    SELECT votes.id, votes.vp_state, votes.vp_by_strategy, proposals.vp_value_by_strategy
     FROM votes
-    WHERE proposal IN (SELECT DISTINCT id FROM proposals WHERE cb IN (?)) AND cb = ?
+    JOIN proposals ON votes.proposal = proposals.id
+    WHERE proposals.cb IN (?) AND votes.cb = ?
     LIMIT ?`;
-  const votesResult = await db.queryAsync(query, [
+  const results = await db.queryAsync(query, [
     [CB.PENDING_FINAL, CB.PENDING_COMPUTE, CB.FINAL],
     CB.PENDING_COMPUTE,
     BATCH_SIZE
   ]);
 
-  if (!votesResult.length) return [];
-
-  const proposalsId = [...new Set(votesResult.map((r: any) => r.proposal))];
-  const proposalsResult = await db.queryAsync(
-    'SELECT id, vp_value_by_strategy FROM proposals WHERE id IN (?)',
-    [proposalsId]
-  );
-
-  const proposalsVpByStrategy: Record<string, number[]> = Object.fromEntries(
-    proposalsResult.map((r: any) => [r.id, JSON.parse(r.vp_value_by_strategy)])
-  );
-
-  return votesResult
-    .filter((r: any) => proposalsVpByStrategy[r.proposal])
-    .map((r: any) => {
-      return {
-        id: r.id,
-        vpState: r.vp_state,
-        vpValueByStrategy: proposalsVpByStrategy[r.proposal],
-        vpByStrategy: JSON.parse(r.vp_by_strategy)
-      };
-    });
+  return results.map((r: any) => {
+    return {
+      id: r.id,
+      vpState: r.vp_state,
+      vpValueByStrategy: JSON.parse(r.vp_value_by_strategy),
+      vpByStrategy: JSON.parse(r.vp_by_strategy)
+    };
+  });
 }
 
 async function refreshVotesVpValues(data: Datum[]) {
