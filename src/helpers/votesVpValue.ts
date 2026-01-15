@@ -31,7 +31,6 @@ async function getVotes(): Promise<Datum[]> {
     FROM votes
     JOIN proposals ON votes.proposal = proposals.id
     WHERE proposals.cb IN (?) AND votes.cb = ?
-    ORDER BY votes.created ASC
     LIMIT ?`;
   const results = await db.queryAsync(query, [
     [CB.PENDING_FINAL, CB.PENDING_COMPUTE, CB.FINAL],
