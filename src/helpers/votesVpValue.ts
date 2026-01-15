@@ -49,14 +49,16 @@ async function getVotes(): Promise<Datum[]> {
     proposalsResult.map((r: any) => [r.id, JSON.parse(r.vp_value_by_strategy)])
   );
 
-  return votesResult.map((r: any) => {
-    return {
-      id: r.id,
-      vpState: r.vp_state,
-      vpValueByStrategy: proposalsVpByStrategy[r.proposal],
-      vpByStrategy: JSON.parse(r.vp_by_strategy)
-    };
-  });
+  return votesResult
+    .filter((r: any) => proposalsVpByStrategy[r.proposal])
+    .map((r: any) => {
+      return {
+        id: r.id,
+        vpState: r.vp_state,
+        vpValueByStrategy: proposalsVpByStrategy[r.proposal],
+        vpByStrategy: JSON.parse(r.vp_by_strategy)
+      };
+    });
 }
 
 async function refreshVotesVpValues(data: Datum[]) {
