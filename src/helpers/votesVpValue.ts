@@ -36,6 +36,9 @@ async function getVotes(): Promise<Datum[]> {
     CB.PENDING_COMPUTE,
     BATCH_SIZE
   ]);
+
+  if (!votesResult.length) return [];
+
   const proposalsId = [...new Set(votesResult.map((r: any) => r.proposal))];
   const proposalsResult = await db.queryAsync(
     'SELECT id, vp_value_by_strategy FROM proposals WHERE id IN (?)',
