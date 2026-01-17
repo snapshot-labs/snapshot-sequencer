@@ -28,7 +28,7 @@ const datumSchema = z
 async function getVotes(): Promise<Datum[]> {
   const query = `
     SELECT votes.id, votes.vp_state, votes.vp_by_strategy, proposals.vp_value_by_strategy
-    FROM votes
+    FROM votes FORCE INDEX (idx_votes_on_cb_proposal)
     JOIN proposals ON votes.proposal = proposals.id
     WHERE proposals.cb IN (?) AND votes.cb = ?
     LIMIT ?`;
