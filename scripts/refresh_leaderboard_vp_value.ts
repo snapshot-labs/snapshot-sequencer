@@ -49,15 +49,17 @@ async function processSpaces(spaces: SpaceRow[], dryRun = false): Promise<Proces
       for (const row of rows) {
         rowNum++;
         console.log(`${rowNum} | ${row.user} | ${row.space} | ${row.vp_value}`);
+      }
 
-        if (!dryRun) {
-          const result = await db.queryAsync(
-            'UPDATE leaderboard SET vp_value = ? WHERE user = ? AND space = ?',
-            [row.vp_value, row.user, row.space]
-          );
-          totalAffected += result.affectedRows;
-          totalChanged += result.changedRows;
-        }
+      if (!dryRun) {
+        const query = rows
+          .map(() => 'UPDATE leaderboard SET vp_value = ? WHERE user = ? AND space = ?')
+          .join('; ');
+        const params = rows.flatMap(row => [row.vp_value, row.user, row.space]);
+
+        const result = await db.queryAsync(query, params);
+        totalAffected += result.affectedRows;
+        totalChanged += result.changedRows;
       }
 
       lastVoter = rows[rows.length - 1].user;
