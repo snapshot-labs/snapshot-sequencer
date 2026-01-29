@@ -58,8 +58,9 @@ async function processSpaces(spaces: SpaceRow[], dryRun = false): Promise<Proces
         const params = rows.flatMap(row => [row.vp_value, row.user, row.space]);
 
         const result = await db.queryAsync(query, params);
-        totalAffected += result.affectedRows;
-        totalChanged += result.changedRows;
+        const results = Array.isArray(result) ? result : [result];
+        totalAffected += results.reduce((sum, r) => sum + (r.affectedRows || 0), 0);
+        totalChanged += results.reduce((sum, r) => sum + (r.changedRows || 0), 0);
       }
 
       lastVoter = rows[rows.length - 1].user;
