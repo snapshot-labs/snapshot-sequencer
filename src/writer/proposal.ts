@@ -2,13 +2,14 @@ import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 import { uniq } from 'lodash';
-import { validateSpaceSettings } from './settings';
+import { CB } from '../constants';
 import { getPremiumNetworkIds, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
 import { getLimits, getSpaceType } from '../helpers/options';
+import { validateSpaceSettings } from '../helpers/spaceValidation';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
@@ -65,11 +66,7 @@ async function validateSpace(space: any) {
     return Promise.reject('space hibernated');
   }
 
-  try {
-    await validateSpaceSettings(space);
-  } catch (e) {
-    return Promise.reject(e);
-  }
+  await validateSpaceSettings(space);
 }
 
 export async function verify(body): Promise<any> {
@@ -146,7 +143,7 @@ export async function verify(body): Promise<any> {
       return Promise.reject('invalid proposal content');
     }
   } catch (e) {
-    log.warning('[writer] Failed to check proposal content', e);
+    log.warn('[writer] Failed to check proposal content', e);
   }
 
   if (flaggedAddresses.includes(addressLC))
@@ -268,7 +265,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     try {
       quorum = await getQuorum(spaceSettings.plugins.quorum, spaceNetwork, proposalSnapshot);
     } catch (e: any) {
-      console.log('unable to get quorum', e.message);
+      log.warn('unable to get quorum', e.message);
       return Promise.reject('unable to get quorum');
     }
   }
@@ -301,10 +298,12 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
     scores_state: 'pending',
     scores_total: 0,
     scores_updated: 0,
+    scores_total_value: 0,
     vp_value_by_strategy: JSON.stringify([]),
     votes: 0,
     validation,
-    flagged: +containsFlaggedLinks(msg.payload.body)
+    flagged: +containsFlaggedLinks(msg.payload.body),
+    cb: CB.PENDING_SYNC
   };
 
   const query = `

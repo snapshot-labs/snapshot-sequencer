@@ -1,10 +1,10 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
-import snapshot from '@snapshot-labs/snapshot.js';
 import isEqual from 'lodash/isEqual';
 import { addOrUpdateSpace, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
 import { getLimit, getSpaceType } from '../helpers/options';
+import { validateSpaceSettings } from '../helpers/spaceValidation';
 import {
   addToWalletConnectWhitelist,
   clearStampCache,
@@ -14,65 +14,6 @@ import {
 } from '../helpers/utils';
 
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
-
-export async function validateSpaceSettings(originalSpace: any) {
-  const spaceType = originalSpace.turbo ? 'turbo' : 'default';
-  const space = snapshot.utils.clone(originalSpace);
-
-  if (space?.deleted) return Promise.reject('space deleted, contact admin');
-
-  delete space.deleted;
-  delete space.flagged;
-  delete space.verified;
-  delete space.turbo;
-  delete space.hibernated;
-  delete space.id;
-
-  if (space.parent && space.parent === originalSpace.id) {
-    return Promise.reject('space cannot be its own parent');
-  }
-
-  if (
-    space.children &&
-    Array.isArray(space.children) &&
-    space.children.includes(originalSpace.id)
-  ) {
-    return Promise.reject('space cannot be its own child');
-  }
-
-  const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, space, {
-    spaceType,
-    snapshotEnv: SNAPSHOT_ENV
-  });
-
-  if (schemaIsValid !== true) {
-    log.warn('[writer] Wrong space format', schemaIsValid);
-    const firstErrorObject: any = Object.values(schemaIsValid)[0];
-    if (firstErrorObject.message === 'network not allowed') {
-      return Promise.reject(firstErrorObject.message);
-    }
-    return Promise.reject('wrong space format');
-  }
-
-  if (SNAPSHOT_ENV !== 'testnet') {
-    const hasTicket = space.strategies.some(strategy => strategy.name === 'ticket');
-    const hasVotingValidation =
-      space.voteValidation?.name && !['any'].includes(space.voteValidation.name);
-
-    if (hasTicket && !hasVotingValidation) {
-      return Promise.reject('space with ticket requires voting validation');
-    }
-
-    const hasProposalValidation =
-      (space.validation?.name && space.validation.name !== 'any') ||
-      space.filters?.minScore ||
-      space.filters?.onlyMembers;
-
-    if (!hasProposalValidation) {
-      return Promise.reject('space missing proposal validation');
-    }
-  }
-}
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);

@@ -1,4 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
+import { CB } from './constants';
 import log from './helpers/log';
 import db from './helpers/mysql';
 import { getDecryptionKey } from './helpers/shutter';
@@ -16,6 +17,7 @@ async function getProposal(id: string): Promise<any | undefined> {
   proposal.choices = JSON.parse(proposal.choices);
   proposal.scores = JSON.parse(proposal.scores);
   proposal.scores_by_strategy = JSON.parse(proposal.scores_by_strategy);
+  proposal.vp_value_by_strategy = JSON.parse(proposal.vp_value_by_strategy);
   let proposalState = 'pending';
   const ts = parseInt((Date.now() / 1e3).toFixed());
   if (ts > proposal.start) proposalState = 'active';
@@ -26,7 +28,7 @@ async function getProposal(id: string): Promise<any | undefined> {
 
 async function getVotes(proposalId: string): Promise<any[] | undefined> {
   const query =
-    'SELECT id, choice, voter, vp, vp_by_strategy, vp_state FROM votes WHERE proposal = ?';
+    'SELECT id, choice, voter, vp, vp_by_strategy, vp_state, vp_value FROM votes WHERE proposal = ?';
   const votes = await db.queryAsync(query, [proposalId]);
 
   return votes.map(vote => {
@@ -59,11 +61,13 @@ async function updateVotesVp(votes: any[], vpState: string, proposalId: string) 
     let query = '';
     votesInPage.forEach((vote: any) => {
       query += `UPDATE votes
-      SET vp = ?, vp_by_strategy = ?, vp_state = ?
+      SET vp = ?, vp_by_strategy = ?, vp_state = ?, vp_value = ?, cb = ?
       WHERE id = ? AND proposal = ? LIMIT 1; `;
       params.push(vote.balance);
       params.push(JSON.stringify(vote.scores));
       params.push(vpState);
+      params.push(vote.vp_value);
+      params.push(CB.PENDING_COMPUTE);
       params.push(vote.id);
       params.push(proposalId);
     });
@@ -74,7 +78,7 @@ async function updateVotesVp(votes: any[], vpState: string, proposalId: string) 
   log.info(`[scores] updated votes vp, ${votesWithChange.length}/${votes.length} on ${proposalId}`);
 }
 
-async function updateProposalScores(proposalId: string, scores: any, votes: number) {
+async function updateProposalScores(proposal: any, scores: any, votes: number) {
   const ts = (Date.now() / 1e3).toFixed();
   const query = `
     UPDATE proposals
@@ -83,7 +87,8 @@ async function updateProposalScores(proposalId: string, scores: any, votes: numb
     scores_by_strategy = ?,
     scores_total = ?,
     scores_updated = ?,
-    votes = ?
+    votes = ?,
+    cb = ?
     WHERE id = ? LIMIT 1;
   `;
   await db.queryAsync(query, [
@@ -93,7 +98,8 @@ async function updateProposalScores(proposalId: string, scores: any, votes: numb
     scores.scores_total,
     ts,
     votes,
-    proposalId
+    proposal.cb === CB.PENDING_FINAL ? CB.PENDING_COMPUTE : proposal.cb,
+    proposal.id
   ]);
 }
 
@@ -180,7 +186,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
     if (!isFinal) await updateVotesVp(votes, vpState, proposalId);
 
     // Store scores
-    await updateProposalScores(proposalId, results, votes.length);
+    await updateProposalScores(proposal, results, votes.length);
     log.info(
       `[scores] Proposal updated ${proposal.id}, ${proposal.space}, ${results.scores_state}, ${votes.length}`
     );
