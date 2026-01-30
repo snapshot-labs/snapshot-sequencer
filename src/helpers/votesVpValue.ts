@@ -28,9 +28,10 @@ const datumSchema = z
 async function getVotes(): Promise<Datum[]> {
   const query = `
     SELECT votes.id, votes.vp_state, votes.vp_by_strategy, proposals.vp_value_by_strategy
-    FROM votes FORCE INDEX (idx_votes_on_cb_proposal)
-    JOIN proposals ON votes.proposal = proposals.id
+    FROM proposals
+    JOIN votes ON votes.proposal = proposals.id
     WHERE proposals.cb IN (?) AND votes.cb = ?
+    ORDER BY proposals.votes DESC
     LIMIT ?`;
   const results = await db.queryAsync(query, [
     [CB.PENDING_FINAL, CB.PENDING_COMPUTE, CB.FINAL],
