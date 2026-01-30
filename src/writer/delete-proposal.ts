@@ -19,7 +19,7 @@ export async function verify(body): Promise<any> {
 }
 
 export async function action(body): Promise<void> {
-  const BATCH_SIZE = 1000;
+  const BATCH_SIZE = 200;
 
   const msg = jsonParse(body.msg);
   const proposal = await getProposal(msg.space, msg.payload.proposal);
