@@ -24,9 +24,10 @@ export async function action(body): Promise<void> {
   const msg = jsonParse(body.msg);
   const proposal = await getProposal(msg.space, msg.payload.proposal);
 
-  const voters = await db.queryAsync(`SELECT voter, vp_value FROM votes WHERE proposal = ?`, [
-    msg.payload.proposal
-  ]);
+  const voters = await db.queryAsync(
+    `SELECT voter, vp_value, vp_state FROM votes WHERE proposal = ?`,
+    [msg.payload.proposal]
+  );
   const id = msg.payload.proposal;
 
   let queries = `
