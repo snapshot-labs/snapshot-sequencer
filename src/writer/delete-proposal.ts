@@ -57,11 +57,10 @@ export async function action(body): Promise<void> {
 
   await db.queryAsync(queries, parameters);
 
-  // Decrease only when the vp_state is final, as it's increased only when final
-  const votersWithFinalVpValue = voters.filter(v => v.vp_value > 0 && v.vp_state === 'final');
-  if (votersWithFinalVpValue.length > 0) {
-    for (let i = 0; i < votersWithFinalVpValue.length; i += BATCH_SIZE) {
-      const batch = votersWithFinalVpValue.slice(i, i + BATCH_SIZE);
+  const votersWithVpValue = voters.filter(v => v.vp_value > 0);
+  if (votersWithVpValue.length > 0) {
+    for (let i = 0; i < votersWithVpValue.length; i += BATCH_SIZE) {
+      const batch = votersWithVpValue.slice(i, i + BATCH_SIZE);
       const vpQueries = batch
         .map(
           () =>
