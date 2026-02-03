@@ -19,10 +19,12 @@ export async function verify(body): Promise<any> {
 }
 
 export async function action(body): Promise<void> {
+  const BATCH_SIZE = 200;
+
   const msg = jsonParse(body.msg);
   const proposal = await getProposal(msg.space, msg.payload.proposal);
 
-  const voters = await db.queryAsync(`SELECT voter FROM votes WHERE proposal = ?`, [
+  const voters = await db.queryAsync(`SELECT voter, vp_value FROM votes WHERE proposal = ?`, [
     msg.payload.proposal
   ]);
   const id = msg.payload.proposal;
@@ -53,4 +55,21 @@ export async function action(body): Promise<void> {
   }
 
   await db.queryAsync(queries, parameters);
+
+  const votersWithVpValue = voters.filter(v => v.vp_value > 0);
+  if (votersWithVpValue.length > 0) {
+    for (let i = 0; i < votersWithVpValue.length; i += BATCH_SIZE) {
+      const batch = votersWithVpValue.slice(i, i + BATCH_SIZE);
+      const vpQueries = batch
+        .map(
+          () =>
+            `UPDATE leaderboard SET vp_value = GREATEST(vp_value - ?, 0) WHERE user = ? AND space = ?;`
+        )
+        .join('\n    ');
+
+      const vpParams = batch.flatMap(voter => [voter.vp_value, voter.voter, msg.space]);
+
+      await db.queryAsync(vpQueries, vpParams);
+    }
+  }
 }
