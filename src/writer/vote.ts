@@ -1,4 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
+import { CB } from '../constants';
 import { getProposal } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
@@ -130,7 +131,8 @@ export async function action(body, ipfs, receipt, id, context): Promise<void> {
     vp: context.vp.vp,
     vp_by_strategy: JSON.stringify(context.vp.vp_by_strategy),
     vp_state: vpState,
-    cb: 0
+    vp_value: 0,
+    cb: CB.PENDING_COMPUTE
   };
 
   // Check if voter already voted

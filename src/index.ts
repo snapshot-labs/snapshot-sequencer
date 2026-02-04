@@ -6,6 +6,8 @@ import api from './api';
 import log from './helpers/log';
 import initMetrics from './helpers/metrics';
 import refreshModeration from './helpers/moderation';
+// import refreshProposalsScoresValue from './helpers/proposalsScoresValue';
+// import refreshProposalsVpValue from './helpers/proposalStrategiesValue';
 import rateLimit from './helpers/rateLimit';
 import shutter from './helpers/shutter';
 import {
@@ -14,12 +16,16 @@ import {
   stop as stopStrategies
 } from './helpers/strategies';
 import { trackTurboStatuses } from './helpers/turbo';
+// import refreshVotesVpValue from './helpers/votesVpValue';
 
 const app = express();
 
 async function startServer() {
   initLogger(app);
   refreshModeration();
+  // refreshProposalsVpValue();
+  // refreshProposalsScoresValue();
+  // refreshVotesVpValue();
 
   await initializeStrategies();
   refreshStrategies();

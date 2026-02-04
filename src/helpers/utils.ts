@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { createHash, randomInt } from 'crypto';
 import http from 'http';
 import https from 'https';
 import { URL } from 'url';
@@ -61,6 +61,46 @@ export function rpcError(res, code, e, id) {
     },
     id
   });
+}
+
+export async function jsonRpcRequest(url: string, method: string, params: any): Promise<any> {
+  const init = {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method,
+      params,
+      id: randomInt(10000)
+    })
+  };
+
+  try {
+    const res = await fetchWithKeepAlive(url, init);
+
+    if (!res.ok) {
+      throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
+    }
+
+    const response = await res.json();
+
+    if (response.error) {
+      throw new Error(
+        `JSON-RPC error: ${response.error.message || response.error.code || 'Unknown error'}`
+      );
+    }
+
+    return response.result;
+  } catch (error) {
+    capture(error, {
+      url,
+      request: { method, params }
+    });
+    throw error;
+  }
 }
 
 export function hasStrategyOverride(strategies: any[]): boolean {
