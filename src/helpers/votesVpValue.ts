@@ -26,7 +26,7 @@ const datumSchema = z
     message: 'Array length mismatch: vpValueByStrategy and vpByStrategy must have the same length'
   });
 
-async function getProposalIds(): Promise<{ id: string; vpValueByStrategy: number[] }[]> {
+async function getProposalsData(): Promise<{ id: string; vpValueByStrategy: number[] }[]> {
   const query = `
     SELECT id, vp_value_by_strategy
     FROM proposals
@@ -93,7 +93,7 @@ export default async function run() {
   while (true) {
     log.info('[votesVpValue] Start refresh');
 
-    const proposals = await getProposalIds();
+    const proposals = await getProposalsData();
 
     log.info(`[votesVpValue] Found ${proposals.length} proposals`);
 
