@@ -1,6 +1,7 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { z } from 'zod';
+import log from './log';
 import db from './mysql';
 import { CB } from '../constants';
 
@@ -25,70 +26,112 @@ const datumSchema = z
     message: 'Array length mismatch: vpValueByStrategy and vpByStrategy must have the same length'
   });
 
-async function getVotes(): Promise<Datum[]> {
+async function getProposalsData(): Promise<{ id: string; vpValueByStrategy: number[] }[]> {
   const query = `
-    SELECT votes.id, votes.vp_state, votes.vp_by_strategy, proposals.vp_value_by_strategy
+    SELECT id, vp_value_by_strategy
     FROM proposals
-    JOIN votes ON votes.proposal = proposals.id
-    WHERE proposals.cb IN (?) AND votes.cb = ?
-    ORDER BY proposals.votes DESC
-    LIMIT ?`;
-  const results = await db.queryAsync(query, [
-    [CB.PENDING_FINAL, CB.PENDING_COMPUTE, CB.FINAL],
-    CB.PENDING_COMPUTE,
-    BATCH_SIZE
-  ]);
+    WHERE cb IN (?) AND votes > 0`;
+  const results = await db.queryAsync(query, [[CB.PENDING_FINAL, CB.PENDING_COMPUTE, CB.FINAL]]);
 
-  return results.map((r: any) => {
-    return {
-      id: r.id,
-      vpState: r.vp_state,
-      vpValueByStrategy: JSON.parse(r.vp_value_by_strategy),
-      vpByStrategy: JSON.parse(r.vp_by_strategy)
-    };
-  });
+  return results.map((r: any) => ({
+    id: r.id,
+    vpValueByStrategy: JSON.parse(r.vp_value_by_strategy)
+  }));
 }
 
-async function refreshVotesVpValues(data: Datum[]) {
-  const query: string[] = [];
-  const params: any[] = [];
+async function getVotes(proposalId: string, vpValueByStrategy: number[]): Promise<Datum[]> {
+  const allVotes: Datum[] = [];
+  let lastId = '';
 
-  for (const datum of data) {
-    query.push('UPDATE votes SET vp_value = ?, cb = ? WHERE id = ? LIMIT 1');
+  while (true) {
+    const query = `
+      SELECT id, vp_state, vp_by_strategy
+      FROM votes
+      WHERE cb = ? AND proposal = ? AND id > ?
+      ORDER BY id
+      LIMIT ?`;
+    const results = await db.queryAsync(query, [
+      CB.PENDING_COMPUTE,
+      proposalId,
+      lastId,
+      BATCH_SIZE
+    ]);
 
-    try {
-      const validatedDatum = datumSchema.parse(datum);
-      const value = validatedDatum.vpValueByStrategy.reduce(
-        (sum, value, index) => sum + value * validatedDatum.vpByStrategy[index],
-        0
-      );
+    if (results.length === 0) {
+      break;
+    }
 
-      params.push(
-        value,
-        validatedDatum.vpState === 'final' ? CB.FINAL : CB.PENDING_FINAL,
-        validatedDatum.id
-      );
-    } catch (e) {
-      capture(e);
-      params.push(0, CB.INELIGIBLE, datum.id);
+    for (const r of results) {
+      allVotes.push({
+        id: r.id,
+        vpState: r.vp_state,
+        vpValueByStrategy,
+        vpByStrategy: JSON.parse(r.vp_by_strategy)
+      });
+    }
+
+    lastId = results[results.length - 1].id;
+
+    if (results.length < BATCH_SIZE) {
+      break;
     }
   }
 
-  if (query.length) {
-    await db.queryAsync(query.join(';'), params);
+  return allVotes;
+}
+
+async function refreshVotesVpValues(data: Datum[]) {
+  if (!data.length) return;
+
+  for (let i = 0; i < data.length; i += BATCH_SIZE) {
+    const batch = data.slice(i, i + BATCH_SIZE);
+    const query: string[] = [];
+    const params: any[] = [];
+
+    for (const datum of batch) {
+      query.push('UPDATE votes SET vp_value = ?, cb = ? WHERE id = ? LIMIT 1');
+
+      try {
+        const validatedDatum = datumSchema.parse(datum);
+        const value = validatedDatum.vpValueByStrategy.reduce(
+          (sum, value, index) => sum + value * validatedDatum.vpByStrategy[index],
+          0
+        );
+
+        params.push(
+          value,
+          validatedDatum.vpState === 'final' ? CB.FINAL : CB.PENDING_FINAL,
+          validatedDatum.id
+        );
+      } catch (e) {
+        capture(e);
+        params.push(0, CB.INELIGIBLE, datum.id);
+      }
+    }
+
+    if (query.length) {
+      await db.queryAsync(query.join(';'), params);
+    }
   }
 }
 
 export default async function run() {
-  while (true) {
-    const votes = await getVotes();
+  log.info('[votesVpValue] Start votesVpValue refresh loop');
 
-    if (votes.length) {
+  while (true) {
+    log.info('[votesVpValue] Start refresh');
+
+    const proposals = await getProposalsData();
+
+    log.info(`[votesVpValue] Found ${proposals.length} proposals`);
+
+    for (const proposal of proposals) {
+      const votes = await getVotes(proposal.id, proposal.vpValueByStrategy);
       await refreshVotesVpValues(votes);
     }
 
-    if (votes.length < BATCH_SIZE) {
-      await snapshot.utils.sleep(REFRESH_INTERVAL);
-    }
+    log.info(`[votesVpValue] End refresh`);
+
+    await snapshot.utils.sleep(REFRESH_INTERVAL);
   }
 }
