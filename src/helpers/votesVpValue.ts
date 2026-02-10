@@ -28,15 +28,15 @@ const datumSchema = z
     message: 'Array length mismatch: vpValueByStrategy and vpByStrategy must have the same length'
   });
 
-async function getPendingVotes(
-  batchSize: number
-): Promise<{ id: string; proposal: string; vpState: string; vpByStrategy: number[] }[]> {
+async function getPendingVotes(): Promise<
+  { id: string; proposal: string; vpState: string; vpByStrategy: number[] }[]
+> {
   const query = `
     SELECT id, proposal, vp_state, vp_by_strategy
     FROM votes
     WHERE cb = ?
     LIMIT ?`;
-  const results = await db.queryAsync(query, [CB.PENDING_COMPUTE, batchSize]);
+  const results = await db.queryAsync(query, [CB.PENDING_COMPUTE, DEFAULT_BATCH_SIZE]);
 
   return results.map((r: any) => ({
     id: r.id,
@@ -94,8 +94,8 @@ async function refreshVotesVpValues(data: Datum[]) {
   }
 }
 
-async function processBatch(batchSize: number): Promise<number> {
-  const votes = await getPendingVotes(batchSize);
+async function processBatch(): Promise<number> {
+  const votes = await getPendingVotes();
   if (!votes.length) return 0;
 
   const proposalIds = [...new Set(votes.map(v => v.proposal))];
@@ -115,16 +115,16 @@ async function processBatch(batchSize: number): Promise<number> {
   return votes.length;
 }
 
-export default async function run(batchSize = DEFAULT_BATCH_SIZE) {
+export default async function run() {
   let totalProcessed = 0;
 
   while (true) {
     if (!totalProcessed) log.info('[votesVpValue] Start refresh');
 
-    const processed = await processBatch(batchSize);
+    const processed = await processBatch();
     totalProcessed += processed;
 
-    if (processed < batchSize) {
+    if (processed < DEFAULT_BATCH_SIZE) {
       log.info(`[votesVpValue] ${totalProcessed} votes processed, sleeping`);
       totalProcessed = 0;
       await snapshot.utils.sleep(REFRESH_INTERVAL);
