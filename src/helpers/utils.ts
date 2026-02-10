@@ -7,6 +7,7 @@ import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { Response } from 'express';
 import fetch from 'node-fetch';
+import { getOverridingStrategies } from './strategies';
 
 const MAINNET_NETWORK_ID_WHITELIST = ['s', 'eth', 'arb1', 'oeth', 'sn', 'base', 'mnt', 'ape'];
 const TESTNET_NETWORK_ID_WHITELIST = ['s-tn', 'sep', 'curtis', 'linea-testnet', 'sn-sep'];
@@ -102,36 +103,10 @@ export async function jsonRpcRequest(url: string, method: string, params: any): 
   }
 }
 
-export function hasStrategyOverride(strategies: any[]) {
-  const keywords = [
-    '"aura-vlaura-vebal-with-overrides"',
-    '"balance-of-with-linear-vesting-power"',
-    '"balancer-delegation"',
-    '"cyberkongz"',
-    '"cyberkongz-v2"',
-    '"delegation"',
-    '"delegation-with-cap"',
-    '"delegation-with-overrides"',
-    '"erc20-balance-of-delegation"',
-    '"erc20-balance-of-fixed-total"',
-    '"erc20-balance-of-quadratic-delegation"',
-    '"erc20-votes-with-override"',
-    '"esd-delegation"',
-    '"ocean-dao-brightid"',
-    '"orbs-network-delegation"',
-    '"api-v2-override"',
-    '"rocketpool-node-operator-delegate-v8"',
-    '"eden-online-override"',
-    '"split-delegation"',
-    '"sonic-staked-balance"'
-  ];
+export function hasStrategyOverride(strategies: any[]): boolean {
   const strategiesStr = JSON.stringify(strategies).toLowerCase();
-  if (keywords.some(keyword => strategiesStr.includes(`"name":${keyword}`))) return true;
-  // Check for split-delegation with delegationOverride
-  const splitDelegation = strategies.filter(strategy => strategy.name === 'split-delegation');
-  return (
-    splitDelegation.length > 0 &&
-    splitDelegation.some(strategy => strategy.params?.delegationOverride)
+  return getOverridingStrategies().some(strategyId =>
+    strategiesStr.includes(`"name":"${strategyId}"`)
   );
 }
 
