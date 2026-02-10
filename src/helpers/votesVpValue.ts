@@ -46,14 +46,12 @@ async function getPendingVotes(): Promise<
   }));
 }
 
-async function getProposalVpValues(proposalIds: string[]): Promise<ProposalVpValues> {
-  if (!proposalIds.length) return new Map();
-
+async function getProposalVpValues(): Promise<ProposalVpValues> {
   const query = `
     SELECT id, vp_value_by_strategy
     FROM proposals
-    WHERE id IN (?)`;
-  const results = await db.queryAsync(query, [proposalIds]);
+    WHERE cb IN (?) AND votes > 0`;
+  const results = await db.queryAsync(query, [[CB.PENDING_COMPUTE, CB.PENDING_FINAL, CB.FINAL]]);
 
   const map: ProposalVpValues = new Map();
   for (const r of results) {
@@ -66,7 +64,7 @@ async function refreshVotesVpValues(data: Datum[]) {
   if (!data.length) return;
 
   const query: string[] = [];
-  const params: any[] = [];
+  const params: (number | string)[] = [];
 
   for (const datum of data) {
     query.push('UPDATE votes SET vp_value = ?, cb = ? WHERE id = ? LIMIT 1');
@@ -94,12 +92,9 @@ async function refreshVotesVpValues(data: Datum[]) {
   }
 }
 
-async function processBatch(): Promise<number> {
+async function processBatch(proposalVpValues: ProposalVpValues): Promise<number> {
   const votes = await getPendingVotes();
   if (!votes.length) return 0;
-
-  const proposalIds = [...new Set(votes.map(v => v.proposal))];
-  const proposalVpValues = await getProposalVpValues(proposalIds);
 
   const data: Datum[] = votes
     .filter(v => proposalVpValues.has(v.proposal))
@@ -115,19 +110,29 @@ async function processBatch(): Promise<number> {
   return votes.length;
 }
 
-export default async function run() {
+// Ignored/filtered out votes still count as processed
+async function processAllBatches(proposalVpValues: ProposalVpValues): Promise<number> {
   let totalProcessed = 0;
+  let processed = DEFAULT_BATCH_SIZE;
 
-  while (true) {
-    if (!totalProcessed) log.info('[votesVpValue] Start refresh');
-
-    const processed = await processBatch();
+  while (processed === DEFAULT_BATCH_SIZE) {
+    processed = await processBatch(proposalVpValues);
     totalProcessed += processed;
+  }
 
-    if (processed < DEFAULT_BATCH_SIZE) {
-      log.info(`[votesVpValue] ${totalProcessed} votes processed, sleeping`);
-      totalProcessed = 0;
-      await snapshot.utils.sleep(REFRESH_INTERVAL);
-    }
+  return totalProcessed;
+}
+
+export default async function run() {
+  while (true) {
+    log.info('[votesVpValue] Start refresh');
+
+    const proposalVpValues = await getProposalVpValues();
+    log.info(`[votesVpValue] Found ${proposalVpValues.size} eligible proposals`);
+
+    const totalProcessed = await processAllBatches(proposalVpValues);
+
+    log.info(`[votesVpValue] ${totalProcessed} votes processed, sleeping`);
+    await snapshot.utils.sleep(REFRESH_INTERVAL);
   }
 }
