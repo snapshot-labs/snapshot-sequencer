@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    uses: snapshot-labs/actions/.github/workflows/test.yml@main
+    uses: snapshot-labs/actions/.github/workflows/test.yml@fix/redis-docker-compat
     secrets: inherit
     with:
       mysql_database_name: snapshot_sequencer_test
