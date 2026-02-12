@@ -18,7 +18,7 @@ async function getProposals(): Promise<Proposal[]> {
     SELECT id, network, start, strategies
     FROM proposals
     WHERE cb IN (?) AND start < UNIX_TIMESTAMP()
-    ORDER BY created ASC
+    ORDER BY cb DESC
     LIMIT ?
   `;
   const proposals = await db.queryAsync(query, [[CB.PENDING_SYNC, CB.ERROR_SYNC], BATCH_SIZE]);
