@@ -1,5 +1,6 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import { getVpValueByStrategy } from './entityValue';
+import log from './log';
 import db from './mysql';
 import { CB } from '../constants';
 
@@ -17,11 +18,11 @@ async function getProposals(): Promise<Proposal[]> {
   const query = `
     SELECT id, network, start, strategies
     FROM proposals
-    WHERE cb = ? AND start < UNIX_TIMESTAMP()
-    ORDER BY created ASC
+    WHERE cb IN (?) AND start < UNIX_TIMESTAMP()
+    ORDER BY cb DESC
     LIMIT ?
   `;
-  const proposals = await db.queryAsync(query, [CB.PENDING_SYNC, BATCH_SIZE]);
+  const proposals = await db.queryAsync(query, [[CB.PENDING_SYNC, CB.ERROR_SYNC], BATCH_SIZE]);
 
   return proposals.map((p: any) => {
     p.strategies = JSON.parse(p.strategies);
@@ -39,7 +40,7 @@ async function refreshVpByStrategy(proposals: Proposal[]) {
         const values = await getVpValueByStrategy(proposal);
         return { proposal, values, cb: CB.PENDING_COMPUTE };
       } catch (e) {
-        console.log(e);
+        log.error(e);
         return { proposal, values: [], cb: CB.ERROR_SYNC };
       }
     })
@@ -58,13 +59,21 @@ async function refreshVpByStrategy(proposals: Proposal[]) {
 export default async function run() {
   if (!process.env.OVERLORD_URL) return;
   while (true) {
+    log.info('[proposalStrategiesValue] Fetching proposals values from overlord');
     const proposals = await getProposals();
+    log.info(`[proposalStrategiesValue] Found ${proposals.length} proposals`);
 
     if (proposals.length) {
       await refreshVpByStrategy(proposals);
+      log.info(
+        `[proposalStrategiesValue] Refreshed from ${proposals[0].id} to ${
+          proposals[proposals.length - 1].id
+        }`
+      );
     }
 
     if (proposals.length < BATCH_SIZE) {
+      log.info(`[proposalStrategiesValue] Sleeping ${REFRESH_INTERVAL}ms`);
       await snapshot.utils.sleep(REFRESH_INTERVAL);
     }
   }
