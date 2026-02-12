@@ -14,7 +14,7 @@ type Datum = {
   vpValueByStrategy: number[];
 };
 
-const REFRESH_INTERVAL = 10 * 1000;
+const REFRESH_INTERVAL = 60 * 1000;
 const DEFAULT_BATCH_SIZE = 1000;
 const PROPOSALS_BATCH_SIZE = 50000;
 
