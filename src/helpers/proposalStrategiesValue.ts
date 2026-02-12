@@ -17,11 +17,11 @@ async function getProposals(): Promise<Proposal[]> {
   const query = `
     SELECT id, network, start, strategies
     FROM proposals
-    WHERE cb = ? AND start < UNIX_TIMESTAMP()
+    WHERE cb IN (?) AND start < UNIX_TIMESTAMP()
     ORDER BY created ASC
     LIMIT ?
   `;
-  const proposals = await db.queryAsync(query, [CB.PENDING_SYNC, BATCH_SIZE]);
+  const proposals = await db.queryAsync(query, [[CB.PENDING_SYNC, CB.ERROR_SYNC], BATCH_SIZE]);
 
   return proposals.map((p: any) => {
     p.strategies = JSON.parse(p.strategies);
