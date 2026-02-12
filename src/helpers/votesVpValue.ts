@@ -16,6 +16,7 @@ type Datum = {
 
 const REFRESH_INTERVAL = 10 * 1000;
 const DEFAULT_BATCH_SIZE = 1000;
+const PROPOSALS_BATCH_SIZE = 50000;
 
 const datumSchema = z
   .object({
@@ -47,16 +48,33 @@ async function getPendingVotes(): Promise<
 }
 
 async function getProposalVpValues(): Promise<ProposalVpValues> {
-  const query = `
-    SELECT id, vp_value_by_strategy
-    FROM proposals
-    WHERE cb IN (?) AND votes > 0`;
-  const results = await db.queryAsync(query, [[CB.PENDING_COMPUTE, CB.PENDING_FINAL, CB.FINAL]]);
-
   const map: ProposalVpValues = new Map();
-  for (const r of results) {
-    map.set(r.id, JSON.parse(r.vp_value_by_strategy));
+  let lastId = '';
+
+  while (true) {
+    const query = `
+      SELECT id, vp_value_by_strategy
+      FROM proposals
+      WHERE cb IN (?) AND votes > 0 AND id > ?
+      ORDER BY id
+      LIMIT ?`;
+    const results = await db.queryAsync(query, [
+      [CB.PENDING_COMPUTE, CB.PENDING_FINAL, CB.FINAL],
+      lastId,
+      PROPOSALS_BATCH_SIZE
+    ]);
+
+    if (results.length === 0) break;
+
+    for (const r of results) {
+      map.set(r.id, JSON.parse(r.vp_value_by_strategy));
+    }
+
+    lastId = results[results.length - 1].id;
+
+    if (results.length < PROPOSALS_BATCH_SIZE) break;
   }
+
   return map;
 }
 
