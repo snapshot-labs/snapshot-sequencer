@@ -39,9 +39,10 @@ async function refreshVpByStrategy(proposals: Proposal[]) {
       try {
         const values = await getVpValueByStrategy(proposal);
         return { proposal, values, cb: CB.PENDING_COMPUTE };
-      } catch (e) {
+      } catch (e: any) {
         log.error(e);
-        return { proposal, values: [], cb: CB.ERROR_SYNC };
+        const cb = e.message?.includes('HTTP error: 400') ? CB.INELIGIBLE : CB.ERROR_SYNC;
+        return { proposal, values: [], cb };
       }
     })
   );
