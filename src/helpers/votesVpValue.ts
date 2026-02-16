@@ -5,13 +5,14 @@ import log from './log';
 import db from './mysql';
 import { CB } from '../constants';
 
-type ProposalVpValues = Map<string, number[]>;
+type ProposalVpValues = Map<string, { cb: number; vpValueByStrategy: number[] }>;
 
 type Datum = {
   id: string;
   vpState: string;
   vpByStrategy: number[];
   vpValueByStrategy: number[];
+  proposalCb: number;
 };
 
 const REFRESH_INTERVAL = 60 * 1000;
@@ -53,13 +54,13 @@ async function getProposalVpValues(): Promise<ProposalVpValues> {
 
   while (true) {
     const query = `
-      SELECT id, vp_value_by_strategy
+      SELECT id, cb, vp_value_by_strategy
       FROM proposals
       WHERE cb IN (?) AND votes > 0 AND id > ?
       ORDER BY id
       LIMIT ?`;
     const results = await db.queryAsync(query, [
-      [CB.PENDING_COMPUTE, CB.PENDING_FINAL, CB.FINAL],
+      [CB.PENDING_COMPUTE, CB.PENDING_FINAL, CB.FINAL, CB.INELIGIBLE],
       lastId,
       PROPOSALS_BATCH_SIZE
     ]);
@@ -67,7 +68,10 @@ async function getProposalVpValues(): Promise<ProposalVpValues> {
     if (results.length === 0) break;
 
     for (const r of results) {
-      map.set(r.id, JSON.parse(r.vp_value_by_strategy));
+      map.set(r.id, {
+        cb: r.cb,
+        vpValueByStrategy: r.cb === CB.INELIGIBLE ? [] : JSON.parse(r.vp_value_by_strategy)
+      });
     }
 
     lastId = results[results.length - 1].id;
@@ -86,6 +90,11 @@ async function refreshVotesVpValues(data: Datum[]) {
 
   for (const datum of data) {
     query.push('UPDATE votes SET vp_value = ?, cb = ? WHERE id = ? LIMIT 1');
+
+    if (datum.proposalCb === CB.INELIGIBLE) {
+      params.push(0, CB.INELIGIBLE, datum.id);
+      continue;
+    }
 
     try {
       const validatedDatum = datumSchema.parse(datum);
@@ -120,7 +129,8 @@ async function processBatch(proposalVpValues: ProposalVpValues): Promise<number>
       id: v.id,
       vpState: v.vpState,
       vpByStrategy: v.vpByStrategy,
-      vpValueByStrategy: proposalVpValues.get(v.proposal)!
+      vpValueByStrategy: proposalVpValues.get(v.proposal)!.vpValueByStrategy,
+      proposalCb: proposalVpValues.get(v.proposal)!.cb
     }));
 
   await refreshVotesVpValues(data);
@@ -146,7 +156,7 @@ export default async function run() {
     log.info('[votesVpValue] Start refresh');
 
     const proposalVpValues = await getProposalVpValues();
-    log.info(`[votesVpValue] Found ${proposalVpValues.size} eligible proposals`);
+    log.info(`[votesVpValue] Found ${proposalVpValues.size} proposals`);
 
     const totalProcessed = await processAllBatches(proposalVpValues);
 

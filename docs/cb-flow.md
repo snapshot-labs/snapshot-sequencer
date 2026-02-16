@@ -46,7 +46,9 @@ flowchart TD
 ```mermaid
 flowchart TD
     A([Vote Created]):::user --> B["cb = -1<br>PENDING_COMPUTE"]
-    B -->|votesVpValue.ts<br>vp_by_strategy x vp_value_by_strategy| C{vp_state<br>final?}
+    B -->|votesVpValue.ts| F{Proposal<br>ineligible?}
+    F -->|Yes| G["cb = -10<br>INELIGIBLE"]
+    F -->|No| C{vp_state<br>final?}
     C -->|Yes| D["cb = 1<br>FINAL"]
     C -->|No| E["cb = -2<br>PENDING_FINAL"]
     E -->|New vote on same proposal<br>triggers scores.ts<br>vp recalculated| B
@@ -55,10 +57,10 @@ flowchart TD
     classDef async fill:#e8833a,color:#fff
 
     class A user
-    class C async
-    class B,D,E default
+    class F,C async
+    class B,D,E,G default
 
     linkStyle 0 stroke:#4a90d9
-    linkStyle 1,2,3 stroke:#e8833a
-    linkStyle 4 stroke:#4a90d9
+    linkStyle 1,2,3,4,5 stroke:#e8833a
+    linkStyle 6 stroke:#4a90d9
 ```
