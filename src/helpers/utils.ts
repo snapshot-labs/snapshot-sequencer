@@ -81,7 +81,9 @@ export async function jsonRpcRequest(url: string, method: string, params: any): 
     const res = await fetchWithKeepAlive(url, init);
 
     if (!res.ok) {
-      throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
+      const error: any = new Error(`HTTP error: ${res.status} ${res.statusText}`);
+      error.status = res.status;
+      throw error;
     }
 
     const response = await res.json();
