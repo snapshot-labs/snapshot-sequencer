@@ -20,7 +20,8 @@ flowchart TD
     A([Proposal Created]):::user --> B["cb = 0<br>PENDING_SYNC"]
     B -->|proposalStrategiesValue.ts<br>fetches USD values from Overlord| C{Success?}
     C -->|Yes| D["cb = -1<br>PENDING_COMPUTE"]
-    C -->|No| E["cb = -11<br>ERROR_SYNC"]
+    C -->|No, status 400| G
+    C -->|No, other error| E["cb = -11<br>ERROR_SYNC"]
     E -->|Retried next cycle| C
     D -->|proposalsScoresValue.ts<br>computes scores_total_value| F{Valid payload?}
     F -->|No| G["cb = -10<br>INELIGIBLE"]
@@ -37,8 +38,8 @@ flowchart TD
     class B,D,E,G,I,J default
 
     linkStyle 0 stroke:#4a90d9
-    linkStyle 1,2,3,4,5,6,7,8,9 stroke:#e8833a
-    linkStyle 10 stroke:#4a90d9
+    linkStyle 1,2,3,4,5,6,7,8,9,10 stroke:#e8833a
+    linkStyle 11 stroke:#4a90d9
 ```
 
 ## Votes State Diagram
