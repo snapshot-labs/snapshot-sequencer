@@ -125,13 +125,16 @@ async function processBatch(proposalVpValues: ProposalVpValues): Promise<number>
 
   const data: Datum[] = votes
     .filter(v => proposalVpValues.has(v.proposal))
-    .map(v => ({
-      id: v.id,
-      vpState: v.vpState,
-      vpByStrategy: v.vpByStrategy,
-      vpValueByStrategy: proposalVpValues.get(v.proposal)!.vpValueByStrategy,
-      proposalCb: proposalVpValues.get(v.proposal)!.cb
-    }));
+    .map(v => {
+      const proposal = proposalVpValues.get(v.proposal)!;
+      return {
+        id: v.id,
+        vpState: v.vpState,
+        vpByStrategy: v.vpByStrategy,
+        vpValueByStrategy: proposal.vpValueByStrategy,
+        proposalCb: proposal.cb
+      };
+    });
 
   await refreshVotesVpValues(data);
 
