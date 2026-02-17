@@ -14,15 +14,27 @@ type Proposal = {
 const REFRESH_INTERVAL = 10 * 1000;
 const BATCH_SIZE = 25;
 
+let cursor = '';
+
 async function getProposals(): Promise<Proposal[]> {
   const query = `
     SELECT id, network, start, strategies
     FROM proposals
-    WHERE cb IN (?) AND start < UNIX_TIMESTAMP()
-    ORDER BY cb DESC
+    WHERE cb IN (?) AND start < UNIX_TIMESTAMP() AND id > ?
+    ORDER BY id
     LIMIT ?
   `;
-  const proposals = await db.queryAsync(query, [[CB.PENDING_SYNC, CB.ERROR_SYNC], BATCH_SIZE]);
+  const proposals = await db.queryAsync(query, [
+    [CB.PENDING_SYNC, CB.ERROR_SYNC],
+    cursor,
+    BATCH_SIZE
+  ]);
+
+  if (proposals.length > 0) {
+    cursor = proposals[proposals.length - 1].id;
+  } else {
+    cursor = '';
+  }
 
   return proposals.map((p: any) => {
     p.strategies = JSON.parse(p.strategies);
