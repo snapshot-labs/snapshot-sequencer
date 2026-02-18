@@ -61,7 +61,7 @@ async function refreshVpByStrategy(proposals: Proposal[]) {
         return { proposal, values, cb: CB.PENDING_COMPUTE };
       } catch (e: any) {
         log.error(e.message);
-        if (e.message && e.message.includes('HTTP error: 429')) {
+        if (e.status === 429) {
           rateLimitHit = true;
           throw e;
         }
