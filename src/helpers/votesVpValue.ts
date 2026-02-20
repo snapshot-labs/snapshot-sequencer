@@ -16,7 +16,7 @@ type Datum = {
 };
 
 const REFRESH_INTERVAL = 60 * 1000;
-const DEFAULT_BATCH_SIZE = 1000;
+const DEFAULT_BATCH_SIZE = 500;
 const PROPOSALS_BATCH_SIZE = 50000;
 
 const datumSchema = z
