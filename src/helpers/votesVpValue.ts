@@ -16,7 +16,7 @@ type Datum = {
 };
 
 const REFRESH_INTERVAL = 60 * 1000;
-const DEFAULT_BATCH_SIZE = 1000;
+const DEFAULT_BATCH_SIZE = 500;
 const PROPOSALS_BATCH_SIZE = 50000;
 
 const datumSchema = z
@@ -85,14 +85,15 @@ async function getProposalVpValues(): Promise<ProposalVpValues> {
 async function refreshVotesVpValues(data: Datum[]) {
   if (!data.length) return;
 
-  const query: string[] = [];
-  const params: (number | string)[] = [];
+  const ids: string[] = [];
+  const vpValues: Map<string, number> = new Map();
+  const cbValues: Map<string, number> = new Map();
 
   for (const datum of data) {
-    query.push('UPDATE votes SET vp_value = ?, cb = ? WHERE id = ? LIMIT 1');
-
     if (datum.proposalCb === CB.INELIGIBLE) {
-      params.push(0, CB.INELIGIBLE, datum.id);
+      ids.push(datum.id);
+      vpValues.set(datum.id, 0);
+      cbValues.set(datum.id, CB.INELIGIBLE);
       continue;
     }
 
@@ -103,20 +104,36 @@ async function refreshVotesVpValues(data: Datum[]) {
         0
       );
 
-      params.push(
-        value,
-        validatedDatum.vpState === 'final' ? CB.FINAL : CB.PENDING_FINAL,
-        validatedDatum.id
+      ids.push(validatedDatum.id);
+      vpValues.set(validatedDatum.id, value);
+      cbValues.set(
+        validatedDatum.id,
+        validatedDatum.vpState === 'final' ? CB.FINAL : CB.PENDING_FINAL
       );
     } catch (e) {
       capture(e);
-      params.push(0, CB.INELIGIBLE, datum.id);
+      ids.push(datum.id);
+      vpValues.set(datum.id, 0);
+      cbValues.set(datum.id, CB.INELIGIBLE);
     }
   }
 
-  if (query.length) {
-    await db.queryAsync(query.join(';'), params);
+  if (!ids.length) return;
+
+  const vpCases = ids.map(() => 'WHEN id = ? THEN ?').join(' ');
+  const cbCases = ids.map(() => 'WHEN id = ? THEN ?').join(' ');
+  const placeholders = ids.map(() => '?').join(',');
+
+  const vpParams: (number | string)[] = [];
+  const cbParams: (number | string)[] = [];
+
+  for (const id of ids) {
+    vpParams.push(id, vpValues.get(id)!);
+    cbParams.push(id, cbValues.get(id)!);
   }
+
+  const query = `UPDATE votes SET vp_value = CASE ${vpCases} END, cb = CASE ${cbCases} END WHERE id IN (${placeholders})`;
+  await db.queryAsync(query, [...vpParams, ...cbParams, ...ids]);
 }
 
 async function processBatch(proposalVpValues: ProposalVpValues): Promise<number> {
