@@ -42,14 +42,11 @@ async function getProposals(): Promise<Proposal[]> {
   const query = `
     SELECT id, type, scores_state, vp_value_by_strategy, scores_by_strategy
     FROM proposals
-    WHERE cb IN (?)
+    WHERE cb = ? OR (cb = ? AND scores_state = 'final')
     ORDER BY created ASC
     LIMIT ?
   `;
-  const proposals = await db.queryAsync(query, [
-    [CB.PENDING_COMPUTE, CB.PENDING_FINAL],
-    BATCH_SIZE
-  ]);
+  const proposals = await db.queryAsync(query, [CB.PENDING_COMPUTE, CB.PENDING_FINAL, BATCH_SIZE]);
 
   return proposals.map((p: any) => ({
     id: p.id,
