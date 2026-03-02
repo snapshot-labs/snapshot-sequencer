@@ -9,6 +9,8 @@ type ProposalVpValues = Map<string, { cb: number; vpValueByStrategy: number[] }>
 
 type Datum = {
   id: string;
+  voter: string;
+  space: string;
   vpState: string;
   vpByStrategy: number[];
   vpValueByStrategy: number[];
@@ -22,6 +24,8 @@ const PROPOSALS_BATCH_SIZE = 50000;
 const datumSchema = z
   .object({
     id: z.string(),
+    voter: z.string(),
+    space: z.string(),
     vpState: z.string(),
     vpValueByStrategy: z.array(z.number().finite()),
     vpByStrategy: z.array(z.number().finite())
@@ -31,10 +35,17 @@ const datumSchema = z
   });
 
 async function getPendingVotes(): Promise<
-  { id: string; proposal: string; vpState: string; vpByStrategy: number[] }[]
+  {
+    id: string;
+    voter: string;
+    space: string;
+    proposal: string;
+    vpState: string;
+    vpByStrategy: number[];
+  }[]
 > {
   const query = `
-    SELECT id, proposal, vp_state, vp_by_strategy
+    SELECT id, voter, space, proposal, vp_state, vp_by_strategy
     FROM votes
     WHERE cb = ?
     LIMIT ?`;
@@ -42,6 +53,8 @@ async function getPendingVotes(): Promise<
 
   return results.map((r: any) => ({
     id: r.id,
+    voter: r.voter,
+    space: r.space,
     proposal: r.proposal,
     vpState: r.vp_state,
     vpByStrategy: JSON.parse(r.vp_by_strategy)
@@ -88,6 +101,7 @@ async function refreshVotesVpValues(data: Datum[]) {
   const ids: string[] = [];
   const vpValues: Map<string, number> = new Map();
   const cbValues: Map<string, number> = new Map();
+  const leaderboardUpdates: { value: number; voter: string; space: string }[] = [];
 
   for (const datum of data) {
     if (datum.proposalCb === CB.INELIGIBLE) {
@@ -110,6 +124,16 @@ async function refreshVotesVpValues(data: Datum[]) {
         validatedDatum.id,
         validatedDatum.vpState === 'final' ? CB.FINAL : CB.PENDING_FINAL
       );
+
+      // Leaderboard update only for final votes
+      // to avoid vp fluctuations with overriding strategies
+      if (validatedDatum.vpState === 'final') {
+        leaderboardUpdates.push({
+          value,
+          voter: validatedDatum.voter,
+          space: validatedDatum.space
+        });
+      }
     } catch (e) {
       capture(e);
       ids.push(datum.id);
@@ -132,8 +156,21 @@ async function refreshVotesVpValues(data: Datum[]) {
     cbParams.push(id, cbValues.get(id)!);
   }
 
-  const query = `UPDATE votes SET vp_value = CASE ${vpCases} END, cb = CASE ${cbCases} END WHERE id IN (${placeholders})`;
-  await db.queryAsync(query, [...vpParams, ...cbParams, ...ids]);
+  const queries: string[] = [
+    `UPDATE votes SET vp_value = CASE ${vpCases} END, cb = CASE ${cbCases} END WHERE id IN (${placeholders})`
+  ];
+  const params: (number | string)[] = [...vpParams, ...cbParams, ...ids];
+
+  for (const update of leaderboardUpdates) {
+    queries.push(
+      `UPDATE leaderboard
+        SET vp_value = vp_value + ?
+        WHERE user = ? AND space = ?`
+    );
+    params.push(update.value, update.voter, update.space);
+  }
+
+  await db.queryAsync(queries.join(';'), params);
 }
 
 async function processBatch(proposalVpValues: ProposalVpValues): Promise<number> {
@@ -146,6 +183,8 @@ async function processBatch(proposalVpValues: ProposalVpValues): Promise<number>
       const proposal = proposalVpValues.get(v.proposal)!;
       return {
         id: v.id,
+        voter: v.voter,
+        space: v.space,
         vpState: v.vpState,
         vpByStrategy: v.vpByStrategy,
         vpValueByStrategy: proposal.vpValueByStrategy,

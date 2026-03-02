@@ -1,0 +1,74 @@
+import snapshot from '@snapshot-labs/snapshot.js';
+import log from './log';
+import db from './mysql';
+import { CB } from '../constants';
+
+type Vote = {
+  id: string;
+  voter: string;
+  space: string;
+  vp_value: number;
+  vp_state: string;
+};
+
+const REFRESH_INTERVAL = 60 * 1000;
+const BATCH_SIZE = 100;
+
+async function getVotesPendingDeletion(): Promise<Vote[]> {
+  return db.queryAsync(
+    `SELECT id, voter, space, vp_value, vp_state FROM votes WHERE cb = ? LIMIT ?`,
+    [CB.PENDING_DELETE, BATCH_SIZE]
+  );
+}
+
+async function processVotes(votes: Vote[]) {
+  const query: string[] = [];
+  const params: (string | number | string[])[] = [];
+
+  // Update spaces vote_count
+  const grouped = new Map<string, Vote[]>();
+  for (const vote of votes) {
+    if (!grouped.has(vote.space)) {
+      grouped.set(vote.space, []);
+    }
+    grouped.get(vote.space)!.push(vote);
+  }
+
+  for (const [space, spaceVotes] of grouped) {
+    query.push('UPDATE spaces SET vote_count = GREATEST(vote_count - ?, 0) WHERE id = ?');
+    params.push(spaceVotes.length, space);
+  }
+
+  // Update leaderboard vote_count and vp_value
+  for (const vote of votes) {
+    query.push(
+      `UPDATE leaderboard
+        SET vote_count = GREATEST(vote_count - 1, 0),
+            vp_value = GREATEST(vp_value - ?, 0)
+        WHERE user = ? AND space = ?`
+    );
+    params.push(vote.vp_state === 'final' ? vote.vp_value : 0, vote.voter, vote.space);
+  }
+
+  // Delete votes
+  query.push('DELETE FROM votes WHERE id IN (?)');
+  params.push(votes.map(v => v.id));
+
+  await db.queryAsync(query.join(';'), params);
+}
+
+export default async function run() {
+  while (true) {
+    const votes = await getVotesPendingDeletion();
+
+    if (votes.length) {
+      log.info(`[deleteProposalVotes] ${votes.length} votes to delete`);
+      await processVotes(votes);
+    }
+
+    if (votes.length < BATCH_SIZE) {
+      log.info('[deleteProposalVotes] sleeping');
+      await snapshot.utils.sleep(REFRESH_INTERVAL);
+    }
+  }
+}
