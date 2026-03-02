@@ -31,7 +31,7 @@ flowchart TD
     K -->|No| J
     H -->|No| J["cb = -2<br>PENDING_FINAL"]
     J -->|New vote arrives<br>scores.ts| D
-    J -->|proposalsScoresValue.ts<br>retries finalization| F
+    J -->|"scores_state = final<br>proposalsScoresValue.ts<br>retries finalization"| F
 
     classDef user fill:#4a90d9,color:#fff
     classDef async fill:#e8833a,color:#fff
