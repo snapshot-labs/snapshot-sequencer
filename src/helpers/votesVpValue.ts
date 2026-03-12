@@ -15,6 +15,7 @@ type Datum = {
   vpByStrategy: number[];
   vpValueByStrategy: number[];
   proposalCb: number;
+  vpValue: number;
 };
 
 const REFRESH_INTERVAL = 60 * 1000;
@@ -42,10 +43,11 @@ async function getPendingVotes(): Promise<
     proposal: string;
     vpState: string;
     vpByStrategy: number[];
+    vpValue: number;
   }[]
 > {
   const query = `
-    SELECT id, voter, space, proposal, vp_state, vp_by_strategy
+    SELECT id, voter, space, proposal, vp_state, vp_by_strategy, vp_value
     FROM votes
     WHERE cb = ?
     LIMIT ?`;
@@ -57,7 +59,8 @@ async function getPendingVotes(): Promise<
     space: r.space,
     proposal: r.proposal,
     vpState: r.vp_state,
-    vpByStrategy: JSON.parse(r.vp_by_strategy)
+    vpByStrategy: JSON.parse(r.vp_by_strategy),
+    vpValue: r.vp_value || 0
   }));
 }
 
@@ -127,9 +130,10 @@ async function refreshVotesVpValues(data: Datum[]) {
 
       // Leaderboard update only for final votes
       // to avoid vp fluctuations with overriding strategies
+      // Use delta (new - old) to handle re-votes correctly
       if (validatedDatum.vpState === 'final') {
         leaderboardUpdates.push({
-          value,
+          value: value - datum.vpValue,
           voter: validatedDatum.voter,
           space: validatedDatum.space
         });
@@ -188,7 +192,8 @@ async function processBatch(proposalVpValues: ProposalVpValues): Promise<number>
         vpState: v.vpState,
         vpByStrategy: v.vpByStrategy,
         vpValueByStrategy: proposal.vpValueByStrategy,
-        proposalCb: proposal.cb
+        proposalCb: proposal.cb,
+        vpValue: v.vpValue
       };
     });
 
