@@ -14,12 +14,16 @@ export async function verify(message): Promise<any> {
     return Promise.reject('alias cannot be the same as the address');
   }
 
-  const existing = await db.queryAsync(
-    'SELECT 1 FROM aliases WHERE address = ? AND alias = ? LIMIT 1',
-    [message.address, msg.payload.alias]
-  );
-  if (existing.length > 0) {
-    return Promise.reject('alias already exists');
+  const results = await db.queryAsync('SELECT address FROM aliases WHERE alias = ?', [
+    msg.payload.alias
+  ]);
+  for (const row of results) {
+    if (row.address === message.address) {
+      return Promise.reject('alias already exists');
+    }
+  }
+  if (results.length > 0) {
+    return Promise.reject('alias is already linked to another address');
   }
 
   return true;
