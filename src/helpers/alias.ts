@@ -1,7 +1,7 @@
 import { uniq } from 'lodash';
 import db from './mysql';
 
-const DEFAULT_ALIAS_EXPIRY_DAYS = 30;
+export const DEFAULT_ALIAS_EXPIRY_DAYS = 30;
 
 // These types can always be executed with an alias
 const TYPES_EXECUTABLE_BY_ALIAS = [
@@ -38,25 +38,14 @@ type ExecutableType =
   | (typeof OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS)[number]
   | (typeof TYPES_EXECUTABLE_BY_STARKNET_ALIAS)[number];
 
-/**
- * Checks if an alias relationship exists and is not expired
- * @param address - The original address
- * @param alias - The alias address to check
- * @param expiryDays - Number of days after which alias expires (default: 30)
- * @returns Promise<boolean> - True if valid alias exists
- */
-export async function isExistingAlias(
-  address: string,
-  alias: string,
-  expiryDays = DEFAULT_ALIAS_EXPIRY_DAYS
-): Promise<boolean> {
+export async function isExistingAlias(address: string, alias: string): Promise<boolean> {
   const query = `SELECT 1
     FROM aliases
     WHERE address = ? AND alias = ?
-      AND created > UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL ? DAY))
+      AND expiration > UNIX_TIMESTAMP(NOW())
     LIMIT 1`;
 
-  const results = await db.queryAsync(query, [address, alias, expiryDays]);
+  const results = await db.queryAsync(query, [address, alias]);
   return results.length > 0;
 }
 

@@ -138,6 +138,7 @@ CREATE TABLE aliases (
   address VARCHAR(100) NOT NULL,
   alias VARCHAR(100) NOT NULL,
   created INT(11) NOT NULL,
+  expiration INT(11) NOT NULL,
   PRIMARY KEY (address, alias),
   INDEX ipfs (ipfs)
 );

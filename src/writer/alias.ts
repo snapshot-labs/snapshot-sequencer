@@ -1,4 +1,5 @@
 import snapshot from '@snapshot-labs/snapshot.js';
+import { DEFAULT_ALIAS_EXPIRY_DAYS } from '../helpers/alias';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
 import { jsonParse } from '../helpers/utils';
@@ -36,7 +37,8 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
     ipfs,
     address: message.address,
     alias: msg.payload.alias,
-    created: msg.timestamp
+    created: msg.timestamp,
+    expiration: msg.timestamp + DEFAULT_ALIAS_EXPIRY_DAYS * 86400
   };
   await db.queryAsync('INSERT INTO aliases SET ?', params);
 }
