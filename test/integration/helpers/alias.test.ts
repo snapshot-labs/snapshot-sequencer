@@ -41,6 +41,22 @@ describe('alias', () => {
       ).rejects.toMatch('alias already exists');
     });
 
+    it('should reject when alias is already linked to another address', async () => {
+      const alias = aliasesSqlFixtures[0].alias;
+      const differentAddress = '0x0000000000000000000000000000000000000099';
+      const msg = {
+        version: '0.1.4',
+        timestamp: Math.floor(Date.now() / 1000),
+        type: 'alias',
+        from: differentAddress,
+        payload: { alias }
+      };
+
+      await expect(
+        verify({ address: differentAddress, from: differentAddress, msg: JSON.stringify(msg) })
+      ).rejects.toMatch('alias is already linked to another address');
+    });
+
     it('should pass when alias does not exist', async () => {
       const msg = {
         version: '0.1.4',
