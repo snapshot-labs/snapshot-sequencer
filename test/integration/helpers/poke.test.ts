@@ -1,5 +1,5 @@
-import poke from '../../../src/helpers/poke';
 import db from '../../../src/helpers/mysql';
+import poke from '../../../src/helpers/poke';
 import { spacesSqlFixtures } from '../../fixtures/space';
 
 const mockGetSpaceUri = jest.fn((): any => {

@@ -1,9 +1,9 @@
 import {
-  loadModerationData,
   containsFlaggedLinks,
-  setData,
+  flaggedAddresses,
   flaggedLinks,
-  flaggedAddresses
+  loadModerationData,
+  setData
 } from '../../../src/helpers/moderation';
 
 describe('moderation', () => {
