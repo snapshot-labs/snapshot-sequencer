@@ -10,9 +10,18 @@ export async function verify(message): Promise<any> {
     log.warn(`[writer] Wrong alias format ${JSON.stringify(schemaIsValid)}`);
     return Promise.reject('wrong alias format');
   }
-  if (message.from === msg.payload.alias) {
+  if (message.address === msg.payload.alias) {
     return Promise.reject('alias cannot be the same as the address');
   }
+
+  const existing = await db.queryAsync(
+    'SELECT 1 FROM aliases WHERE address = ? AND alias = ? LIMIT 1',
+    [message.address, msg.payload.alias]
+  );
+  if (existing.length > 0) {
+    return Promise.reject('alias already exists');
+  }
+
   return true;
 }
 
