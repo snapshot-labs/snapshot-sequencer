@@ -7,18 +7,16 @@ type Vote = {
   id: string;
   voter: string;
   space: string;
-  vp_value: number;
-  vp_state: string;
 };
 
 const REFRESH_INTERVAL = 60 * 1000;
 const BATCH_SIZE = 100;
 
 async function getVotesPendingDeletion(): Promise<Vote[]> {
-  return db.queryAsync(
-    `SELECT id, voter, space, vp_value, vp_state FROM votes WHERE cb = ? LIMIT ?`,
-    [CB.PENDING_DELETE, BATCH_SIZE]
-  );
+  return db.queryAsync(`SELECT id, voter, space FROM votes WHERE cb = ? LIMIT ?`, [
+    CB.PENDING_DELETE,
+    BATCH_SIZE
+  ]);
 }
 
 async function processVotes(votes: Vote[]) {
@@ -39,20 +37,33 @@ async function processVotes(votes: Vote[]) {
     params.push(spaceVotes.length, space);
   }
 
-  // Update leaderboard vote_count and vp_value
+  // Update leaderboard vote_count
   for (const vote of votes) {
     query.push(
       `UPDATE leaderboard
-        SET vote_count = GREATEST(vote_count - 1, 0),
-            vp_value = GREATEST(vp_value - ?, 0)
+        SET vote_count = GREATEST(vote_count - 1, 0)
         WHERE user = ? AND space = ?`
     );
-    params.push(vote.vp_state === 'final' ? vote.vp_value : 0, vote.voter, vote.space);
+    params.push(vote.voter, vote.space);
   }
 
   // Delete votes
   query.push('DELETE FROM votes WHERE id IN (?)');
   params.push(votes.map(v => v.id));
+
+  // Refresh leaderboard vp_value using SUM from remaining votes (idempotent)
+  const pairs = new Set(votes.map(v => `${v.voter}:${v.space}`));
+  for (const pair of pairs) {
+    const [voter, space] = pair.split(':');
+    query.push(
+      `UPDATE leaderboard
+        SET vp_value = COALESCE((
+          SELECT SUM(v.vp_value) FROM votes v WHERE v.voter = ? AND v.space = ?
+        ), 0)
+        WHERE user = ? AND space = ?`
+    );
+    params.push(voter, space, voter, space);
+  }
 
   await db.queryAsync(query.join(';'), params);
 }
