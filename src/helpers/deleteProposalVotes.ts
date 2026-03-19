@@ -37,32 +37,23 @@ async function processVotes(votes: Vote[]) {
     params.push(spaceVotes.length, space);
   }
 
-  // Update leaderboard vote_count
-  for (const vote of votes) {
-    query.push(
-      `UPDATE leaderboard
-        SET vote_count = GREATEST(vote_count - 1, 0)
-        WHERE user = ? AND space = ?`
-    );
-    params.push(vote.voter, vote.space);
-  }
-
   // Delete votes
   query.push('DELETE FROM votes WHERE id IN (?)');
   params.push(votes.map(v => v.id));
 
-  // Refresh leaderboard vp_value using SUM from remaining votes (idempotent)
+  // Refresh leaderboard from remaining votes (idempotent)
   const pairs = new Set(votes.map(v => `${v.voter}:${v.space}`));
   for (const pair of pairs) {
     const [voter, space] = pair.split(':');
     query.push(
       `UPDATE leaderboard
-        SET vp_value = COALESCE((
-          SELECT SUM(v.vp_value) FROM votes v WHERE v.voter = ? AND v.space = ?
-        ), 0)
+        SET vote_count = (SELECT COUNT(*) FROM votes v WHERE v.voter = ? AND v.space = ?),
+            vp_value = COALESCE((
+              SELECT SUM(v.vp_value) FROM votes v WHERE v.voter = ? AND v.space = ?
+            ), 0)
         WHERE user = ? AND space = ?`
     );
-    params.push(voter, space, voter, space);
+    params.push(voter, space, voter, space, voter, space);
   }
 
   await db.queryAsync(query.join(';'), params);
