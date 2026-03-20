@@ -24,39 +24,41 @@ async function processVotes(votes: Vote[]) {
   const params: (string | number | string[])[] = [];
 
   // Update spaces vote_count
-  const grouped = new Map<string, Vote[]>();
+  const grouped = new Map<string, number>();
   for (const vote of votes) {
-    if (!grouped.has(vote.space)) {
-      grouped.set(vote.space, []);
-    }
-    grouped.get(vote.space)!.push(vote);
+    grouped.set(vote.space, (grouped.get(vote.space) || 0) + 1);
   }
-
-  for (const [space, spaceVotes] of grouped) {
+  for (const [space, count] of grouped) {
     query.push('UPDATE spaces SET vote_count = GREATEST(vote_count - ?, 0) WHERE id = ?');
-    params.push(spaceVotes.length, space);
+    params.push(count, space);
   }
 
   // Delete votes
   query.push('DELETE FROM votes WHERE id IN (?)');
   params.push(votes.map(v => v.id));
 
-  // Refresh leaderboard from remaining votes (idempotent)
-  const pairs = new Set(votes.map(v => `${v.voter}:${v.space}`));
-  for (const pair of pairs) {
-    const [voter, space] = pair.split(':');
-    query.push(
-      `UPDATE leaderboard
-        SET vote_count = (SELECT COUNT(*) FROM votes v WHERE v.voter = ? AND v.space = ?),
-            vp_value = COALESCE((
-              SELECT SUM(v.vp_value) FROM votes v WHERE v.voter = ? AND v.space = ?
-            ), 0)
-        WHERE user = ? AND space = ?`
-    );
-    params.push(voter, space, voter, space, voter, space);
-  }
-
   await db.queryAsync(query.join(';'), params);
+
+  // Refresh leaderboard from remaining votes (idempotent, single batched query)
+  const pairs = new Set(votes.map(v => `${v.voter}:${v.space}`));
+  if (pairs.size > 0) {
+    const pairPlaceholders = Array.from(pairs).map(() => '(?, ?)').join(', ');
+    const pairParams: string[] = [];
+    for (const pair of pairs) {
+      const [voter, space] = pair.split(':');
+      pairParams.push(voter, space);
+    }
+
+    await db.queryAsync(
+      `UPDATE leaderboard l
+        SET vote_count = (SELECT COUNT(*) FROM votes v WHERE v.voter = l.user AND v.space = l.space),
+            vp_value = COALESCE((
+              SELECT SUM(v.vp_value) FROM votes v WHERE v.voter = l.user AND v.space = l.space
+            ), 0)
+        WHERE (l.user, l.space) IN (${pairPlaceholders})`,
+      pairParams
+    );
+  }
 }
 
 export default async function run() {
