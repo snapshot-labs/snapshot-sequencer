@@ -42,7 +42,9 @@ async function processVotes(votes: Vote[]) {
   // Refresh leaderboard from remaining votes (idempotent, single batched query)
   const pairs = new Set(votes.map(v => `${v.voter}:${v.space}`));
   if (pairs.size > 0) {
-    const pairPlaceholders = Array.from(pairs).map(() => '(?, ?)').join(', ');
+    const pairPlaceholders = Array.from(pairs)
+      .map(() => '(?, ?)')
+      .join(', ');
     const pairParams: string[] = [];
     for (const pair of pairs) {
       const [voter, space] = pair.split(':');

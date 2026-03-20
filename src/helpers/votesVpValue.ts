@@ -153,20 +153,28 @@ async function refreshVotesVpValues(data: Datum[]) {
   ];
   const params: (number | string)[] = [...vpParams, ...cbParams, ...ids];
 
-  // Refresh leaderboard vp_value using SUM from votes table (idempotent)
-  for (const pair of leaderboardPairs) {
-    const [voter, space] = pair.split(':');
-    queries.push(
-      `UPDATE leaderboard
-        SET vp_value = COALESCE((
-          SELECT SUM(v.vp_value) FROM votes v WHERE v.voter = ? AND v.space = ?
-        ), 0)
-        WHERE user = ? AND space = ?`
-    );
-    params.push(voter, space, voter, space);
-  }
-
   await db.queryAsync(queries.join(';'), params);
+
+  // Refresh leaderboard vp_value using SUM from votes table (idempotent)
+  if (leaderboardPairs.size > 0) {
+    const pairPlaceholders = Array.from(leaderboardPairs)
+      .map(() => '(?, ?)')
+      .join(', ');
+    const pairParams: string[] = [];
+    for (const pair of leaderboardPairs) {
+      const [voter, space] = pair.split(':');
+      pairParams.push(voter, space);
+    }
+
+    await db.queryAsync(
+      `UPDATE leaderboard l
+        SET vp_value = COALESCE((
+          SELECT SUM(v.vp_value) FROM votes v WHERE v.voter = l.user AND v.space = l.space
+        ), 0)
+        WHERE (l.user, l.space) IN (${pairPlaceholders})`,
+      pairParams
+    );
+  }
 }
 
 async function processBatch(proposalVpValues: ProposalVpValues): Promise<number> {
