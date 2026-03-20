@@ -37,30 +37,27 @@ async function processVotes(votes: Vote[]) {
   query.push('DELETE FROM votes WHERE id IN (?)');
   params.push(votes.map(v => v.id));
 
-  await db.queryAsync(query.join(';'), params);
-
-  // Refresh leaderboard from remaining votes (idempotent, single batched query)
+  // Refresh leaderboard from remaining votes (idempotent)
   const pairs = new Set(votes.map(v => `${v.voter}:${v.space}`));
-  if (!pairs.size) return;
-
-  const pairPlaceholders = Array.from(pairs)
-    .map(() => '(?, ?)')
-    .join(', ');
-  const pairParams: string[] = [];
-  for (const pair of pairs) {
-    const [voter, space] = pair.split(':');
-    pairParams.push(voter, space);
+  if (pairs.size) {
+    const pairPlaceholders = Array.from(pairs)
+      .map(() => '(?, ?)')
+      .join(', ');
+    query.push(
+      `UPDATE leaderboard l
+        SET vote_count = (SELECT COUNT(*) FROM votes v WHERE v.voter = l.user AND v.space = l.space),
+            vp_value = COALESCE((
+              SELECT SUM(v.vp_value) FROM votes v WHERE v.voter = l.user AND v.space = l.space
+            ), 0)
+        WHERE (l.user, l.space) IN (${pairPlaceholders})`
+    );
+    for (const pair of pairs) {
+      const [voter, space] = pair.split(':');
+      params.push(voter, space);
+    }
   }
 
-  await db.queryAsync(
-    `UPDATE leaderboard l
-      SET vote_count = (SELECT COUNT(*) FROM votes v WHERE v.voter = l.user AND v.space = l.space),
-          vp_value = COALESCE((
-            SELECT SUM(v.vp_value) FROM votes v WHERE v.voter = l.user AND v.space = l.space
-          ), 0)
-      WHERE (l.user, l.space) IN (${pairPlaceholders})`,
-    pairParams
-  );
+  await db.queryAsync(query.join(';'), params);
 }
 
 export default async function run() {
