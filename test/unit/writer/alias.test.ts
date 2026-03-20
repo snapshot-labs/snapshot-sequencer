@@ -1,6 +1,6 @@
+import omit from 'lodash/omit';
 import * as writer from '../../../src/writer/alias';
 import input from '../../fixtures/writer-payload/alias.json';
-import omit from 'lodash/omit';
 
 describe('writer/profile', () => {
   describe('verify()', () => {

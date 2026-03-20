@@ -1,5 +1,5 @@
-import { verify, action } from '../../../src/writer/unfollow';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
+import { action, verify } from '../../../src/writer/unfollow';
 import { spacesSqlFixtures } from '../../fixtures/space';
 
 describe('writer/unfollow', () => {
