@@ -41,26 +41,26 @@ async function processVotes(votes: Vote[]) {
 
   // Refresh leaderboard from remaining votes (idempotent, single batched query)
   const pairs = new Set(votes.map(v => `${v.voter}:${v.space}`));
-  if (pairs.size > 0) {
-    const pairPlaceholders = Array.from(pairs)
-      .map(() => '(?, ?)')
-      .join(', ');
-    const pairParams: string[] = [];
-    for (const pair of pairs) {
-      const [voter, space] = pair.split(':');
-      pairParams.push(voter, space);
-    }
+  if (!pairs.size) return;
 
-    await db.queryAsync(
-      `UPDATE leaderboard l
-        SET vote_count = (SELECT COUNT(*) FROM votes v WHERE v.voter = l.user AND v.space = l.space),
-            vp_value = COALESCE((
-              SELECT SUM(v.vp_value) FROM votes v WHERE v.voter = l.user AND v.space = l.space
-            ), 0)
-        WHERE (l.user, l.space) IN (${pairPlaceholders})`,
-      pairParams
-    );
+  const pairPlaceholders = Array.from(pairs)
+    .map(() => '(?, ?)')
+    .join(', ');
+  const pairParams: string[] = [];
+  for (const pair of pairs) {
+    const [voter, space] = pair.split(':');
+    pairParams.push(voter, space);
   }
+
+  await db.queryAsync(
+    `UPDATE leaderboard l
+      SET vote_count = (SELECT COUNT(*) FROM votes v WHERE v.voter = l.user AND v.space = l.space),
+          vp_value = COALESCE((
+            SELECT SUM(v.vp_value) FROM votes v WHERE v.voter = l.user AND v.space = l.space
+          ), 0)
+      WHERE (l.user, l.space) IN (${pairPlaceholders})`,
+    pairParams
+  );
 }
 
 export default async function run() {
