@@ -62,7 +62,7 @@ async function updateVotesVp(votes: any[], vpState: string, proposalId: string) 
     votesInPage.forEach((vote: any) => {
       query += `UPDATE votes
       SET vp = ?, vp_by_strategy = ?, vp_state = ?, vp_value = ?, cb = ?
-      WHERE id = ? AND proposal = ? LIMIT 1; `;
+      WHERE id = ? AND proposal = ? AND cb != ? LIMIT 1; `;
       params.push(vote.balance);
       params.push(JSON.stringify(vote.scores));
       params.push(vpState);
@@ -70,6 +70,7 @@ async function updateVotesVp(votes: any[], vpState: string, proposalId: string) 
       params.push(CB.PENDING_COMPUTE);
       params.push(vote.id);
       params.push(proposalId);
+      params.push(CB.PENDING_DELETE);
     });
     await db.queryAsync(query, params);
     if (i) await snapshot.utils.sleep(200);
