@@ -149,9 +149,9 @@ async function refreshVotesVpValues(data: Datum[]) {
   }
 
   const queries: string[] = [
-    `UPDATE votes SET vp_value = CASE ${vpCases} END, cb = CASE ${cbCases} END WHERE id IN (${placeholders})`
+    `UPDATE votes SET vp_value = CASE ${vpCases} END, cb = CASE ${cbCases} END WHERE id IN (${placeholders}) AND cb = ?`
   ];
-  const params: (number | string)[] = [...vpParams, ...cbParams, ...ids];
+  const params: (number | string)[] = [...vpParams, ...cbParams, ...ids, CB.PENDING_COMPUTE];
 
   // Refresh leaderboard vp_value using SUM from votes table (idempotent)
   if (leaderboardPairs.size) {
