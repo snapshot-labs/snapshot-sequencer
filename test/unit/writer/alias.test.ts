@@ -2,7 +2,7 @@ import omit from 'lodash/omit';
 import * as writer from '../../../src/writer/alias';
 import input from '../../fixtures/writer-payload/alias.json';
 
-describe('writer/profile', () => {
+describe('writer/alias', () => {
   describe('verify()', () => {
     const msg = JSON.parse(input.msg);
     const invalidMsg = [
