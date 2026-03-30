@@ -14,10 +14,11 @@ export async function verify(message): Promise<any> {
     return Promise.reject('alias cannot be the same as the address');
   }
 
-  const [existing] = await db.queryAsync('SELECT address FROM aliases WHERE alias = ? LIMIT 1', [
-    msg.payload.alias
-  ]);
-  if (existing && existing.address.toLowerCase() !== message.address.toLowerCase()) {
+  const [existing] = await db.queryAsync(
+    'SELECT address FROM aliases WHERE alias = ? AND address != ? LIMIT 1',
+    [msg.payload.alias, message.address]
+  );
+  if (existing) {
     return Promise.reject('alias is already linked to another address');
   }
 
