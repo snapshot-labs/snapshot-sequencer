@@ -51,9 +51,9 @@ describe('alias', () => {
         payload: { alias }
       };
 
-      await expect(
-        verify({ address: differentAddress, msg: JSON.stringify(msg) })
-      ).rejects.toMatch('alias is already linked to another address');
+      await expect(verify({ address: differentAddress, msg: JSON.stringify(msg) })).rejects.toMatch(
+        'alias is already linked to another address'
+      );
     });
 
     it('should pass when alias does not exist', async () => {

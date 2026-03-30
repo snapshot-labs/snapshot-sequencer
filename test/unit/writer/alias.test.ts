@@ -1,3 +1,7 @@
+jest.mock('../../../src/helpers/mysql', () => ({
+  default: { queryAsync: jest.fn().mockResolvedValue([]) }
+}));
+
 import omit from 'lodash/omit';
 import * as writer from '../../../src/writer/alias';
 import input from '../../fixtures/writer-payload/alias.json';
