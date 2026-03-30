@@ -14,15 +14,11 @@ export async function verify(message): Promise<any> {
     return Promise.reject('alias cannot be the same as the address');
   }
 
-  const results = await db.queryAsync('SELECT address FROM aliases WHERE alias = ?', [
-    msg.payload.alias
-  ]);
-  for (const row of results) {
-    if (row.address === message.address) {
-      return Promise.reject('alias already exists');
-    }
-  }
-  if (results.length > 0) {
+  const [existing] = await db.queryAsync(
+    'SELECT address FROM aliases WHERE alias = ? LIMIT 1',
+    [msg.payload.alias]
+  );
+  if (existing && existing.address.toLowerCase() !== message.address.toLowerCase()) {
     return Promise.reject('alias is already linked to another address');
   }
 
@@ -38,5 +34,8 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
     alias: msg.payload.alias,
     created: msg.timestamp
   };
-  await db.queryAsync('INSERT INTO aliases SET ?', params);
+  await db.queryAsync(
+    'INSERT INTO aliases SET ? ON DUPLICATE KEY UPDATE id = VALUES(id), ipfs = VALUES(ipfs), created = VALUES(created)',
+    params
+  );
 }
