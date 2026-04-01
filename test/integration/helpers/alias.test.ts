@@ -3,6 +3,13 @@ import db, { sequencerDB } from '../../../src/helpers/mysql';
 import { action, verify } from '../../../src/writer/alias';
 import { aliasesSqlFixtures } from '../../fixtures/alias';
 
+const buildAliasMsg = (alias: string, timestamp = Math.floor(Date.now() / 1000)) => ({
+  version: '0.1.4',
+  timestamp,
+  type: 'alias',
+  payload: { alias }
+});
+
 const cleanupFixtures = () => {
   const tuples = aliasesSqlFixtures.map(() => '(?, ?)').join(', ');
   const params = aliasesSqlFixtures.flatMap(a => [a.address, a.alias]);
@@ -31,12 +38,7 @@ describe('alias', () => {
   describe('verify()', () => {
     it('should pass when alias pair already exists (allows renewal)', async () => {
       const { address, alias } = aliasesSqlFixtures[0];
-      const msg = {
-        version: '0.1.4',
-        timestamp: Math.floor(Date.now() / 1000),
-        type: 'alias',
-        payload: { alias }
-      };
+      const msg = buildAliasMsg(alias);
 
       await expect(verify({ address, msg: JSON.stringify(msg) })).resolves.toBeTruthy();
     });
@@ -44,12 +46,7 @@ describe('alias', () => {
     it('should reject when alias is already linked to another address', async () => {
       const alias = aliasesSqlFixtures[0].alias;
       const differentAddress = '0x0000000000000000000000000000000000000099';
-      const msg = {
-        version: '0.1.4',
-        timestamp: Math.floor(Date.now() / 1000),
-        type: 'alias',
-        payload: { alias }
-      };
+      const msg = buildAliasMsg(alias);
 
       await expect(verify({ address: differentAddress, msg: JSON.stringify(msg) })).rejects.toMatch(
         'alias is already linked to another address'
@@ -58,12 +55,7 @@ describe('alias', () => {
 
     it('should pass when alias does not exist', async () => {
       const address = '0x0000000000000000000000000000000000000001';
-      const msg = {
-        version: '0.1.4',
-        timestamp: Math.floor(Date.now() / 1000),
-        type: 'alias',
-        payload: { alias: '0x0000000000000000000000000000000000000002' }
-      };
+      const msg = buildAliasMsg('0x0000000000000000000000000000000000000002');
 
       await expect(verify({ address, msg: JSON.stringify(msg) })).resolves.toBeTruthy();
     });
@@ -73,12 +65,7 @@ describe('alias', () => {
     it('should bump created date when re-submitting existing alias', async () => {
       const { address, alias } = aliasesSqlFixtures[0];
       const newTimestamp = Math.floor(Date.now() / 1000) + 1000;
-      const msg = {
-        version: '0.1.4',
-        timestamp: newTimestamp,
-        type: 'alias',
-        payload: { alias }
-      };
+      const msg = buildAliasMsg(alias, newTimestamp);
 
       await action({ address, msg: JSON.stringify(msg) }, 'ipfs-new', '', 'new-id');
 
