@@ -10,9 +10,10 @@ export async function verify(message): Promise<any> {
     log.warn(`[writer] Wrong alias format ${JSON.stringify(schemaIsValid)}`);
     return Promise.reject('wrong alias format');
   }
-  if (message.from === msg.payload.alias) {
+  if (message.address === msg.payload.alias) {
     return Promise.reject('alias cannot be the same as the address');
   }
+
   return true;
 }
 
@@ -25,5 +26,8 @@ export async function action(message, ipfs, receipt, id): Promise<void> {
     alias: msg.payload.alias,
     created: msg.timestamp
   };
-  await db.queryAsync('INSERT INTO aliases SET ?', params);
+  await db.queryAsync(
+    'INSERT INTO aliases SET ? ON DUPLICATE KEY UPDATE id = VALUES(id), ipfs = VALUES(ipfs), created = VALUES(created)',
+    params
+  );
 }

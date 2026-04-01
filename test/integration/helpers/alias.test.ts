@@ -1,30 +1,78 @@
 import { isExistingAlias } from '../../../src/helpers/alias';
 import db, { sequencerDB } from '../../../src/helpers/mysql';
+import { action, verify } from '../../../src/writer/alias';
 import { aliasesSqlFixtures } from '../../fixtures/alias';
 
-describe('alias', () => {
-  const seed = Date.now().toFixed(0);
+const cleanupFixtures = () => {
+  const tuples = aliasesSqlFixtures.map(() => '(?, ?)').join(', ');
+  const params = aliasesSqlFixtures.flatMap(a => [a.address, a.alias]);
+  return db.queryAsync(
+    `DELETE FROM snapshot_sequencer_test.aliases WHERE (address, alias) IN (${tuples})`,
+    params
+  );
+};
 
-  beforeAll(async () => {
-    await db.queryAsync('DELETE from snapshot_sequencer_test.aliases');
+describe('alias', () => {
+  beforeEach(async () => {
+    await cleanupFixtures();
     await Promise.all(
-      aliasesSqlFixtures.map(alias => {
-        const values = {
-          ...alias,
-          ipfs: seed
-        };
-        return db.queryAsync('INSERT INTO snapshot_sequencer_test.aliases SET ?', values);
-      })
+      aliasesSqlFixtures.map(alias =>
+        db.queryAsync('INSERT INTO snapshot_sequencer_test.aliases SET ?', alias)
+      )
     );
   });
 
-  afterEach(async () => {
-    await db.queryAsync('DELETE from snapshot_sequencer_test.aliases where ipfs = ?', seed);
-  });
-
   afterAll(async () => {
+    await cleanupFixtures();
     await db.endAsync();
     await sequencerDB.endAsync();
+  });
+
+  describe('verify()', () => {
+    it('should pass when alias pair already exists (allows renewal)', async () => {
+      const { address, alias } = aliasesSqlFixtures[0];
+      const msg = {
+        version: '0.1.4',
+        timestamp: Math.floor(Date.now() / 1000),
+        type: 'alias',
+        payload: { alias }
+      };
+
+      await expect(verify({ address, msg: JSON.stringify(msg) })).resolves.toBeTruthy();
+    });
+
+    it('should pass when alias does not exist', async () => {
+      const address = '0x0000000000000000000000000000000000000001';
+      const msg = {
+        version: '0.1.4',
+        timestamp: Math.floor(Date.now() / 1000),
+        type: 'alias',
+        payload: { alias: '0x0000000000000000000000000000000000000002' }
+      };
+
+      await expect(verify({ address, msg: JSON.stringify(msg) })).resolves.toBeTruthy();
+    });
+  });
+
+  describe('action()', () => {
+    it('should bump created date when re-submitting existing alias', async () => {
+      const { address, alias } = aliasesSqlFixtures[0];
+      const newTimestamp = Math.floor(Date.now() / 1000) + 1000;
+      const msg = {
+        version: '0.1.4',
+        timestamp: newTimestamp,
+        type: 'alias',
+        payload: { alias }
+      };
+
+      await action({ address, msg: JSON.stringify(msg) }, 'ipfs-new', '', 'new-id');
+
+      const [row] = await db.queryAsync(
+        'SELECT created FROM aliases WHERE address = ? AND alias = ?',
+        [address, alias]
+      );
+      expect(row.created).toBe(newTimestamp);
+    });
   });
 
   describe('isExistingAlias()', () => {
