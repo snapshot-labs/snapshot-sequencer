@@ -1,10 +1,15 @@
 import omit from 'lodash/omit';
+import db from '../../../src/helpers/mysql';
 import * as writer from '../../../src/writer/alias';
 import input from '../../fixtures/writer-payload/alias.json';
 
-describe('writer/profile', () => {
+describe('writer/alias', () => {
   describe('verify()', () => {
     const msg = JSON.parse(input.msg);
+
+    beforeEach(() => {
+      jest.spyOn(db, 'queryAsync').mockResolvedValue([]);
+    });
     const invalidMsg = [
       ['unknown field', { ...msg, payload: { ...msg.payload, title: 'title' } }],
       ['missing field', { msg, payload: omit(msg.payload, 'alias') }],
