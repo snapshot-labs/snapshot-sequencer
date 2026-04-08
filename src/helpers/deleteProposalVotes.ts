@@ -34,8 +34,11 @@ async function processVotes(votes: Vote[]) {
   }
 
   // Delete votes
-  query.push('DELETE FROM votes WHERE id IN (?)');
-  params.push(votes.map(v => v.id));
+  query.push('DELETE FROM votes WHERE id IN (?) AND cb = ?');
+  params.push(
+    votes.map(v => v.id),
+    CB.PENDING_DELETE
+  );
 
   // Refresh leaderboard from remaining votes (idempotent)
   const pairs = new Set(votes.map(v => `${v.voter}:${v.space}`));
