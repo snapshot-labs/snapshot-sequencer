@@ -3,6 +3,7 @@ import { fallbackLogger, initLogger } from '@snapshot-labs/snapshot-sentry';
 import cors from 'cors';
 import express from 'express';
 import api from './api';
+import deleteProposalVotes from './helpers/deleteProposalVotes';
 import log from './helpers/log';
 import initMetrics from './helpers/metrics';
 import refreshModeration from './helpers/moderation';
@@ -26,6 +27,7 @@ async function startServer() {
   refreshProposalsVpValue();
   refreshProposalsScoresValue();
   refreshVotesVpValue();
+  deleteProposalVotes();
 
   await initializeStrategies();
   refreshStrategies();

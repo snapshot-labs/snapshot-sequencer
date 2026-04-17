@@ -6,6 +6,7 @@ import express from 'express';
 import log from './log';
 import db from './mysql';
 import { getIp, jsonParse, jsonRpcRequest, rpcError, rpcSuccess } from './utils';
+import { CB } from '../constants';
 import { updateProposalAndVotes } from '../scores';
 
 init().then(() => log.info('[shutter] init'));
@@ -58,8 +59,8 @@ export async function setProposalKey(params) {
     const ts = (Date.now() / 1e3).toFixed();
     if (!proposal || ts < proposal.end) return false;
 
-    query = 'SELECT id, choice FROM votes WHERE proposal = ?';
-    const votes = await db.queryAsync(query, [proposal.id]);
+    query = 'SELECT id, choice FROM votes WHERE proposal = ? AND cb != ?';
+    const votes = await db.queryAsync(query, [proposal.id, CB.PENDING_DELETE]);
 
     const sqlParams: string[] = [];
     let sqlQuery = '';
