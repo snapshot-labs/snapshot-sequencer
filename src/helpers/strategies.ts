@@ -24,9 +24,12 @@ let overridingStrategies: string[] = [];
 async function loadStrategies() {
   const res = await snapshot.utils.getJSON(URI);
 
-  if ('error' in res) {
+  const isEmptyResponse = Object.keys(res).length === 0;
+  if ('error' in res || isEmptyResponse) {
     const error = new Error(
-      `Failed to load strategies: ${res.error.message || JSON.stringify(res.error)}`
+      isEmptyResponse
+        ? 'Empty strategies'
+        : `Failed to load strategies: ${res.error.message || JSON.stringify(res.error)}`
     );
     capture(error, {
       contexts: { input: { uri: URI }, res }
