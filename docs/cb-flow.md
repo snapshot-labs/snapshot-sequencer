@@ -8,6 +8,7 @@
 | -1 | `PENDING_COMPUTE` | Strategy values synced. Waiting for `scores_total_value` computation | Default. Waiting for `vp_value` computation |
 | -2 | `PENDING_FINAL` | Score value computed, but proposal still active | Value computed, but `vp_state` not final |
 | 1 | `FINAL` | Fully computed | Fully computed |
+| -3 | `PENDING_DELETE` | N/A | Proposal deleted, vote awaiting async cleanup |
 | -10 | `INELIGIBLE` | Invalid payload format, cannot compute (permanent) | Invalid data, cannot compute (permanent) |
 | -11 | `ERROR_SYNC` | Overlord sync failed, will be retried | N/A |
 
@@ -54,14 +55,23 @@ flowchart TD
     C -->|No| E["cb = -2<br>PENDING_FINAL"]
     E -->|New vote on same proposal<br>triggers scores.ts<br>vp recalculated| B
 
+    B -->|delete-proposal| H["cb = -3<br>PENDING_DELETE"]
+    D -->|delete-proposal| H
+    E -->|delete-proposal| H
+    G -->|delete-proposal| H
+    H -->|deleteProposalVotes.ts<br>async cleanup| I([Vote Deleted])
+
     classDef user fill:#4a90d9,color:#fff
     classDef async fill:#e8833a,color:#fff
 
     class A user
     class F,C async
-    class B,D,E,G default
+    class B,D,E,G,H default
+    class I default
 
     linkStyle 0 stroke:#4a90d9
     linkStyle 1,2,3,4,5 stroke:#e8833a
     linkStyle 6 stroke:#4a90d9
+    linkStyle 7,8,9,10 stroke:#4a90d9
+    linkStyle 11 stroke:#e8833a
 ```
