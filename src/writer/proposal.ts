@@ -10,10 +10,15 @@ import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
 import { getLimits, getSpaceType } from '../helpers/options';
 import { validateSpaceSettings } from '../helpers/spaceValidation';
-import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
-
-const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
-const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
+import {
+  BROVIDER_URL,
+  captureError,
+  getQuorum,
+  jsonParse,
+  resolvePrivacy,
+  SCORE_API_URL,
+  validateChoices
+} from '../helpers/utils';
 
 export const getProposalsCount = async (space, author) => {
   const query = `
@@ -115,8 +120,6 @@ export async function verify(body): Promise<any> {
   });
   if (!isChoicesValid) return Promise.reject('wrong choices for basic type voting');
 
-  // if (msg.payload.start < created) return Promise.reject('invalid start date');
-
   if (space.voting?.delay) {
     const isValidDelay = msg.payload.start === created + space.voting.delay;
     if (!isValidDelay) return Promise.reject('invalid voting delay');
@@ -181,7 +184,7 @@ export async function verify(body): Promise<any> {
           space.network,
           'latest',
           validationParams,
-          { url: scoreAPIUrl }
+          { url: SCORE_API_URL }
         );
       }
 
@@ -201,7 +204,7 @@ export async function verify(body): Promise<any> {
     return Promise.reject('proposal snapshot must be after network start');
 
   try {
-    const provider = snapshot.utils.getProvider(space.network, { broviderUrl });
+    const provider = snapshot.utils.getProvider(space.network, { broviderUrl: BROVIDER_URL });
     const block = await provider.getBlock(msg.payload.snapshot);
     if (!block) return Promise.reject('invalid snapshot block');
   } catch (error: any) {
@@ -255,10 +258,7 @@ export async function action(body, ipfs, receipt, id): Promise<void> {
   const plugins = JSON.stringify(metadata.plugins || {});
   const spaceNetwork = spaceSettings.network;
   const proposalSnapshot = parseInt(msg.payload.snapshot || '0');
-  let privacy = spaceSettings.voting?.privacy ?? 'any';
-  if (privacy === 'any') {
-    privacy = msg.payload.privacy ?? '';
-  }
+  const privacy = resolvePrivacy(spaceSettings.voting?.privacy, msg.payload.privacy);
 
   let quorum = spaceSettings.voting?.quorum || 0;
   if (!quorum && spaceSettings.plugins?.quorum) {

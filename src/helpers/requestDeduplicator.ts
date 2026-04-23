@@ -6,17 +6,10 @@ const ongoingRequests = new Map();
 export default async function serve(id, action, args) {
   const key = sha256(id);
   if (!ongoingRequests.has(key)) {
-    const requestPromise = action(...args)
-      .then(result => {
-        return result;
-      })
-      .catch(e => {
-        throw e;
-      })
-      .finally(() => {
-        ongoingRequests.delete(key);
-      });
-    ongoingRequests.set(key, requestPromise);
+    ongoingRequests.set(
+      key,
+      action(...args).finally(() => ongoingRequests.delete(key))
+    );
   }
 
   requestDeduplicatorSize.set(ongoingRequests.size);
