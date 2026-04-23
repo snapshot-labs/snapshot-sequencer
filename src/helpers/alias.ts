@@ -20,7 +20,8 @@ const OPTIONAL_TYPES_EXECUTABLE_BY_ALIAS = [
   'vote-string',
   'proposal',
   'update-proposal',
-  'delete-proposal'
+  'delete-proposal',
+  'flag-proposal'
 ] as const;
 
 // These types can be executed with a Starknet alias

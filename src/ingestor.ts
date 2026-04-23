@@ -91,7 +91,6 @@ export default async function ingestor(req) {
       return Promise.reject('Invalid space id');
     }
 
-    let aliased = false;
     if (!['settings', 'alias', 'profile', 'delete-space'].includes(type)) {
       if (!message.space) return Promise.reject('unknown space');
 
@@ -99,13 +98,12 @@ export default async function ingestor(req) {
         const space = await getSpace(message.space, false, message.network);
         if (!space) return Promise.reject('unknown space');
         network = space.network;
-        if (space.voting?.aliased) aliased = true;
       } catch (e: any) {
         return Promise.reject(e.message);
       }
     }
 
-    await verifyAlias(type, body, aliased);
+    await verifyAlias(type, body, true);
 
     // Check if signature is valid
     try {
