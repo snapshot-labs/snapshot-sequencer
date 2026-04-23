@@ -103,7 +103,7 @@ export default async function ingestor(req) {
       }
     }
 
-    await verifyAlias(type, body, true);
+    await verifyAlias(type, body);
 
     // Check if signature is valid
     try {
