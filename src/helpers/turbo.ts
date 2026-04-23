@@ -1,7 +1,7 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import db from './mysql';
-import { fetchWithKeepAlive } from './utils';
+import { BROVIDER_URL, DEFAULT_NETWORK, fetchWithKeepAlive, NETWORK } from './utils';
 
 type Space = {
   id: string;
@@ -9,12 +9,10 @@ type Space = {
 };
 
 const SCHNAPS_API_URL = process.env.SCHNAPS_API_URL;
-const NETWORK_PREFIX = process.env.NETWORK === 'mainnet' ? 's:' : 's-tn:';
+const NETWORK_PREFIX = NETWORK === 'mainnet' ? 's:' : 's-tn:';
 const RUN_INTERVAL = 10 * 1e3; // 10 seconds
 
-const provider = snapshot.utils.getProvider(process.env.DEFAULT_NETWORK ?? '1', {
-  broviderUrl: process.env.BROVIDER_URL || 'https://rpc.snapshot.org'
-});
+const provider = snapshot.utils.getProvider(DEFAULT_NETWORK, { broviderUrl: BROVIDER_URL });
 
 // Periodically sync the turbo status of spaces with the schnaps-api
 export async function trackTurboStatuses() {
@@ -26,9 +24,7 @@ export async function trackTurboStatuses() {
 
     spaces = spaces
       .filter(space => space.id.startsWith(NETWORK_PREFIX))
-      .map(space => {
-        return { ...space, id: space.id.replace(NETWORK_PREFIX, '') };
-      });
+      .map(space => ({ ...space, id: space.id.replace(NETWORK_PREFIX, '') }));
 
     // Step 2: Update the turbo status of the spaces in the database
     updateTurboStatuses(spaces);

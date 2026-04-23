@@ -3,17 +3,8 @@ import { CB } from '../constants';
 import { getProposal } from '../helpers/actions';
 import log from '../helpers/log';
 import db from '../helpers/mysql';
-import { captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
+import { captureError, hasStrategyOverride, jsonParse, SCORE_API_URL } from '../helpers/utils';
 import { updateProposalAndVotes } from '../scores';
-
-const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
-
-// async function isLimitReached(space) {
-//   const limit = 1500000;
-//   const query = `SELECT COUNT(*) AS count FROM messages WHERE space = ? AND timestamp > (UNIX_TIMESTAMP() - 2592000)`;
-//   const [{ count }] = await db.queryAsync(query, [space]);
-//   return count > limit;
-// }
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
@@ -61,7 +52,7 @@ export async function verify(body): Promise<any> {
         proposal.network,
         proposal.snapshot,
         validationParams,
-        { url: scoreAPIUrl }
+        { url: SCORE_API_URL }
       );
       if (!validate) return Promise.reject('failed vote validation');
     } catch (e) {
@@ -75,7 +66,7 @@ export async function verify(body): Promise<any> {
     }
   }
 
-  let vp: any = {};
+  let vp: any;
   try {
     vp = await snapshot.utils.getVp(
       body.address,
@@ -84,7 +75,7 @@ export async function verify(body): Promise<any> {
       proposal.snapshot,
       msg.space,
       false,
-      { url: scoreAPIUrl }
+      { url: SCORE_API_URL }
     );
     if (vp.vp === 0) return Promise.reject('no voting power');
   } catch (e: any) {
@@ -96,8 +87,6 @@ export async function verify(body): Promise<any> {
     );
     return Promise.reject('failed to check voting power');
   }
-
-  // if (await isLimitReached(msg.space)) return Promise.reject('too much activity, please contact an admin');
 
   return { proposal, vp };
 }

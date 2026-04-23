@@ -6,13 +6,12 @@ import { flagEntity } from './helpers/moderation';
 import poke from './helpers/poke';
 import relayer from './helpers/relayer';
 import serve from './helpers/requestDeduplicator';
-import { sendError, verifyAuth } from './helpers/utils';
+import { NETWORK, sendError, verifyAuth } from './helpers/utils';
 import typedData from './ingestor';
 import { updateProposalAndVotes } from './scores';
 import { name, version } from '../package.json';
 
 const router = express.Router();
-const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 
 const maintenanceMsg = 'update in progress, try later';
 
@@ -40,7 +39,7 @@ router.get('/', (req, res) => {
   const v = commit ? `${version}#${commit.substr(0, 7)}` : version;
   return res.json({
     name,
-    SNAPSHOT_ENV,
+    SNAPSHOT_ENV: NETWORK,
     version: v,
     relayer: relayer.address
   });
