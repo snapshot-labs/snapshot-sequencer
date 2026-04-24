@@ -52,10 +52,10 @@ async function processSpaces(spaces: SpaceRow[], dryRun: boolean): Promise<Proce
   while (true) {
     const pairs: Pair[] = await db.queryAsync(
       `SELECT user, space FROM leaderboard
-       WHERE space IN (?) AND (user, space) > (?, ?)
+       WHERE space IN (?) AND (user > ? OR (user = ? AND space > ?))
        ORDER BY user, space
        LIMIT ?`,
-      [spaceIds, lastUser, lastSpace, PAIRS_PER_UPDATE]
+      [spaceIds, lastUser, lastUser, lastSpace, PAIRS_PER_UPDATE]
     );
     if (pairs.length === 0) break;
 
