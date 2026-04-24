@@ -47,14 +47,15 @@ async function processSpaces(spaces: SpaceRow[], dryRun: boolean): Promise<Proce
   let affected = 0;
   let changed = 0;
   let lastUser = '';
+  let lastSpace = '';
 
   while (true) {
     const pairs: Pair[] = await db.queryAsync(
       `SELECT user, space FROM leaderboard
-       WHERE space IN (?) AND user > ?
-       ORDER BY user
+       WHERE space IN (?) AND (user, space) > (?, ?)
+       ORDER BY user, space
        LIMIT ?`,
-      [spaceIds, lastUser, PAIRS_PER_UPDATE]
+      [spaceIds, lastUser, lastSpace, PAIRS_PER_UPDATE]
     );
     if (pairs.length === 0) break;
 
@@ -62,7 +63,9 @@ async function processSpaces(spaces: SpaceRow[], dryRun: boolean): Promise<Proce
     affected += result.affectedRows;
     changed += result.changedRows;
 
-    lastUser = pairs[pairs.length - 1].user;
+    const last = pairs[pairs.length - 1];
+    lastUser = last.user;
+    lastSpace = last.space;
     if (pairs.length < PAIRS_PER_UPDATE) break;
   }
 
