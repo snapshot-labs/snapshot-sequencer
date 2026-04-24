@@ -35,9 +35,17 @@ async function updatePage(pairs: Pair[]): Promise<UpdateResult> {
 // when the WHERE filter is a PK tuple — same shape as src/helpers/votesVpValue.ts.
 async function processSpaces(spaces: SpaceRow[], dryRun: boolean): Promise<ProcessResult> {
   const spaceIds = spaces.map(s => s.id);
+
+  if (dryRun) {
+    const [{ count }] = await db.queryAsync(
+      'SELECT COUNT(*) AS count FROM leaderboard WHERE space IN (?)',
+      [spaceIds]
+    );
+    return { affectedRows: 0, changedRows: 0, previewed: Number(count) };
+  }
+
   let affected = 0;
   let changed = 0;
-  let previewed = 0;
   let lastUser = '';
 
   while (true) {
@@ -50,19 +58,15 @@ async function processSpaces(spaces: SpaceRow[], dryRun: boolean): Promise<Proce
     );
     if (pairs.length === 0) break;
 
-    if (dryRun) {
-      previewed += pairs.length;
-    } else {
-      const result = await updatePage(pairs);
-      affected += result.affectedRows || 0;
-      changed += result.changedRows || 0;
-    }
+    const result = await updatePage(pairs);
+    affected += result.affectedRows;
+    changed += result.changedRows;
 
     lastUser = pairs[pairs.length - 1].user;
     if (pairs.length < PAIRS_PER_UPDATE) break;
   }
 
-  return { affectedRows: affected, changedRows: changed, previewed };
+  return { affectedRows: affected, changedRows: changed, previewed: 0 };
 }
 
 function parseArgs(): Args {
@@ -89,6 +93,8 @@ function parseArgs(): Args {
       concurrency = n;
     }
   });
+
+  if (space && from) throw new Error('Cannot pass both --space and --from');
 
   return { space, from, dryRun, concurrency };
 }
