@@ -75,20 +75,24 @@ function parseArgs(): Args {
   let dryRun = false;
   let concurrency = DEFAULT_CONCURRENCY;
 
+  const readValue = (flag: string, index: number): string => {
+    const value = process.argv[index + 1];
+    if (!value || value.startsWith('--')) throw new Error(`Missing value for ${flag}`);
+    return value;
+  };
+
   process.argv.forEach((arg, index) => {
     if (arg === '--space') {
-      if (!process.argv[index + 1]) throw new Error('Space ID is missing');
-      space = process.argv[index + 1].trim();
+      space = readValue('--space', index).trim();
     }
     if (arg === '--from') {
-      if (!process.argv[index + 1]) throw new Error('From space ID is missing');
-      from = process.argv[index + 1].trim();
+      from = readValue('--from', index).trim();
     }
     if (arg === '--dry-run') {
       dryRun = true;
     }
     if (arg === '--concurrency') {
-      const n = parseInt(process.argv[index + 1], 10);
+      const n = parseInt(readValue('--concurrency', index), 10);
       if (!Number.isFinite(n) || n < 1) throw new Error('Invalid --concurrency value');
       concurrency = n;
     }
