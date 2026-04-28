@@ -14,9 +14,14 @@ const TYPES_EXECUTABLE_BY_ALIAS = [
   'vote-string',
   'proposal',
   'update-proposal',
-  'delete-proposal',
   'flag-proposal'
 ] as const;
+
+const TYPES_EXECUTABLE_BY_STARKNET_ALIAS = ['delete-proposal'] as const;
+
+function isStarknetAddress(address: string): boolean {
+  return /^0x[0-9a-fA-F]{64}$/.test(address);
+}
 
 export async function isExistingAlias(
   address: string,
@@ -39,7 +44,11 @@ export async function verifyAlias(type: string, body: any): Promise<void> {
 
   if (body.address === message.from) return;
 
-  if (!TYPES_EXECUTABLE_BY_ALIAS.includes(type as any)) {
+  const allowed =
+    TYPES_EXECUTABLE_BY_ALIAS.includes(type as any) ||
+    (isStarknetAddress(message.from) && TYPES_EXECUTABLE_BY_STARKNET_ALIAS.includes(type as any));
+
+  if (!allowed) {
     return Promise.reject(`alias not allowed for the type: ${type}`);
   }
 
