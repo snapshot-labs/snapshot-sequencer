@@ -2,7 +2,7 @@ import db from './mysql';
 
 const DEFAULT_ALIAS_EXPIRY_DAYS = 30;
 
-const TYPES_EXECUTABLE_BY_ALIAS = [
+const TYPES_EXECUTABLE_BY_ALIAS: readonly string[] = [
   'follow',
   'unfollow',
   'subscribe',
@@ -15,9 +15,9 @@ const TYPES_EXECUTABLE_BY_ALIAS = [
   'proposal',
   'update-proposal',
   'flag-proposal'
-] as const;
+];
 
-const TYPES_EXECUTABLE_BY_STARKNET_ALIAS = ['delete-proposal'] as const;
+const TYPES_EXECUTABLE_BY_STARKNET_ALIAS: readonly string[] = ['delete-proposal'];
 
 function isStarknetAddress(address: string): boolean {
   return /^0x[0-9a-fA-F]{64}$/.test(address);
@@ -45,8 +45,8 @@ export async function verifyAlias(type: string, body: any): Promise<void> {
   if (body.address === message.from) return;
 
   const allowed =
-    TYPES_EXECUTABLE_BY_ALIAS.includes(type as any) ||
-    (isStarknetAddress(message.from) && TYPES_EXECUTABLE_BY_STARKNET_ALIAS.includes(type as any));
+    TYPES_EXECUTABLE_BY_ALIAS.includes(type) ||
+    (isStarknetAddress(message.from) && TYPES_EXECUTABLE_BY_STARKNET_ALIAS.includes(type));
 
   if (!allowed) {
     return Promise.reject(`alias not allowed for the type: ${type}`);
