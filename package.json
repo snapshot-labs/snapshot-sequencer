@@ -52,7 +52,8 @@
     "zod": "3.23.8"
   },
   "overrides": {
-    "@snapshot-labs/eslint-config-base": "0.1.0-beta.18"
+    "@snapshot-labs/eslint-config-base": "0.1.0-beta.18",
+    "ofetch": "1.3.3"
   },
   "devDependencies": {
     "@snapshot-labs/eslint-config": "0.1.0-beta.18",
