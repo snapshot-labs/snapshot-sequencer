@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import db from '../src/helpers/mysql';
 
-// Usage: yarn ts-node scripts/refresh_spaces_counters.ts
+// Usage: bunx ts-node scripts/refresh_spaces_counters.ts
 async function main() {
   const spaces = await db.queryAsync(`SELECT COUNT(*) as count FROM spaces`);
   console.log(`Found ${spaces[0].count} spaces`);

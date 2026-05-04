@@ -7,8 +7,9 @@ on:
 
 jobs:
   create-sentry-release:
-    uses: snapshot-labs/actions/.github/workflows/create-sentry-release.yml@main
+    uses: snapshot-labs/actions/.github/workflows/create-sentry-release.yml@feat/bun-support
     secrets: inherit
     with:
+      package_manager: bun
       project: snapshot-sequencer
       sourcemaps: './build'

@@ -4,7 +4,7 @@ import networks from '@snapshot-labs/snapshot.js/src/networks.json';
 
 async function main() {
   if (process.argv.length < 2) {
-    console.error(`Usage: yarn ts-node scripts/hibernate.ts run|preview`);
+    console.error(`Usage: bunx ts-node scripts/hibernate.ts run|preview`);
     return process.exit(1);
   }
 
