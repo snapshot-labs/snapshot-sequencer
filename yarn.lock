@@ -1325,10 +1325,10 @@
   dependencies:
     "@sentry/node" "^7.81.1"
 
-"@snapshot-labs/snapshot.js@^0.14.20":
-  version "0.14.20"
-  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot.js/-/snapshot.js-0.14.20.tgz#86851b097336d95054223246106b8e7306253354"
-  integrity sha512-qqSBODELcwqsVyfodNt+idweaI40Vo0TG6Ck0Uq4VUul+jXFs0CpjxCts/NEMqps7iRIpmdDzrwQ9Wy6CDDRLw==
+"@snapshot-labs/snapshot.js@^0.14.21":
+  version "0.14.21"
+  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot.js/-/snapshot.js-0.14.21.tgz#409d3d538c229cb0c51a9b3e173a906ecc739b2a"
+  integrity sha512-DnkK3ttbk5XAHbWQPn77RC4pRG0HkPKu74gfVrgsGQ5TzCCikQhpduJa/ZLkJfiVlh1M/jPBgqiNo9B5l7jtag==
   dependencies:
     "@ensdomains/eth-ens-namehash" "^2.0.15"
     "@ethersproject/abi" "^5.6.4"
@@ -1340,7 +1340,7 @@
     "@ethersproject/providers" "^5.6.8"
     "@ethersproject/units" "^5.7.0"
     "@ethersproject/wallet" "^5.6.2"
-    ajv "^8.11.0"
+    ajv "8.11.0"
     ajv-errors "^3.0.0"
     ajv-formats "^2.1.1"
     cross-fetch "^3.1.6"
@@ -1634,6 +1634,16 @@ ajv-formats@^2.1.1:
   dependencies:
     ajv "^8.0.0"
 
+ajv@8.11.0, ajv@^8.0.0:
+  version "8.11.0"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.11.0.tgz#977e91dd96ca669f54a11e23e378e33b884a565f"
+  integrity sha512-wGgprdCvMalC0BztXvitD2hC04YffAvtsUn93JbGXYLAtCUO4xd17mCCZQxUOItiBwZvJScWo8NIvQMQ71rdpg==
+  dependencies:
+    fast-deep-equal "^3.1.1"
+    json-schema-traverse "^1.0.0"
+    require-from-string "^2.0.2"
+    uri-js "^4.2.2"
+
 ajv@^6.10.0, ajv@^6.12.4:
   version "6.12.6"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.12.6.tgz#baf5a62e802b07d977034586f8c3baf5adf26df4"
@@ -1642,16 +1652,6 @@ ajv@^6.10.0, ajv@^6.12.4:
     fast-deep-equal "^3.1.1"
     fast-json-stable-stringify "^2.0.0"
     json-schema-traverse "^0.4.1"
-    uri-js "^4.2.2"
-
-ajv@^8.0.0, ajv@^8.11.0:
-  version "8.11.0"
-  resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.11.0.tgz#977e91dd96ca669f54a11e23e378e33b884a565f"
-  integrity sha512-wGgprdCvMalC0BztXvitD2hC04YffAvtsUn93JbGXYLAtCUO4xd17mCCZQxUOItiBwZvJScWo8NIvQMQ71rdpg==
-  dependencies:
-    fast-deep-equal "^3.1.1"
-    json-schema-traverse "^1.0.0"
-    require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
 ansi-escapes@^4.2.1:
