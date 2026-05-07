@@ -49,6 +49,7 @@ const ORGANIZATION_QUERY = {
 export default class Tally extends Provider {
   static readonly MAPPING = {
     's:arbitrumfoundation.eth': 'arbitrum',
+    'arb1:0x789fC99093B09aD01C34DC7251D0C89ce743e5a4': 'arbitrum',
     's:uniswapgovernance.eth': 'uniswap',
     's:dopedao.eth': 'dopewars',
     's:opcollective.eth': 'optimism',
@@ -108,7 +109,7 @@ export default class Tally extends Provider {
 
       const _delegates: Delegate[] = [];
       results.delegates.nodes.forEach((node: any) => {
-        const statement = node.statement.statement.trim();
+        const statement = node.statement?.statement?.trim();
 
         if (!statement) return;
 
