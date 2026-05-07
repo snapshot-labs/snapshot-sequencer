@@ -7,7 +7,7 @@ on:
 
 jobs:
   create-sentry-release:
-    uses: snapshot-labs/actions/.github/workflows/create-sentry-release.yml@feat/bun-support
+    uses: snapshot-labs/actions/.github/workflows/create-sentry-release.yml@main
     secrets: inherit
     with:
       package_manager: bun

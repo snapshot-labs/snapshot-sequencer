@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   lint:
-    uses: snapshot-labs/actions/.github/workflows/lint.yml@feat/bun-support
+    uses: snapshot-labs/actions/.github/workflows/lint.yml@main
     secrets: inherit
     with:
       package_manager: bun

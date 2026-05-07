@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    uses: snapshot-labs/actions/.github/workflows/test.yml@feat/bun-support
+    uses: snapshot-labs/actions/.github/workflows/test.yml@main
     secrets: inherit
     with:
       package_manager: bun
