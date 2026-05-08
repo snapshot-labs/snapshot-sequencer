@@ -71,7 +71,7 @@ async function refreshVotesCount(spaces?: string[], users?: string[]) {
   );
 }
 
-// Usage: yarn ts-node scripts/refresh_leaderboard_counters.ts --type proposal|vote --space OPTIONAL-SPACE-ID --start TIMESTAMP --end TIMESTAMP
+// Usage: bunx ts-node scripts/refresh_leaderboard_counters.ts --type proposal|vote --space OPTIONAL-SPACE-ID --start TIMESTAMP --end TIMESTAMP
 async function main() {
   let start = 0;
   let end = 0;

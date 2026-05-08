@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import run from '../src/lib/importer/statement';
 
-// Usage: yarn ts-node scripts/import-statements.ts --providers tally,agora --spaces s:hop.eth
+// Usage: bunx ts-node scripts/import-statements.ts --providers tally,agora --spaces s:hop.eth
 async function main() {
   let providers: string[] | undefined = undefined;
   let spaces: string[] | undefined = undefined;

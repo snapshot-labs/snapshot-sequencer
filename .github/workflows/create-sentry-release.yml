@@ -10,5 +10,6 @@ jobs:
     uses: snapshot-labs/actions/.github/workflows/create-sentry-release.yml@main
     secrets: inherit
     with:
+      package_manager: bun
       project: snapshot-sequencer
       sourcemaps: './build'

@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import db from '../src/helpers/mysql';
 
-// Usage: yarn ts-node scripts/refresh-space-leaderboard.ts --space SPACE-ID
+// Usage: bunx ts-node scripts/refresh-space-leaderboard.ts --space SPACE-ID
 // This script assumes there are no active proposals in the space
 
 async function getFirstAndLastVote(space: string) {

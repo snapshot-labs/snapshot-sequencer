@@ -10,7 +10,7 @@
  * All imported colors will be in 6-character hex format, and will not support transparency.
  * All colors with transparency will be opacified, based on the background color
  *
- * To run this script: yarn ts-node scripts/import-skins.ts
+ * To run this script: bunx ts-node scripts/import-skins.ts
  */
 
 import 'dotenv/config';

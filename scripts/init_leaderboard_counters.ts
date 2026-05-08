@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import db from '../src/helpers/mysql';
 
-// Usage: yarn ts-node scripts/init_leaderboard_counters.ts --pivot TIMESTAMP
+// Usage: bunx ts-node scripts/init_leaderboard_counters.ts --pivot TIMESTAMP
 async function main() {
   let pivot: number | null = null;
 
