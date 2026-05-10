@@ -239,8 +239,22 @@ export const getQuorum = async (options: any, network: string, blockTag: number)
   }
 };
 
+const EXPECTED_CLIENT_ERROR_MESSAGES = new Set(['unauthorized']);
+
+export function isExpectedClientError(e: any): boolean {
+  const message = e instanceof Error ? e.message : typeof e === 'string' ? e : '';
+  return EXPECTED_CLIENT_ERROR_MESSAGES.has(message);
+}
+
+export function captureException(e: any, context?: any) {
+  if (isExpectedClientError(e)) return;
+
+  capture(e, context);
+}
+
 export function captureError(e: any, context?: any, ignoredErrorCodes?: number[]) {
   if (ignoredErrorCodes?.includes(e.code)) return;
+  if (isExpectedClientError(e)) return;
 
   capture(e, context);
 }

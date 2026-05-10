@@ -1,4 +1,3 @@
-import { capture } from '@snapshot-labs/snapshot-sentry';
 import express, { NextFunction, Request, Response } from 'express';
 import duplicateRequestPreventor, { cleanup } from './helpers/duplicateRequestPreventor';
 import log from './helpers/log';
@@ -6,7 +5,7 @@ import { flagEntity } from './helpers/moderation';
 import poke from './helpers/poke';
 import relayer from './helpers/relayer';
 import serve from './helpers/requestDeduplicator';
-import { sendError, verifyAuth } from './helpers/utils';
+import { captureException, sendError, verifyAuth } from './helpers/utils';
 import typedData from './ingestor';
 import { updateProposalAndVotes } from './scores';
 import { name, version } from '../package.json';
@@ -52,7 +51,7 @@ router.get('/scores/:proposalId', async (req, res) => {
     const result = await serve(proposalId, updateProposalAndVotes, [proposalId]);
     return res.json({ result });
   } catch (e) {
-    capture(e);
+    captureException(e);
     log.warn(`[api] updateProposalAndVotes() failed ${proposalId}, ${JSON.stringify(e)}`);
     return res.json({ error: 'failed', message: e });
   }
