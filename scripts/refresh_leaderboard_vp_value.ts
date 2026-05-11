@@ -185,7 +185,7 @@ async function main(): Promise<void> {
 
   console.log('\n=== Summary ===');
   if (dryRun) {
-    console.log(`Total leaderboard rows that would be updated: ${totalPreviewed}`);
+    console.log(`Total leaderboard rows that would be examined: ${totalPreviewed}`);
   } else {
     console.log(`Affected: ${totalAffected}, Changed: ${totalChanged}`);
   }
