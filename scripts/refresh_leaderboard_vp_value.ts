@@ -142,7 +142,7 @@ async function main(): Promise<void> {
 
   console.log('Fetching spaces...');
   const params: string[] = [];
-  let whereClause = 's.deleted = 0 AND s.vote_count > 0';
+  let whereClause = 's.deleted = 0';
 
   if (space) {
     whereClause += ' AND s.id = ?';
