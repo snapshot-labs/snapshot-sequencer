@@ -19,13 +19,17 @@ const URI = new URL(
 let consecutiveFailsCount = 0;
 let shouldStop = false;
 let strategies: Record<Strategy['id'], Strategy> = {};
+let overridingStrategies: string[] = [];
 
 async function loadStrategies() {
   const res = await snapshot.utils.getJSON(URI);
 
-  if ('error' in res) {
+  const isEmptyResponse = Object.keys(res).length === 0;
+  if ('error' in res || isEmptyResponse) {
     const error = new Error(
-      `Failed to load strategies: ${res.error.message || JSON.stringify(res.error)}`
+      isEmptyResponse
+        ? 'Empty strategies'
+        : `Failed to load strategies: ${res.error.message || JSON.stringify(res.error)}`
     );
     capture(error, {
       contexts: { input: { uri: URI }, res }
@@ -40,11 +44,17 @@ async function loadStrategies() {
   }));
 
   strategies = Object.fromEntries(strategiesList.map(strategy => [strategy.id, strategy]));
+
+  overridingStrategies = strategiesList.filter(s => s.override).map(s => s.id);
 }
 
 // Using a getter to avoid potential reference initialization issues
 export function getStrategies(): Record<Strategy['id'], Strategy> {
   return strategies;
+}
+
+export function getOverridingStrategies(): string[] {
+  return overridingStrategies;
 }
 
 export async function initialize() {
