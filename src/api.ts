@@ -14,13 +14,11 @@ import { name, version } from '../package.json';
 const router = express.Router();
 const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 
-const maintenanceMsg = 'update in progress, try later';
-
 router.post(
   '/',
   duplicateRequestPreventor,
   async (req: Request, res: Response, next: NextFunction) => {
-    if (process.env.MAINTENANCE) return sendError(res, maintenanceMsg, 503);
+    if (process.env.MAINTENANCE) return sendError(res, process.env.MAINTENANCE, 503);
     try {
       const result = await typedData(req);
       res.json(result);
