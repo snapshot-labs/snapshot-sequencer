@@ -81,16 +81,20 @@ export async function addOrUpdateSkin(id: string, skinSettings: Record<string, s
   );
 }
 
+export function isAuthorized({ space, address }: { space: any; address: string }): boolean {
+  const admins = (space?.admins || []).map((a: string) => a.toLowerCase());
+  const mods = (space?.moderators || []).map((m: string) => m.toLowerCase());
+  const addressLC = address.toLowerCase();
+  return admins.includes(addressLC) || mods.includes(addressLC);
+}
+
 export async function getProposal(space, id) {
   const query = `SELECT * FROM proposals WHERE space = ? AND id = ?`;
   const [proposal] = await db.queryAsync(query, [space, id]);
   if (!proposal) return false;
 
   proposal.strategies = jsonParse(proposal.strategies);
-  proposal.validation = jsonParse(proposal.validation, { name: 'any', params: {} }) || {
-    name: 'any',
-    params: {}
-  };
+  proposal.validation = jsonParse(proposal.validation, { name: 'any', params: {} });
   proposal.choices = jsonParse(proposal.choices);
   proposal.vp_value_by_strategy = jsonParse(proposal.vp_value_by_strategy, []);
 

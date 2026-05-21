@@ -1,11 +1,9 @@
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { addOrUpdateSpace } from './actions';
+import { BROVIDER_URL, DEFAULT_NETWORK } from './utils';
 
 type Space = Record<string, any>;
-
-const DEFAULT_NETWORK = process.env.DEFAULT_NETWORK ?? '1';
-const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
 
 export default async function poke(id: string): Promise<Space> {
   const space = await getSpaceENS(id);
@@ -25,7 +23,7 @@ export default async function poke(id: string): Promise<Space> {
 }
 
 async function getSpaceENS(id: string): Promise<Space> {
-  const uri = await snapshot.utils.getSpaceUri(id, DEFAULT_NETWORK, { broviderUrl });
+  const uri = await snapshot.utils.getSpaceUri(id, DEFAULT_NETWORK, { broviderUrl: BROVIDER_URL });
 
   if (uri) {
     if (!isValidUri(uri)) {

@@ -1,12 +1,11 @@
 import snapshot from '@snapshot-labs/snapshot.js';
 import log from './log';
 import { getStrategies } from './strategies';
-
-const DEFAULT_SNAPSHOT_ENV: string = 'testnet';
+import { NETWORK } from './utils';
 
 export async function validateSpaceSettings(
   originalSpace: any,
-  snapshotEnv = process.env.NETWORK ?? DEFAULT_SNAPSHOT_ENV
+  snapshotEnv = NETWORK
 ): Promise<void> {
   const spaceType = originalSpace.turbo ? 'turbo' : 'default';
   const space = snapshot.utils.clone(originalSpace);

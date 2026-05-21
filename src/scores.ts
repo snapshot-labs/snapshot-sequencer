@@ -3,26 +3,26 @@ import { CB } from './constants';
 import log from './helpers/log';
 import db from './helpers/mysql';
 import { getDecryptionKey } from './helpers/shutter';
-import { hasStrategyOverride, sha256 } from './helpers/utils';
+import { hasStrategyOverride, SCORE_API_URL, sha256 } from './helpers/utils';
 
-const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const FINALIZE_SCORE_SECONDS_DELAY = 60;
+
+const PROPOSAL_JSON_FIELDS = [
+  'strategies',
+  'plugins',
+  'choices',
+  'scores',
+  'scores_by_strategy',
+  'vp_value_by_strategy'
+];
 
 async function getProposal(id: string): Promise<any | undefined> {
   const query = 'SELECT * FROM proposals WHERE id = ? LIMIT 1';
   const [proposal] = await db.queryAsync(query, [id]);
   if (!proposal) return;
-  proposal.strategies = JSON.parse(proposal.strategies);
-  proposal.plugins = JSON.parse(proposal.plugins);
-  proposal.choices = JSON.parse(proposal.choices);
-  proposal.scores = JSON.parse(proposal.scores);
-  proposal.scores_by_strategy = JSON.parse(proposal.scores_by_strategy);
-  proposal.vp_value_by_strategy = JSON.parse(proposal.vp_value_by_strategy);
-  let proposalState = 'pending';
+  PROPOSAL_JSON_FIELDS.forEach(f => (proposal[f] = JSON.parse(proposal[f])));
   const ts = parseInt((Date.now() / 1e3).toFixed());
-  if (ts > proposal.start) proposalState = 'active';
-  if (ts > proposal.end) proposalState = 'closed';
-  proposal.state = proposalState;
+  proposal.state = ts > proposal.end ? 'closed' : ts > proposal.start ? 'active' : 'pending';
   return proposal;
 }
 
@@ -50,13 +50,11 @@ async function updateVotesVp(votes: any[], vpState: string, proposalId: string) 
 
   const max = 200;
   const pages = Math.ceil(votesWithChange.length / max);
-  const votesInPages: any = [];
-  Array.from(Array(pages)).forEach((x, i) => {
-    votesInPages.push(votesWithChange.slice(max * i, max * (i + 1)));
-  });
+  const votesInPages = Array.from({ length: pages }, (_, i) =>
+    votesWithChange.slice(max * i, max * (i + 1))
+  );
 
-  let i = 0;
-  for (const votesInPage of votesInPages) {
+  for (const [idx, votesInPage] of votesInPages.entries()) {
     const params: any = [];
     let query = '';
     votesInPage.forEach((vote: any) => {
@@ -73,8 +71,7 @@ async function updateVotesVp(votes: any[], vpState: string, proposalId: string) 
       params.push(CB.PENDING_DELETE);
     });
     await db.queryAsync(query, params);
-    if (i) await snapshot.utils.sleep(200);
-    i++;
+    if (idx > 0) await snapshot.utils.sleep(200);
   }
   log.info(`[scores] updated votes vp, ${votesWithChange.length}/${votes.length} on ${proposalId}`);
 }
@@ -157,7 +154,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
         proposal.network,
         votes.map(vote => vote.voter),
         parseInt(proposal.snapshot),
-        scoreAPIUrl,
+        SCORE_API_URL,
         { returnValue: 'all' }
       );
       vpState = state;

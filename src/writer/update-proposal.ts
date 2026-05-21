@@ -3,7 +3,7 @@ import { getProposal, getSpace } from '../helpers/actions';
 import log from '../helpers/log';
 import { containsFlaggedLinks } from '../helpers/moderation';
 import db from '../helpers/mysql';
-import { jsonParse, validateChoices } from '../helpers/utils';
+import { jsonParse, resolvePrivacy, validateChoices } from '../helpers/utils';
 
 // We don't need most of the checks used https://github.com/snapshot-labs/snapshot-sequencer/blob/89992b49c96fedbbbe33b42041c9cbe5a82449dd/src/writer/proposal.ts#L62
 // because we assume that those checks were already done during the proposal creation
@@ -62,7 +62,7 @@ export async function verify(body): Promise<any> {
   });
   if (spaceUpdateError) return Promise.reject(spaceUpdateError);
 
-  return Promise.resolve(proposal);
+  return proposal;
 }
 
 export async function action(body, ipfs): Promise<void> {
@@ -71,10 +71,7 @@ export async function action(body, ipfs): Promise<void> {
   const metadata = msg.payload.metadata || {};
   const plugins = JSON.stringify(metadata.plugins || {});
   const spaceSettings = await getSpace(msg.space);
-  let privacy = spaceSettings.voting?.privacy ?? 'any';
-  if (privacy === 'any') {
-    privacy = msg.payload.privacy ?? '';
-  }
+  const privacy = resolvePrivacy(spaceSettings.voting?.privacy, msg.payload.privacy);
 
   const proposal = {
     ipfs,
@@ -92,8 +89,8 @@ export async function action(body, ipfs): Promise<void> {
     flagged: +containsFlaggedLinks(msg.payload.body)
   };
 
-  const query = 'UPDATE proposals SET ? WHERE id = ? LIMIT 1';
-  const params: any[] = [proposal, msg.payload.proposal];
-
-  await db.queryAsync(query, params);
+  await db.queryAsync('UPDATE proposals SET ? WHERE id = ? LIMIT 1', [
+    proposal,
+    msg.payload.proposal
+  ]);
 }

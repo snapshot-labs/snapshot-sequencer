@@ -10,10 +10,9 @@ import {
   clearStampCache,
   getSpaceController,
   jsonParse,
+  NETWORK,
   removeFromWalletConnectWhitelist
 } from '../helpers/utils';
-
-const SNAPSHOT_ENV = process.env.NETWORK || 'testnet';
 
 export async function verify(body): Promise<any> {
   const msg = jsonParse(body.msg);
@@ -39,7 +38,7 @@ export async function verify(body): Promise<any> {
     return Promise.reject(`max number of strategies is ${strategiesLimit}`);
   }
 
-  const controller = await getSpaceController(msg.space, SNAPSHOT_ENV);
+  const controller = await getSpaceController(msg.space, NETWORK);
   const isController = controller === body.address;
 
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());

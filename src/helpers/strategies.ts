@@ -2,6 +2,7 @@ import { URL } from 'url';
 import { capture } from '@snapshot-labs/snapshot-sentry';
 import snapshot from '@snapshot-labs/snapshot.js';
 import log from './log';
+import { SCORE_API_URL } from './utils';
 
 type Strategy = {
   id: string;
@@ -11,10 +12,7 @@ type Strategy = {
 
 const RUN_INTERVAL = 60e3 * 5; // 5 minutes
 const MAX_CONSECUTIVE_FAILS = 3;
-const URI = new URL(
-  '/api/strategies',
-  process.env.SCORE_API_URL ?? 'https://score.snapshot.org'
-).toString();
+const URI = new URL('/api/strategies', SCORE_API_URL).toString();
 
 let consecutiveFailsCount = 0;
 let shouldStop = false;

@@ -12,22 +12,21 @@ import log from './helpers/log';
 import { timeIngestorProcess } from './helpers/metrics';
 import { flaggedIps } from './helpers/moderation';
 import relayer, { issueReceipt } from './helpers/relayer';
-import { getIp, jsonParse, sha256 } from './helpers/utils';
+import { BROVIDER_URL, DEFAULT_NETWORK, getIp, jsonParse, NETWORK, sha256 } from './helpers/utils';
 import writer from './writer';
 
 const NETWORK_METADATA = {
   evm: {
     name: 'snapshot',
     version: '0.1.4',
-    broviderUrl: process.env.BROVIDER_URL ?? 'https://rpc.snapshot.org',
-    defaultNetwork: process.env.DEFAULT_NETWORK ?? '1'
+    broviderUrl: BROVIDER_URL,
+    defaultNetwork: DEFAULT_NETWORK
   },
   starknet: {
     name: 'sx-starknet',
     version: '0.1.0',
-    broviderUrl: process.env.BROVIDER_URL ?? 'https://rpc.snapshot.org',
-    defaultNetwork:
-      process.env.NETWORK === 'testnet' ? '0x534e5f5345504f4c4941' : '0x534e5f4d41494e'
+    broviderUrl: BROVIDER_URL,
+    defaultNetwork: NETWORK === 'testnet' ? '0x534e5f5345504f4c4941' : '0x534e5f4d41494e'
   }
 };
 
